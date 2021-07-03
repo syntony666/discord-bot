@@ -51,9 +51,9 @@ class ReactionRoleDao(Database):
         data['$set'] = dict()
         if message is not None:
             message_id = str(message)
-            query['$set']['message'] = message_id
+            data['$set']['message'] = message_id
         if emoji is not None:
-            query['$set']['emoji'] = emoji
+            data['$set']['emoji'] = emoji
         self._update_data(self.col_name, query, data)
 
     def del_data(self, guild: str, role=None, message=None):
