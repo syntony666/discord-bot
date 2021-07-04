@@ -1,5 +1,6 @@
 from core.database import Database
 from core.exception import DataNotExist, DataExist
+from database.find_builder import FindBuilder
 from model.reply_model import ReplyModel
 
 
@@ -9,17 +10,10 @@ class ReplyDao(Database):
         self.col_name = 'reply'
 
     def get_data(self, guild: str, receive=None):
-        guild_id = str(guild)
-        query = dict()
-        query['_id.guild'] = guild_id
-        if receive is not None:
-            query['_id.receive'] = receive
-        response = self._find_data(self.col_name, query)
-        if response is None:
-            return []
-        reply = [ReplyModel(guild_id, found['_id']['receive'], found['send'])
-                 for found in response]
-        return reply
+        find_builder = FindBuilder(self.col_name)
+        find_builder.collect_query('_id.guild', str(guild))
+        find_builder.collect_uncessary_query('_id.receive', receive)
+        return find_builder.get_result(ReplyModel)
 
     def search_data(self, guild: str, receive: str):
         guild_id = str(guild)

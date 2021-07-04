@@ -2,6 +2,7 @@ from discord import Emoji
 
 from core.database import Database
 from core.exception import DataExist, DataNotExist
+from database.find_builder import FindBuilder
 from model.reaction_role_model import ReactionRoleModel
 
 
@@ -11,23 +12,12 @@ class ReactionRoleDao(Database):
         self.col_name = 'reaction_role'
 
     def get_data(self, guild: str, role=None, message=None, emoji=None):
-        query = dict()
-        guild_id = str(guild)
-        query['_id.guild'] = guild_id
-        if role is not None:
-            role_id = str(role)
-            query['_id.role'] = role_id
-        if message is not None:
-            message_id = str(message)
-            query['message'] = message_id
-        if emoji is not None:
-            query['emoji'] = emoji
-        response = self._find_data(self.col_name, query)
-        if response is None:
-            return []
-        reaction_role = [ReactionRoleModel(found['_id']['guild'], found['_id']['role'], found['message'], found['emoji'])
-                         for found in response]
-        return reaction_role
+        find_builder = FindBuilder(self.col_name)
+        find_builder.collect_query('_id.guild', str(guild))
+        find_builder.collect_uncessary_query('_id.role', str(role))
+        find_builder.collect_uncessary_query('message', str(message))
+        find_builder.collect_uncessary_query('emoji', emoji)
+        return find_builder.get_result(ReactionRoleModel)
 
     def create_data(self, guild: str, role: str, message: str, emoji: Emoji):
         role_id = str(role)

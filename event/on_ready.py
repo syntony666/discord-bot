@@ -12,6 +12,10 @@ class OnReady(Extension):
     async def on_ready(self):
         await self.bot.change_presence(activity=Game('使用 [* about] 來知道怎麼玩弄我'))
 
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, exception):
+        print(exception)
+
 
 def setup(bot):
     bot.add_cog(OnReady(bot))

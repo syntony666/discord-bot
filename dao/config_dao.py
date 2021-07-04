@@ -1,4 +1,5 @@
 from core.exception import DataExist, DataNotExist
+from database.find_builder import FindBuilder
 from model.config_model import ConfigModel
 from core.database import Database
 
@@ -9,16 +10,9 @@ class ConfigDao(Database):
         self.col_name = 'config'
 
     def get_data(self, guild: str):
-        guild_id = str(guild)
-        query = dict()
-        query['_id.guild'] = guild_id
-        response = self._find_data(self.col_name, query)
-        if response is None:
-            return []
-        reply = [ConfigModel(guild_id, found['join_channel'], found['join_message'],
-                             found['remove_channel'], found['remove_message'])
-                 for found in response]
-        return reply
+        find_builder = FindBuilder(self.col_name)
+        find_builder.collect_query('_id.guild', str(guild))
+        return find_builder.get_result(ConfigModel)
 
     def create_data(self, guild: str):
         guild_id = str(guild)

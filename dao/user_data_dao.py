@@ -1,5 +1,6 @@
 from core.database import Database
 from core.exception import DataExist, DataNotExist
+from database.find_builder import FindBuilder
 from model.user_data_model import UserDataModel
 
 
@@ -9,17 +10,10 @@ class UserDataDao(Database):
         self.col_name = 'user_data'
 
     def get_data(self, user: str, guild: str):
-        user_id = str(user)
-        guild_id = str(guild)
-        query = dict()
-        query['_id.guild'] = guild_id
-        query['_id.user'] = user_id
-        response = self._find_data(self.col_name, query)
-        if response is None:
-            return []
-        reply = [UserDataModel(user_id, guild_id, found.exp, found.money)
-                 for found in response]
-        return reply
+        find_builder = FindBuilder(self.col_name)
+        find_builder.collect_query('_id.user', str(user))
+        find_builder.collect_query('_id.guild', str(guild))
+        return find_builder.get_result(UserDataModel)
 
     def create_data(self, user: str, guild: str):
         user_id = str(user)
