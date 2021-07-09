@@ -2,6 +2,7 @@ from discord import Emoji
 
 from core.database import Database
 from core.exception import DataExist, DataNotExist
+from database.create_builder import CreateBuilder
 from database.find_builder import FindBuilder
 from model.reaction_role_model import ReactionRoleModel
 
@@ -20,16 +21,15 @@ class ReactionRoleDao(Database):
         return find_builder.get_result(ReactionRoleModel)
 
     def create_data(self, guild: str, role: str, message: str, emoji: Emoji):
-        role_id = str(role)
-        message_id = str(message)
-        guild_id = str(guild)
-        if len(self.get_data(role_id)) != 0:
-            raise DataExist
-        query = dict()
-        query['_id'] = {'guild': guild_id, 'role': role_id}
-        query['message'] = message_id
-        query['emoji'] = emoji
-        self._create_data(self.col_name, query)
+        create_builder = CreateBuilder(self.col_name)
+        create_builder.collect_query('_id.guild', str(guild))
+        create_builder.collect_query('_id.role', str(role))
+
+        create_builder.collect_data_id('guild', str(guild))
+        create_builder.collect_data_id('role', str(role))
+        create_builder.collect_data('message', str(message))
+        create_builder.collect_data('emoji', str(emoji))
+        create_builder.get_result()
 
     def update_data(self, role: str, message=None, emoji=None):
         role_id = str(role)

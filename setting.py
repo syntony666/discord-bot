@@ -9,4 +9,4 @@ DATABASE_NAME = 'dc-bot'
 PREFIX = '* '
 TOKEN = os.environ.get('DC_TOKEN')
 
-VERSION = 'ver. 3.0.3 release'
+VERSION = 'ver. 4.0.0 release'

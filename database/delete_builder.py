@@ -1,11 +1,7 @@
-from typing import Type
-
-from core import database
 from core.database import Database
-from model.model import Model
 
 
-class FindBuilder(Database):
+class DeleteBuilder(Database):
     def __init__(self, col_name):
         super().__init__()
         self.col_name = col_name
@@ -19,7 +15,7 @@ class FindBuilder(Database):
             return
         self.query[attr_name] = data
 
-    def get_result(self, model: Type[Model]):
+    def get_result(self):
         response = self._find_data(self.col_name, self.query)
         if response is None:
             return []

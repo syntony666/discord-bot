@@ -1,5 +1,6 @@
 from core.database import Database
-from core.exception import DataNotExist, DataExist
+from core.exception import DataNotExist
+from database.create_builder import CreateBuilder
 from database.find_builder import FindBuilder
 from model.reply_model import ReplyModel
 
@@ -26,13 +27,14 @@ class ReplyDao(Database):
         return reply
 
     def create_data(self, guild: str, receive: str, send: str):
-        guild_id = str(guild)
-        if len(self.get_data(guild_id, receive)) != 0:
-            raise DataExist
-        query = dict()
-        query['_id'] = {'guild': guild_id, 'receive': receive}
-        query['send'] = send
-        self._create_data(self.col_name, query)
+        create_builder = CreateBuilder(self.col_name)
+        create_builder.collect_query('_id.guild', str(guild))
+        create_builder.collect_query('_id.receive', receive)
+
+        create_builder.collect_data_id('guild', str(guild))
+        create_builder.collect_data_id('receive', receive)
+        create_builder.collect_data('send', send)
+        create_builder.get_result()
 
     def update_data(self, guild: str, receive: str, send: str):
         guild_id = str(guild)

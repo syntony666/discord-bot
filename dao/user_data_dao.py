@@ -1,5 +1,6 @@
 from core.database import Database
 from core.exception import DataExist, DataNotExist
+from database.create_builder import CreateBuilder
 from database.find_builder import FindBuilder
 from model.user_data_model import UserDataModel
 
@@ -16,15 +17,15 @@ class UserDataDao(Database):
         return find_builder.get_result(UserDataModel)
 
     def create_data(self, user: str, guild: str):
-        user_id = str(user)
-        guild_id = str(guild)
-        if len(self.get_data(user_id, guild_id)) != 0:
-            raise DataExist
-        query = dict()
-        query['_id'] = {'user': user_id, 'guild': guild_id}
-        query['exp'] = 0
-        query['money'] = 0
-        self._create_data(self.col_name, query)
+        create_builder = CreateBuilder(self.col_name)
+        create_builder.collect_query('_id.user', str(user))
+        create_builder.collect_query('_id.guild', str(guild))
+
+        create_builder.collect_data_id('user', str(user))
+        create_builder.collect_data_id('guild', str(guild))
+        create_builder.collect_data('exp', 0)
+        create_builder.collect_data('money', 0)
+        create_builder.get_result()
 
     def update_data(self, user: str, guild: str, exp: int = None, money: int = None):
         user_id = str(user)
