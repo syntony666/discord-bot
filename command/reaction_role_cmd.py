@@ -16,7 +16,7 @@ class ReactionRole(Extension):
         self.embed_color = Color.blue()
         self.reaction_role_dao = ReactionRoleDao()
 
-    @commands.has_permissions(administrator=True)
+    @commands.has_permissions(manage_roles=True)
     @commands.group(aliases=['rr'])
     async def reaction_role(self, ctx):
         pass
