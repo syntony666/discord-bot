@@ -1,6 +1,7 @@
 from core.database import Database
 from core.exception import DataExist, DataNotExist
 from database.create_builder import CreateBuilder
+from database.delete_builder import DeleteBuilder
 from database.find_builder import FindBuilder
 from model.user_data_model import UserDataModel
 
@@ -42,10 +43,7 @@ class UserDataDao(Database):
         self._update_data(self.col_name, query, data)
 
     def del_data(self, user: str, guild: str):
-        user_id = str(user)
-        guild_id = str(guild)
-        if len(self.get_data(user_id, guild_id)) == 0:
-            raise DataNotExist
-        query = dict()
-        query['_id'] = {'user': user_id, 'guild': guild_id}
-        self._del_data(self.col_name, query)
+        delete_builder = DeleteBuilder(self.col_name)
+        delete_builder.collect_query('_id.guild', str(guild))
+        delete_builder.collect_query('_id.user', str(user))
+        delete_builder.get_result()

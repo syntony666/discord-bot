@@ -1,7 +1,9 @@
 from core.database import Database
 from core.exception import DataNotExist
 from database.create_builder import CreateBuilder
+from database.delete_builder import DeleteBuilder
 from database.find_builder import FindBuilder
+from database.update_builder import UpdateBuilder
 from model.reply_model import ReplyModel
 
 
@@ -37,20 +39,15 @@ class ReplyDao(Database):
         create_builder.get_result()
 
     def update_data(self, guild: str, receive: str, send: str):
-        guild_id = str(guild)
-        if len(self.get_data(guild_id, receive)) == 0:
-            raise DataNotExist
-        query = dict()
-        query['_id'] = {'guild': guild_id, 'receive': receive}
-        data = dict()
-        data['$set'] = dict()
-        data['$set']['send'] = send
-        self._update_data(self.col_name, query, data)
+        update_builder = UpdateBuilder(self.col_name)
+        update_builder.collect_query('_id.guild', str(guild))
+        update_builder.collect_query('_id.receive', str(receive))
+
+        update_builder.collect_data('send', send)
+        update_builder.get_result()
 
     def del_data(self, guild: str, receive: str):
-        guild_id = str(guild)
-        if len(self.get_data(guild_id, receive)) == 0:
-            raise DataNotExist
-        query = dict()
-        query['_id'] = {'guild': guild_id, 'receive': receive}
-        self._del_data(self.col_name, query)
+        delete_builder = DeleteBuilder(self.col_name)
+        delete_builder.collect_query('_id.guild', str(guild))
+        delete_builder.collect_query('_id.receive', receive)
+        delete_builder.get_result()

@@ -3,6 +3,7 @@ from discord import Emoji
 from core.database import Database
 from core.exception import DataExist, DataNotExist
 from database.create_builder import CreateBuilder
+from database.delete_builder import DeleteBuilder
 from database.find_builder import FindBuilder
 from model.reaction_role_model import ReactionRoleModel
 
@@ -47,15 +48,8 @@ class ReactionRoleDao(Database):
         self._update_data(self.col_name, query, data)
 
     def del_data(self, guild: str, role=None, message=None):
-        query = dict()
-        guild_id = str(guild)
-        if len(self.get_data(guild_id, role, message)) == 0:
-            raise DataNotExist
-        query['_id.guild'] = guild_id
-        if role is not None:
-            role_id = str(role)
-            query['_id.role'] = role_id
-        if message is not None:
-            message_id = str(message)
-            query['message'] = message_id
-        self._del_data(self.col_name, query)
+        delete_builder = DeleteBuilder(self.col_name)
+        delete_builder.collect_query('_id.guild', str(guild))
+        delete_builder.collect_uncessary_query('_id.role', str(role))
+        delete_builder.collect_uncessary_query('message', message)
+        delete_builder.get_result()

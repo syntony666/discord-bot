@@ -1,4 +1,5 @@
 from core.exception import DataExist, DataNotExist
+from database.delete_builder import DeleteBuilder
 from database.find_builder import FindBuilder
 from model.config_model import ConfigModel
 from core.database import Database
@@ -49,9 +50,6 @@ class ConfigDao(Database):
         self._update_data(self.col_name, query, data)
 
     def del_data(self, guild: str):
-        guild_id = str(guild)
-        if len(self.get_data(guild_id)) == 0:
-            raise DataNotExist
-        query = dict()
-        query['_id'] = {'guild': guild_id}
-        self._del_data(self.col_name, query)
+        delete_builder = DeleteBuilder(self.col_name)
+        delete_builder.collect_query('_id.guild', str(guild))
+        delete_builder.get_result()
