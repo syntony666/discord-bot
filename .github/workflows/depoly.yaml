@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: |-
         rm -rf node_modules/
-        npm cache clean
+        npm cache clean --force
         yarn install
     - name: Build Site
       run: npm run build
