@@ -5,7 +5,7 @@ module.exports = {
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#title
    */
-  title: '工具人使用手冊',
+  title: '黒井闇子',
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#description
    */
@@ -45,12 +45,17 @@ module.exports = {
         link: '/about/',
       },
       {
+        text: '隱私權政策',
+        link: '/announce/',
+      },
+      {
         text: '工具人邀請連結',
-        link: 'https://discord.com/api/oauth2/authorize?client_id=878870568852672512&permissions=8&scope=bot'
+        link: 'https://discord.com/api/oauth2/authorize?client_id=995551157151862854&permissions=1644971945463&scope=bot'
       }
     ],
     sidebar: {
-    }
+    },
+    contributors: false
   }),
 
   /**

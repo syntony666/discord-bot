@@ -1,7 +1,7 @@
 ---
 home: true
 heroImage: ./heroImage.png
-tagline: 沈迷於玩弄工具人是否搞錯了什麼
+tagline: 我是黒井闇子 我很可愛
 actions:
   - text: Link Start!!! →
     link: /command/
