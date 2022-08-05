@@ -18,6 +18,12 @@ GitHub: [syntony666](https://github.com/syntony666)
 
 ## 版本紀錄
 
+### ver. 4.0.1
+
+#### 2022.8.5
+
+- 增加通知設定
+
 ### ver. 4.0.0
 
 #### 2022.8.1
