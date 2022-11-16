@@ -14,7 +14,7 @@ export class ReplyCommandService {
     private _interaction: ChatInputCommandInteraction;
     private _guildId: string = '';
 
-    constructor(interaction: ChatInputCommandInteraction, type: ReplyOperation) {
+    constructor(interaction: ChatInputCommandInteraction) {
         if (interaction.guild != null) {
             this._interaction = interaction;
             this._guildId = interaction.guild.id;
@@ -24,7 +24,7 @@ export class ReplyCommandService {
         }
     }
 
-    public getEmbedMessage(): EmbedBuilder {
+    public _getEmbedMessage(): EmbedBuilder {
         return new EmbedBuilder()
             .setColor(embedColor.get('reply') ?? null)
             .setAuthor({ name: this._interaction.client.user?.username ?? '', iconURL: this._interaction.client.user?.avatarURL() ?? undefined })
@@ -116,7 +116,7 @@ export class ReplyCommandService {
     }
 
     private _onCreateSuccess(input: string, output: string) {
-        let embed = this.getEmbedMessage().setTitle('回覆內容已新增')
+        let embed = this._getEmbedMessage().setTitle('回覆內容已新增')
             .setFields(
                 { name: '關鍵字', value: input, inline: false },
                 { name: '回覆內容', value: output, inline: true },
@@ -125,7 +125,7 @@ export class ReplyCommandService {
     }
 
     private _onEditSuccess(input: string, output: string) {
-        let embed = this.getEmbedMessage().setTitle('回覆內容已修改')
+        let embed = this._getEmbedMessage().setTitle('回覆內容已修改')
             .setFields(
                 { name: '關鍵字', value: input, inline: true },
                 { name: '回覆內容', value: output, inline: true },
@@ -138,7 +138,7 @@ export class ReplyCommandService {
     }
 
     private _onRemoveSuccess(input: string) {
-        let embed = this.getEmbedMessage().setTitle('回覆內容已移除')
+        let embed = this._getEmbedMessage().setTitle('回覆內容已移除')
             .setFields(
                 { name: '關鍵字', value: input },
             )

@@ -28,7 +28,8 @@ const eventList: EventListener[] = [
 ]
 
 const embedColor: Map<string, ColorResolvable> = new Map([
-    ['reply', '#f0b01d']
+    ['reply', '#f0b01d'],
+    ['status', '#0099ff']
 ])
 
 export {

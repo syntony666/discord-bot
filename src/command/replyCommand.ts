@@ -68,7 +68,6 @@ export const ReplyCommand: Command = {
                 .setDescription('列出所有的回應內容')
         }),
     run: async (interaction) => {
-
         let type: ReplyOperation;
 
         switch (interaction.options.getSubcommand()) {
@@ -92,7 +91,7 @@ export const ReplyCommand: Command = {
                 break;
         }
 
-        const replyCommandService = new ReplyCommandService(interaction, type);
+        const replyCommandService = new ReplyCommandService(interaction);
         let input: string | null, output: string | null;
 
         switch (type) {

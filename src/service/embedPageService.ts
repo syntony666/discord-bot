@@ -108,9 +108,11 @@ export class EmbedPageService {
         }
     
         return new ActionRowBuilder()
-            .setComponents(new ButtonBuilder().setCustomId('first').setEmoji(buttonEmojis.first).setStyle(ButtonStyle.Primary).setDisabled(currentPage == 1),
-            new ButtonBuilder().setCustomId('previous').setEmoji(buttonEmojis.previous).setStyle(ButtonStyle.Primary).setDisabled(currentPage == 1),
-            new ButtonBuilder().setCustomId('next').setEmoji(buttonEmojis.next).setStyle(ButtonStyle.Primary).setDisabled(currentPage == maxPage),
-            new ButtonBuilder().setCustomId('last').setEmoji(buttonEmojis.last).setStyle(ButtonStyle.Primary).setDisabled(currentPage == maxPage));
+            .setComponents(
+                new ButtonBuilder().setCustomId('first').setEmoji(buttonEmojis.first).setStyle(ButtonStyle.Primary).setDisabled(currentPage == 1),
+                new ButtonBuilder().setCustomId('previous').setEmoji(buttonEmojis.previous).setStyle(ButtonStyle.Primary).setDisabled(currentPage == 1),
+                new ButtonBuilder().setCustomId('next').setEmoji(buttonEmojis.next).setStyle(ButtonStyle.Primary).setDisabled(currentPage == maxPage),
+                new ButtonBuilder().setCustomId('last').setEmoji(buttonEmojis.last).setStyle(ButtonStyle.Primary).setDisabled(currentPage == maxPage)
+            );
     }
 }
