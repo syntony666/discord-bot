@@ -1,6 +1,6 @@
 {
   "name": "discord-bot",
-  "version": "4.1.0",
+  "version": "4",
   "description": "The discord bot made by syntony666",
   "main": "./prod/index.js",
   "scripts": {
