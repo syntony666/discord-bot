@@ -2,5 +2,5 @@ import { ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandSubcomman
 
 export interface Command {
     data: SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder;
-    run: (interaction: ChatInputCommandInteraction) => Promise<void>;
+    execute: (interaction: ChatInputCommandInteraction) => Promise<void>;
 }

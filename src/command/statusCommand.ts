@@ -16,7 +16,7 @@ export const StatusCommand: Command = {
                 .setName('server')
                 .setDescription('取得伺服器資訊')
         }),
-    run: async (interaction) => {
+    execute: async (interaction) => {
         let type: StatusOperation;
 
         switch (interaction.options.getSubcommand()) {

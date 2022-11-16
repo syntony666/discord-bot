@@ -4,7 +4,7 @@ import { EventListener } from "./eventListener";
 
 export const InteractionCreateEvent: EventListener = {
     name: Events.InteractionCreate,
-    run: async (interaction: ChatInputCommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction) => {
         console.log(`Interaction created: ${interaction} by ${interaction.user.username}`);
 
         if (!interaction.isCommand()) return;
@@ -14,7 +14,7 @@ export const InteractionCreateEvent: EventListener = {
         if (!command) return;
 
         try {
-            await command.run(interaction);
+            await command.execute(interaction);
         } catch (error) {
             console.error(error);
             await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });

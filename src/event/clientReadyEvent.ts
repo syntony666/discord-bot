@@ -5,16 +5,20 @@ import { EventListener } from "./eventListener";
 
 export const ClientReadyEvent: EventListener = {
     name: Events.ClientReady,
-    run: async (client: Client): Promise<void> => {
-        const guildDTO = DBConnectionService(GuildModel);
-        guildDTO.findAll({ attributes: ['guild_id'] }).then(guildsFound => {
-            let guildsInDatabase = guildsFound.map((guild: any) => guild.guild_id);
-            let guildsInDiscord = client.guilds.cache.map(guild => guild.id);
-            let guildsToAdd = guildsInDiscord
-                .filter(guild => !guildsInDatabase.includes(guild)).map(guild => { return { guild_id: guild } });
-            guildDTO.bulkCreate(guildsToAdd)
-            console.log('Database ready!!');
-            console.log(`Ready! Logged in as ${client.user?.tag}`);
-        });
+    execute: async (client: Client) => {
+        prepareDatabase(client)
+        console.log(`Ready! Logged in as ${client.user?.tag}`);
     }
+}
+
+function prepareDatabase(client: Client) {
+    const guildDTO = DBConnectionService(GuildModel);
+    guildDTO.findAll({ attributes: ['guild_id'] }).then(guildsFound => {
+        const guildsInDatabase = guildsFound.map((guild: any) => guild.guild_id);
+        const guildsInDiscord = client.guilds.cache.map(guild => guild.id);
+        const guildsToAdd = guildsInDiscord
+            .filter(guild => !guildsInDatabase.includes(guild)).map(guild => { return { guild_id: guild } });
+        guildDTO.bulkCreate(guildsToAdd)
+        console.log('Database ready!!');
+    });
 }

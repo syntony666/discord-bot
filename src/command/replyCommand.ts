@@ -67,7 +67,7 @@ export const ReplyCommand: Command = {
                 .setName('list')
                 .setDescription('列出所有的回應內容')
         }),
-    run: async (interaction) => {
+    execute: async (interaction) => {
         let type: ReplyOperation;
 
         switch (interaction.options.getSubcommand()) {
