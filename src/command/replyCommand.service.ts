@@ -44,7 +44,7 @@ export class ReplyCommandService {
             request: input,
             response: output
         })
-            .then(() => this._onCreateSuccess(input, output))
+            .then(() => this._onAddSuccess(input, output))
             .catch((err) => this._onOperationFail(err));
     }
 
@@ -119,7 +119,7 @@ export class ReplyCommandService {
         )
     }
 
-    private _onCreateSuccess(input: string, output: string) {
+    private _onAddSuccess(input: string, output: string) {
         let embed = this._getEmbedMessage().setTitle('回覆內容已新增')
             .setFields(
                 { name: '關鍵字', value: input, inline: false },
