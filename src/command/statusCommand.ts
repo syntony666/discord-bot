@@ -8,32 +8,18 @@ export const StatusCommand: Command = {
         .setDescription('取得相關資訊')
         .addSubcommand(subcommand => {
             return subcommand
-                .setName('bot')
+                .setName(StatusOperation.BOT)
                 .setDescription('取得機器人資訊')
         })
         .addSubcommand(subcommand => {
             return subcommand
-                .setName('server')
+                .setName(StatusOperation.SERVER)
                 .setDescription('取得伺服器資訊')
         }),
     execute: async (interaction) => {
-        let type: StatusOperation;
-
-        switch (interaction.options.getSubcommand()) {
-            case 'bot':
-                type = StatusOperation.BOT;
-                break;
-            case 'server':
-                type = StatusOperation.SERVER;
-                break;
-            default:
-                type = StatusOperation.UNDEFINED;
-                break;
-        }
-
         const statusCommandService = new StatusCommandService(interaction);
 
-        switch (type) {
+        switch (interaction.options.getSubcommand()) {
             case StatusOperation.BOT:
                 statusCommandService.bot();
                 break;
@@ -42,7 +28,6 @@ export const StatusCommand: Command = {
                 statusCommandService.server();
                 break;
 
-            case StatusOperation.UNDEFINED:
             default:
                 // TODO: add error type
                 throw new Error('')

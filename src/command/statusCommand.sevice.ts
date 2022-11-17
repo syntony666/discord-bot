@@ -2,7 +2,8 @@ import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ChatIn
 import { embedColor } from "../config";
 
 export enum StatusOperation {
-    UNDEFINED, BOT, SERVER
+    BOT = 'bot',
+    SERVER = 'server'
 }
 
 export class StatusCommandService {

@@ -8,7 +8,7 @@ export const ReplyCommand: Command = {
         .setDescription('設定回覆功能')
         .addSubcommand(subcommand => {
             return subcommand
-                .setName('add')
+                .setName(ReplyOperation.ADD)
                 .setDescription('新增回覆內容')
                 .addStringOption(option => {
                     return option
@@ -25,7 +25,7 @@ export const ReplyCommand: Command = {
         })
         .addSubcommand(subcommand => {
             return subcommand
-                .setName('edit')
+                .setName(ReplyOperation.EDIT)
                 .setDescription('編輯回覆內容')
                 .addStringOption(option => {
                     return option
@@ -42,7 +42,7 @@ export const ReplyCommand: Command = {
         })
         .addSubcommand(subcommand => {
             return subcommand
-                .setName('remove')
+                .setName(ReplyOperation.REMOVE)
                 .setDescription('移除回覆內容')
                 .addStringOption(option => {
                     return option
@@ -53,7 +53,7 @@ export const ReplyCommand: Command = {
         })
         .addSubcommand(subcommand => {
             return subcommand
-                .setName('search')
+                .setName(ReplyOperation.SEARCH)
                 .setDescription('從關鍵字搜尋回覆內容')
                 .addStringOption(option => {
                     return option
@@ -64,37 +64,14 @@ export const ReplyCommand: Command = {
         })
         .addSubcommand(subcommand => {
             return subcommand
-                .setName('list')
+                .setName(ReplyOperation.LIST)
                 .setDescription('列出所有的回應內容')
         }),
     execute: async (interaction) => {
-        let type: ReplyOperation;
-
-        switch (interaction.options.getSubcommand()) {
-            case 'add':
-                type = ReplyOperation.ADD;
-                break;
-            case 'edit':
-                type = ReplyOperation.EDIT;
-                break;
-            case 'remove':
-                type = ReplyOperation.REMOVE;
-                break;
-            case 'search':
-                type = ReplyOperation.SEARCH;
-                break;
-            case 'list':
-                type = ReplyOperation.LIST;
-                break;
-            default:
-                type = ReplyOperation.UNDEFINED;
-                break;
-        }
-
         const replyCommandService = new ReplyCommandService(interaction);
         let input: string | null, output: string | null;
 
-        switch (type) {
+        switch (interaction.options.getSubcommand()) {
             case ReplyOperation.ADD:
                 input = interaction.options.get('input')?.value as string;
                 output = interaction.options.get('output')?.value as string;
@@ -120,8 +97,7 @@ export const ReplyCommand: Command = {
             case ReplyOperation.LIST:
                 replyCommandService.list();
                 break;
-                
-            case ReplyOperation.UNDEFINED:
+
             default:
                 // TODO: add error type
                 throw new Error('')

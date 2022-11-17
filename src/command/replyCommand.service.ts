@@ -6,7 +6,11 @@ import { DBConnectionService } from "../service/DBConnectionService";
 import { EmbedPageService } from "../service/embedPageService";
 
 export enum ReplyOperation {
-    UNDEFINED, ADD, EDIT, REMOVE, SEARCH, LIST
+    ADD = 'add', 
+    EDIT = 'edit', 
+    REMOVE = 'remove', 
+    SEARCH = 'search', 
+    LIST = 'list'
 }
 
 export class ReplyCommandService {
