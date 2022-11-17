@@ -37,7 +37,7 @@ export class ReplyCommandService {
             .setTimestamp();
     }
 
-    public create(input: string, output: string) {
+    public add(input: string, output: string) {
         this._replyDTO.create({
             guild_id: this._guildId,
             last_editor_id: this._interaction.user.id,

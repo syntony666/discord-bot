@@ -75,7 +75,7 @@ export const ReplyCommand: Command = {
             case ReplyOperation.ADD:
                 input = interaction.options.get('input')?.value as string;
                 output = interaction.options.get('output')?.value as string;
-                replyCommandService.create(input, output);
+                replyCommandService.add(input, output);
                 break;
 
             case ReplyOperation.EDIT:
