@@ -5,6 +5,8 @@ import { StatusCommand } from "./command/statusCommand";
 import { ClientReadyEvent } from "./event/clientReadyEvent";
 import { InteractionCreateEvent } from "./event/interactionCreateEvent";
 import { ReplyCommand } from "./command/replyCommand";
+import { MessageCreateEvent } from "./event/messageCreateEvent";
+import { ReactionRoleCommand } from "./command/reactionRoleCommand";
 
 const intentOptions: GatewayIntentBits[] = [
     GatewayIntentBits.Guilds,
@@ -20,16 +22,17 @@ const partialsOptions: Partials[] = [
 ]
 
 const commandList: Command[] = [
-    StatusCommand, ReplyCommand
+    StatusCommand, ReplyCommand, ReactionRoleCommand
 ]
 
 const eventList: EventListener[] = [
-    ClientReadyEvent, InteractionCreateEvent
+    ClientReadyEvent, InteractionCreateEvent, MessageCreateEvent
 ]
 
 const embedColor: Map<string, ColorResolvable> = new Map([
     ['reply', '#f0b01d'],
-    ['status', '#0099ff']
+    ['status', '#0099ff'],
+    ['reactionRole', '#fa8d2d']
 ])
 
 export {
