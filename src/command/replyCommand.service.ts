@@ -14,8 +14,8 @@ export enum ReplyOperation {
 }
 
 export class ReplyCommandService {
-    private _replyDTO = DBConnectionService(ReplyModel);
     private _interaction: ChatInputCommandInteraction;
+    private _replyDTO = DBConnectionService(ReplyModel);
     private _guildId: string = '';
 
     constructor(interaction: ChatInputCommandInteraction) {

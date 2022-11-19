@@ -14,8 +14,8 @@ export enum ReactionRoleOperation {
 }
 
 export class ReactionRoleCommandService {
-    private _reactionRoleDTO = DBConnectionService(ReactionRoleModel);
     private _interaction: ChatInputCommandInteraction;
+    private _reactionRoleDTO = DBConnectionService(ReactionRoleModel);
     private _guildId: string = '';
 
     constructor(interaction: ChatInputCommandInteraction) {
