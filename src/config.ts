@@ -7,6 +7,7 @@ import { InteractionCreateEvent } from "./event/interactionCreateEvent";
 import { ReplyCommand } from "./command/replyCommand";
 import { MessageCreateEvent } from "./event/messageCreateEvent";
 import { ReactionRoleCommand } from "./command/reactionRoleCommand";
+import { NotifyCommand } from "./command/notifyCommand";
 
 const intentOptions: GatewayIntentBits[] = [
     GatewayIntentBits.Guilds,
@@ -23,7 +24,7 @@ const partialsOptions: Partials[] = [
 ]
 
 const commandList: Command[] = [
-    StatusCommand, ReplyCommand, ReactionRoleCommand
+    StatusCommand, ReplyCommand, ReactionRoleCommand, NotifyCommand
 ]
 
 const eventList: EventListener[] = [
@@ -33,7 +34,8 @@ const eventList: EventListener[] = [
 const embedColor: Map<string, ColorResolvable> = new Map([
     ['reply', '#f0b01d'],
     ['status', '#0099ff'],
-    ['reactionRole', '#fa8d2d']
+    ['reactionRole', '#fa8d2d'],
+    ['notify', '#f58e69']
 ])
 
 export {
