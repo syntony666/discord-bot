@@ -26,7 +26,7 @@ export class EmbedPageService {
         return this;
     }
 
-    public setDescription(description: string | null) {
+    public setEmbedDescription(description: string | null) {
         this._embedDescription = description;
         return this;
     }

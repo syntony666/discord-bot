@@ -6,10 +6,10 @@ import { DBConnectionService } from "../service/DBConnectionService";
 import { EmbedPageService } from "../service/embedPageService";
 
 export enum ReplyOperation {
-    ADD = 'add', 
-    EDIT = 'edit', 
-    REMOVE = 'remove', 
-    SEARCH = 'search', 
+    ADD = 'add',
+    EDIT = 'edit',
+    REMOVE = 'remove',
+    SEARCH = 'search',
     LIST = 'list'
 }
 
@@ -66,7 +66,7 @@ export class ReplyCommandService {
         })).then(
             () => this._onEditSuccess(input, output),
             () => this._onEditReject()
-        ).catch((err) => this._onOperationFail(err));
+        ).catch(err => this._onOperationFail(err));
     }
 
     public remove(input: string) {
@@ -83,7 +83,7 @@ export class ReplyCommandService {
         })).then(
             () => this._onRemoveSuccess(input),
             () => this._onRemoveReject()
-        ).catch((err) => this._onOperationFail(err));
+        ).catch(err => this._onOperationFail(err));
     }
 
     public list() {
@@ -97,9 +97,9 @@ export class ReplyCommandService {
             }
             return resolve(res);
         })).then(
-            (res) => this._onListSuccess(res, null),
+            res => this._onListSuccess(res, null),
             () => this._onListReject()
-        )
+        ).catch(err => this._onOperationFail(err));
     }
 
     public search(query: string) {
@@ -114,9 +114,9 @@ export class ReplyCommandService {
             }
             return resolve(res);
         })).then(
-            (res) => this._onListSuccess(res, query),
+            res => this._onListSuccess(res, query),
             () => this._onListReject()
-        )
+        ).catch(err => this._onOperationFail(err));
     }
 
     private _onAddSuccess(input: string, output: string) {
@@ -168,6 +168,7 @@ export class ReplyCommandService {
     }
 
     private _onOperationFail(err: Error) {
+        // TODO: add error behavior
         if (err.name == 'SequelizeUniqueConstraintError') {
             this._interaction.reply({ content: '關鍵字已重複', ephemeral: true });
         } else {
@@ -177,9 +178,9 @@ export class ReplyCommandService {
     }
 
     private _replyListResult(res: any, query: string | null): EmbedPageService {
-        const resultList: EmbedField[] = res.map((item: { last_editor_id: any; response: string; request: any; }) => {
-            let last_editor = item.last_editor_id ? `> ${userMention(item.last_editor_id)}\n` : '';
-            let value = last_editor + item.response;
+        const resultList: EmbedField[] = res.map((item: { last_editor_id: any; request: string; response: string; }) => {
+            let last_editor = item.last_editor_id ? `\n- ${userMention(item.last_editor_id)}` : '\n';
+            let value = item.response + last_editor + '\u200B';
             return { name: item.request, value: value }
         });
         const embedPageService = new EmbedPageService(resultList, this._interaction);
@@ -190,7 +191,7 @@ export class ReplyCommandService {
         }
         embedPageService
             .setEmbedColor(embedColor.get('reply') ?? null)
-            .setDescription('這些回答都不是我自願的...')
+            .setEmbedDescription('這些回答都不是我自願的...')
             .setEmbedAuthor({ name: this._interaction.user.username, iconURL: this._interaction.user.avatarURL() ?? undefined })
             .setPageCount(true);
         return embedPageService;
