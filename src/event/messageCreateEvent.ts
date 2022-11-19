@@ -6,23 +6,25 @@ import { EventListener } from "./eventListener";
 export const MessageCreateEvent: EventListener = {
     name: Events.MessageCreate,
     execute: async (message: Message) => {
+        if(message.author.bot) return;
         replyMessages(message)
     }
 }
 
 function replyMessages(message: Message) {
     const replyDTO = DBConnectionService(ReplyModel);
-    if (!message.author.bot && message.guild){
-        replyDTO.findOne({
-            where: {
-                guild_id: message.guild.id,
-                request: message.content
-            }
-        }).then((msg: any) => {
-            if (msg.response !== null) {
-                message.reply(msg.response);
-                console.log(`${message.content} ===> ${msg.response}`);
-            }
-        }).catch(err => { });
+    if (!message.guild){
+        return;
     }
+    replyDTO.findOne({
+        where: {
+            guild_id: message.guild.id,
+            request: message.content
+        }
+    }).then((msg: any) => {
+        if (msg !== null) {
+            message.reply(msg.response);
+            console.log(`${message.content} ===> ${msg.response}`);
+        }
+    }).catch(err => { console.log(err) });
 }

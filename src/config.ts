@@ -12,7 +12,8 @@ const intentOptions: GatewayIntentBits[] = [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMessageReactions
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.MessageContent
 ]
 
 const partialsOptions: Partials[] = [
