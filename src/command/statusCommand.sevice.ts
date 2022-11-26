@@ -1,5 +1,5 @@
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, Guild, time } from "discord.js";
-import { embedColor } from "../config";
+import { embedColor, CLIENT_VERSION } from "../config";
 
 export enum StatusOperation {
     BOT = 'bot',
@@ -39,7 +39,7 @@ export class StatusCommandService {
                 { name: 'Bot Ping', value: `\`${Date.now() - this._interaction.createdAt.getTime()} ms\``, inline: true },
                 { name: 'API Ping', value: `\`${this._interaction.client.ws.ping} ms\``, inline: true }
             )
-            .setFooter({ text: `ver. ${process.env.VERSION}`, iconURL: 'attachment://discord_js.png' });
+            .setFooter({ text: `ver. ${CLIENT_VERSION}`, iconURL: 'attachment://discord_js.png' });
         this._interaction.reply({
             embeds: [embed], files: [this._avatar_bg, this._logo, this._discord_js], components: [this._getBotButtons()], ephemeral: false
         });

@@ -15,7 +15,7 @@ import { GuildCreateEvent } from "./event/guildCreateEvent";
 import { GuildMemberAddEvent } from "./event/guildMemberAddEvent";
 import { GuildMemberRemoveEvent } from "./event/guildMemberRemoveEvent";
 
-const VERSION = '4.1.0'
+const CLIENT_VERSION = '4.1.0'
 
 const intentOptions: GatewayIntentBits[] = [
     GatewayIntentBits.Guilds,
@@ -56,5 +56,5 @@ const embedColor: Map<string, ColorResolvable> = new Map([
 ])
 
 export {
-    intentOptions, partialsOptions, commandList, eventList, embedColor
+    CLIENT_VERSION, intentOptions, partialsOptions, commandList, eventList, embedColor
 }
