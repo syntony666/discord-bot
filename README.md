@@ -1,6 +1,6 @@
 # Discord Bot
 
-[![Made with TypeScript](https://img.shields.io/badge/TypeScript-4-f328a8?logo=typescript&logoColor=white)](https://typescriptlang.org "Go to TypeScript homepage")
+[![Made with TypeScript](https://img.shields.io/github/package-json/dependency-version/syntony666/discord-bot/dev/typescript?logo=typescript&logoColor=white&color=f328a8)](https://typescriptlang.org "Go to TypeScript homepage")
 [![Package - discord.js](https://img.shields.io/github/package-json/dependency-version/syntony666/discord-bot/discord.js?logoColor=white&color=blue)](https://www.npmjs.com/package/discord.js)
 ![Build Status](https://github.com/syntony666/discord-bot/actions/workflows/deploy.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](#license)
