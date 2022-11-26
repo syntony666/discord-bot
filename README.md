@@ -7,7 +7,7 @@
 
 [![view - Documentation](https://img.shields.io/badge/view-Documentation-834abe?style=for-the-badge)](https://discord-bot.syntony666.com)
 
----?style=flat&logo=appveyor
+---
 
 ## Prerequisite
 
