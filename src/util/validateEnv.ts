@@ -24,9 +24,5 @@ export const validateEnv = () => {
         console.warn("Missing database name (required). (DATABASE_NAME)");
         isValidate = false;
     }
-    if(!process.env.VERSION) {
-        console.warn("Missing version number (required). (VERSION)");
-        isValidate = false;
-    }
     return isValidate;
 }
