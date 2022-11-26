@@ -1,4 +1,4 @@
-name: project deploy
+name: Deployment
 
 on:
   push:
