@@ -8,6 +8,14 @@ import { ReplyCommand } from "./command/replyCommand";
 import { MessageCreateEvent } from "./event/messageCreateEvent";
 import { ReactionRoleCommand } from "./command/reactionRoleCommand";
 import { NotifyCommand } from "./command/notifyCommand";
+import { MessageDeleteEvent } from "./event/messageDeleteEvent";
+import { MessageReactionAddEvent } from "./event/messageReactionAddEvent";
+import { MessageReactionRemoveEvent } from "./event/messageReactionRemoveEvent";
+import { GuildCreateEvent } from "./event/guildCreateEvent";
+import { GuildMemberAddEvent } from "./event/guildMemberAddEvent";
+import { GuildMemberRemoveEvent } from "./event/guildMemberRemoveEvent";
+
+const VERSION = '4.1.0'
 
 const intentOptions: GatewayIntentBits[] = [
     GatewayIntentBits.Guilds,
@@ -28,7 +36,16 @@ const commandList: Command[] = [
 ]
 
 const eventList: EventListener[] = [
-    ClientReadyEvent, InteractionCreateEvent, MessageCreateEvent
+    ClientReadyEvent,
+    GuildCreateEvent,
+    GuildMemberAddEvent,
+    GuildMemberRemoveEvent,
+    InteractionCreateEvent,
+    MessageCreateEvent,
+    MessageDeleteEvent,
+    MessageReactionAddEvent,
+    MessageReactionRemoveEvent,
+
 ]
 
 const embedColor: Map<string, ColorResolvable> = new Map([

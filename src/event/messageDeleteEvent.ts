@@ -3,7 +3,7 @@ import { embedColor } from "../config";
 import { GuildModel } from "../database/guildModel";
 import { DBConnectionService } from "../service/DBConnectionService";
 import { EventListener } from "./eventListener";
-export const MessageCreateEvent: EventListener = {
+export const MessageDeleteEvent: EventListener = {
     name: Events.MessageCreate,
     execute: async (message: Message) => {
         if (message.author.bot) return;

@@ -1,7 +1,7 @@
 import { Events, MessageReaction, User } from "discord.js";
 import { EventActionHelper } from "../helper/eventActionHelper";
 import { EventListener } from "./eventListener";
-export const MessageCreateEvent: EventListener = {
+export const MessageReactionRemoveEvent: EventListener = {
     name: Events.MessageReactionRemove,
     execute: async (reaction: MessageReaction, user: User) => {
         if (user.bot) return;
