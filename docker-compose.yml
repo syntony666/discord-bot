@@ -9,4 +9,5 @@ services:
       - NODE_ENV=production
     volumes:
       - ./:/home/node/app
-    command: npm run app
+    command: >
+      sh -c   "npm install && npm run app"
