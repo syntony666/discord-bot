@@ -4,7 +4,7 @@
   "description": "The discord bot made by syntony666",
   "main": "./prod/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npx tsc",
     "start": "node -r dotenv/config ./prod/index.js",
     "app": "npm run build && npm run start"
   },
