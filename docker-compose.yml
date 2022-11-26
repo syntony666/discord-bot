@@ -10,4 +10,4 @@ services:
     volumes:
       - ./:/home/node/app
     command: >
-      sh -c   "npm install && npm run app"
+      sh -c "npm install && npm run app"
