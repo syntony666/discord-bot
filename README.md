@@ -1,13 +1,13 @@
 # Discord Bot
 
-[![Made with TypeScript](https://img.shields.io/github/package-json/dependency-version/syntony666/discord-bot/dev/typescript?logo=typescript&logoColor=white&color=f328a8)](https://typescriptlang.org "Go to TypeScript homepage")
-[![Package - discord.js](https://img.shields.io/github/package-json/dependency-version/syntony666/discord-bot/discord.js?logoColor=white&color=blue)](https://www.npmjs.com/package/discord.js)
+[![Made with TypeScript](https://img.shields.io/github/package-json/dependency-version/syntony666/discord-bot/dev/typescript?logo=typescript&logoColor=3178C6&color=f328a8)](https://typescriptlang.org "Go to TypeScript homepage")
+[![Package - discord.js](https://img.shields.io/github/package-json/dependency-version/syntony666/discord-bot/discord.js?color=blue)](https://www.npmjs.com/package/discord.js)
 ![Build Status](https://github.com/syntony666/discord-bot/actions/workflows/deploy.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](#license)
 
 [![view - Documentation](https://img.shields.io/badge/view-Documentation-834abe?style=for-the-badge)](https://discord-bot.syntony666.com)
 
----
+---?style=flat&logo=appveyor
 
 ## Prerequisite
 
