@@ -95,8 +95,8 @@ export class NotifyCommandService {
                 guild_id: this._guildId
             }
         })
-        .then(res => this._onListSuccess(res))
-        .catch(err => this._onOperationFail(err))
+            .then(res => this._onListSuccess(res))
+            .catch(err => this._onOperationFail(err))
     }
 
     private _onGuildJoinSuccess(channel: string, message: string) {
@@ -143,12 +143,12 @@ export class NotifyCommandService {
     private _onListSuccess(res: any) {
         const join = {
             name: (res.join_channel_id ? '✅' : '❎') + ' 成員加入通知',
-            value: res.join_channel_id ? 
+            value: res.join_channel_id ?
                 `**發送頻道:**\n- ${channelMention(res.join_channel_id)}\n**測試訊息:**\n- ${this._getGuildJoinMessage(res.join_message)}` : '\u200B'
         };
         const leave = {
             name: (res.leave_channel_id ? '✅' : '❎') + ' 成員離開通知',
-            value: res.leave_channel_id ? 
+            value: res.leave_channel_id ?
                 `**發送頻道:**\n- ${channelMention(res.leave_channel_id)}\n**測試訊息:**\n- ${this._getGuildLeaveMessage(res.leave_message)}` : '\u200B'
         };
         const delete_notification = {
