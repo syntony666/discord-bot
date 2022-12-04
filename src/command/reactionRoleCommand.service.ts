@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, EmbedBuilder, EmbedField, roleMention } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder, EmbedField, hyperlink, roleMention } from "discord.js";
 import { Model } from "sequelize";
 import { embedColor } from "../config";
 import { ReactionRoleModel } from "../database/ReactionRoleModel";
@@ -149,7 +149,7 @@ export class ReactionRoleCommandService {
 
     private _onListSuccess(res: any) {
         const resultList: EmbedField[] = res.map((item: { role_id: any; reaction: string; message_url: any; }) => {
-            let value = `${roleMention(item.role_id)}\n- [訊息連結](${item.message_url})　${item.reaction}`;
+            let value = `${roleMention(item.role_id)}\n- ${hyperlink('訊息連結', item.message_url)}　${item.reaction}`;
             return { name: '\u200B', value: value }
         });
         const embedPageService = new EmbedPageService(resultList, this._interaction);
