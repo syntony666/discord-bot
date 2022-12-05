@@ -11,13 +11,6 @@ export enum NotifyOperation {
     LIST = 'list'
 }
 
-// TODO: change entity name
-//      join_channel_id => guild_join_cid
-//      join_message => guild_join_msg
-//      leave_channel_id => guild_leave_cid
-//      leave_message => guild_leave_msg
-//      delete_notification_channel_id => message_delete_cid
-
 export class NotifyCommandService {
     private _guildDTO = DBConnectionService(GuildModel);
     private _interaction: ChatInputCommandInteraction;
@@ -44,7 +37,7 @@ export class NotifyCommandService {
 
     public guildJoin(channel: string, message: string) {
         this._guildDTO.update(
-            { join_channel_id: channel, join_message: message },
+            { guild_join_cid: channel, guild_join_msg: message },
             { where: { guild_id: this._guildId } }
         )
             .then(() => this._onGuildJoinSuccess(channel, message))
@@ -53,7 +46,7 @@ export class NotifyCommandService {
 
     public guildLeave(channel: string, message: string) {
         this._guildDTO.update(
-            { leave_channel_id: channel, leave_message: message },
+            { guild_leave_cid: channel, guild_leave_msg: message },
             { where: { guild_id: this._guildId } }
         )
             .then(() => this._onGuildLeaveSuccess(channel, message))
@@ -62,7 +55,7 @@ export class NotifyCommandService {
 
     public messageDelete(channel: string) {
         this._guildDTO.update(
-            { delete_notification_channel_id: channel },
+            { message_delete_cid: channel },
             { where: { guild_id: this._guildId } }
         )
             .then(() => this._onMessageDeleteSuccess(channel))
@@ -72,13 +65,13 @@ export class NotifyCommandService {
     public off(type: NotifyOperation) {
         let updateColumn: any;
         if (type == NotifyOperation.GUILD_JOIN) {
-            updateColumn = { join_channel_id: null, join_message: null };
+            updateColumn = { guild_join_cid: null, guild_join_msg: null };
         }
         if (type == NotifyOperation.GUILD_LEAVE) {
-            updateColumn = { leave_channel_id: null, leave_message: null };
+            updateColumn = { guild_leave_cid: null, guild_leave_msg: null };
         }
         if (type == NotifyOperation.MSG_DEL) {
-            updateColumn = { join_channel_id: null, join_message: null };
+            updateColumn = { guild_join_cid: null, guild_join_msg: null };
         }
 
         this._guildDTO.update(
@@ -142,18 +135,18 @@ export class NotifyCommandService {
 
     private _onListSuccess(res: any) {
         const join = {
-            name: (res.join_channel_id ? '✅' : '❎') + ' 成員加入通知',
-            value: res.join_channel_id ?
-                `**發送頻道:**\n- ${channelMention(res.join_channel_id)}\n**測試訊息:**\n- ${this._getGuildJoinMessage(res.join_message)}` : '\u200B'
+            name: (res.guild_join_cid ? '✅' : '❎') + ' 成員加入通知',
+            value: res.guild_join_cid ?
+                `**發送頻道:**\n- ${channelMention(res.guild_join_cid)}\n**測試訊息:**\n- ${this._getGuildJoinMessage(res.guild_join_msg)}` : '\u200B'
         };
         const leave = {
-            name: (res.leave_channel_id ? '✅' : '❎') + ' 成員離開通知',
-            value: res.leave_channel_id ?
-                `**發送頻道:**\n- ${channelMention(res.leave_channel_id)}\n**測試訊息:**\n- ${this._getGuildLeaveMessage(res.leave_message)}` : '\u200B'
+            name: (res.guild_leave_cid ? '✅' : '❎') + ' 成員離開通知',
+            value: res.guild_leave_cid ?
+                `**發送頻道:**\n- ${channelMention(res.guild_leave_cid)}\n**測試訊息:**\n- ${this._getGuildLeaveMessage(res.guild_leave_msg)}` : '\u200B'
         };
         const delete_notification = {
-            name: (res.delete_notification_channel_id ? '✅' : '❎') + ' 訊息刪除通知',
-            value: res.delete_notification_channel_id ? `**發送頻道:**\n- ${channelMention(res.delete_notification_channel_id)}` : '\u200B'
+            name: (res.message_delete_cid ? '✅' : '❎') + ' 訊息刪除通知',
+            value: res.message_delete_cid ? `**發送頻道:**\n- ${channelMention(res.message_delete_cid)}` : '\u200B'
         };
         let embed = this._getEmbedMessage().setTitle('通知設定')
             .setFields(
