@@ -3,7 +3,7 @@ import { embedColor } from "../config";
 import { GuildModel } from "../database/guildModel";
 import { DBConnectionService } from "../service/DBConnectionService";
 
-export enum NotifyOperation {
+export enum GuildNotifyOperation {
     GUILD_JOIN = 'guild-join',
     GUILD_LEAVE = 'guild-leave',
     MSG_DEL = 'message-delete',
@@ -11,7 +11,7 @@ export enum NotifyOperation {
     LIST = 'list'
 }
 
-export class NotifyCommandService {
+export class GuildNotifyCommandService {
     private _guildDTO = DBConnectionService(GuildModel);
     private _interaction: ChatInputCommandInteraction;
     private _guildId: string = '';
@@ -28,7 +28,7 @@ export class NotifyCommandService {
 
     private _getEmbedMessage(): EmbedBuilder {
         return new EmbedBuilder()
-            .setColor(embedColor.get('notify') ?? null)
+            .setColor(embedColor.get('guild-notify') ?? null)
             .setAuthor({ name: this._interaction.client.user?.username ?? '', iconURL: this._interaction.client.user?.avatarURL() ?? undefined })
             .setDescription('事情都我在幫你做 = =')
             .setFooter({ text: this._interaction.user.tag, iconURL: this._interaction.user.avatarURL() ?? undefined })
@@ -62,15 +62,15 @@ export class NotifyCommandService {
             .catch(err => this._onOperationFail(err))
     }
 
-    public off(type: NotifyOperation) {
+    public off(type: GuildNotifyOperation) {
         let updateColumn: any;
-        if (type == NotifyOperation.GUILD_JOIN) {
+        if (type == GuildNotifyOperation.GUILD_JOIN) {
             updateColumn = { guild_join_cid: null, guild_join_msg: null };
         }
-        if (type == NotifyOperation.GUILD_LEAVE) {
+        if (type == GuildNotifyOperation.GUILD_LEAVE) {
             updateColumn = { guild_leave_cid: null, guild_leave_msg: null };
         }
-        if (type == NotifyOperation.MSG_DEL) {
+        if (type == GuildNotifyOperation.MSG_DEL) {
             updateColumn = { guild_join_cid: null, guild_join_msg: null };
         }
 
@@ -118,15 +118,15 @@ export class NotifyCommandService {
         this._interaction.reply({ embeds: [embed], ephemeral: false });
     }
 
-    private _onOffSuccess(type: NotifyOperation) {
+    private _onOffSuccess(type: GuildNotifyOperation) {
         let title: string = '';
-        if (type == NotifyOperation.GUILD_JOIN) {
+        if (type == GuildNotifyOperation.GUILD_JOIN) {
             title = '伺服器成員加入';
         }
-        if (type == NotifyOperation.GUILD_LEAVE) {
+        if (type == GuildNotifyOperation.GUILD_LEAVE) {
             title = '伺服器成員離開';
         }
-        if (type == NotifyOperation.MSG_DEL) {
+        if (type == GuildNotifyOperation.MSG_DEL) {
             title = '訊息刪除';
         }
         let embed = this._getEmbedMessage().setTitle(`${title}通知已關閉`)

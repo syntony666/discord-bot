@@ -7,7 +7,10 @@ export const ClientReadyEvent: EventListener = {
     name: Events.ClientReady,
     execute: async (client: Client) => {
         prepareDatabase(client)
+
         console.log(`Ready! Logged in as ${client.user?.tag}`);
+
+        twitchNotifyInterval(client)
     }
 }
 
@@ -21,4 +24,10 @@ function prepareDatabase(client: Client) {
         guildDTO.bulkCreate(guildsToAdd)
         console.log('Database ready!!');
     });
+}
+
+function twitchNotifyInterval(client: Client) {
+    setInterval(() => {
+
+    }, 3000)
 }

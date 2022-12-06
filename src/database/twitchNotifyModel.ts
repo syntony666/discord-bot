@@ -1,7 +1,7 @@
 import { STRING } from 'sequelize';
 import { Model } from './model';
 
-export const TwitchModifyModel: Model = {
+export const TwitchNotifyModel: Model = {
     databaseName: 'twitch_notifies',
     schema: {
         guild_id: STRING,
