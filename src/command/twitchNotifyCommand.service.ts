@@ -39,7 +39,7 @@ export class TwitchNotifyCommandService {
                 channel_id: channel,
                 twitch_id: twitchUsername
             })
-        })
+        }).catch(err => console.log(err));
     }
     public remove(twitchUsername: string) {
         this._twitchNotifyDTO.destroy({
@@ -52,18 +52,23 @@ export class TwitchNotifyCommandService {
                 return reject();
             }
             return resolve();
-        }))
+        })).catch(err => console.log(err));
     }
     public list() {
-        this._twitchNotifyDTO.findAll({
-            where: {
-                guild_id: this._guildId
-            }
-        }).then(res => new Promise((resolve, reject) => {
-            if (res.length == 0) {
+      this._twitchNotifyDTO
+        .findAll({
+          where: {
+            guild_id: this._guildId,
+          },
+        })
+        .then(
+          (res) =>
+            new Promise((resolve, reject) => {
+              if (res.length == 0) {
                 return reject();
-            }
-            return resolve(res);
-        }))
+              }
+              return resolve(res);
+            })
+        );
     }
 }
