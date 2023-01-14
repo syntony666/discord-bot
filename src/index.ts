@@ -6,11 +6,13 @@ import { registerEvent } from "./util/registerEvent";
 import { validateEnv } from "./util/validateEnv";
 
 (async () => {
-    if(!validateEnv()) return;
-
-    registerCmd();
+    if (!validateEnv()) return;
 
     const client = new Client({ intents: intentOptions, partials: partialsOptions });
+
+    client.destroy();
+
+    registerCmd();
 
     registerEvent(client);
 
