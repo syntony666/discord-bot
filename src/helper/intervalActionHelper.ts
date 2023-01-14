@@ -18,14 +18,12 @@ export abstract class IntervalActionHelper {
           const updatedStatus = _.differenceBy(res, statusData, 'is_streaming');
           statusData.forEach((dtoData: any) => {
             const targetData = updatedStatus.find((data) => data.twitch_id === dtoData.twitch_id);
-            console.log('1 >>>', targetData);
             if (!targetData) {
               return;
             }
             dtoData.update(targetData);
             if (targetData.is_streaming) {
               const postData = notifyData.filter((notify: any) => notify.twitch_id === targetData?.twitch_id);
-              console.log('2 >>>', postData);
               postData.forEach((post: any) => {
                 const postMessage = post.message ? post.message + '\n' : '';
                 client.channels
@@ -38,5 +36,5 @@ export abstract class IntervalActionHelper {
           });
         });
       });
-    }, 3000);
+    }, 30000);
 }
