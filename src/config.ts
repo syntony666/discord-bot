@@ -46,7 +46,6 @@ const eventList: EventListener[] = [
     MessageDeleteEvent,
     MessageReactionAddEvent,
     MessageReactionRemoveEvent,
-
 ]
 
 const embedColor: Map<string, ColorResolvable> = new Map([

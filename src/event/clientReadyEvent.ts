@@ -1,5 +1,6 @@
 import { Client, Events } from "discord.js";
 import { GuildModel } from "../database/guildModel";
+import { IntervalActionHelper } from "../helper/intervalActionHelper";
 import { DBConnectionService } from "../service/DBConnectionService";
 import { EventListener } from "./eventListener";
 
@@ -10,7 +11,7 @@ export const ClientReadyEvent: EventListener = {
 
         console.log(`Ready! Logged in as ${client.user?.tag}`);
 
-        twitchNotifyInterval(client)
+        IntervalActionHelper.twitchNotifyInterval(client);
     }
 }
 
@@ -24,10 +25,4 @@ function prepareDatabase(client: Client) {
         guildDTO.bulkCreate(guildsToAdd)
         console.log('Database ready!!');
     });
-}
-
-function twitchNotifyInterval(client: Client) {
-    setInterval(() => {
-
-    }, 3000)
 }
