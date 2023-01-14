@@ -42,9 +42,8 @@ export class TwitchConnectionService {
             .then(res => res.json())
             .then(data => {
                 (data.data as Array<any>).forEach((res) => {
-                    result[res.user_login] = true;
-                })
-                console.log(data);
+                  result[res.user_login] = true;
+                });
                 return Object.keys(result).map((key) => {return {
                     twitch_id: key,
                     is_streaming: result[key]
