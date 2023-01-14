@@ -13,13 +13,13 @@ export abstract class EventActionHelper {
                 guild_id: guild.id
             }
         }).then((res: any) => {
-            if (res == null || res.join_channel_id == null && option == 'add' || res.leave_channel_id == null && option == 'remove') return;
+            if (res == null || res.guild_join_cid == null && option == 'add' || res.guild_leave_cid == null && option == 'remove') return;
             if (option == 'add') {
-                channel_id = res.join_channel_id
-                notifyMessage = res.join_message.replace('{m}', userMention(user.id))
+                channel_id = res.guild_join_cid
+                notifyMessage = res.guild_join_msg.replace('{m}', userMention(user.id))
             } else if (option == 'remove') {
-                channel_id = res.leave_channel_id
-                notifyMessage = res.leave_message.replace('{m}', `${user.tag}`)
+                channel_id = res.guild_leave_cid
+                notifyMessage = res.guild_leave_msg.replace('{m}', `${user.tag}`)
             }
             let embed = new EmbedBuilder()
                 .setColor(embedColor.get('notify') ?? null)

@@ -7,13 +7,14 @@ import { InteractionCreateEvent } from "./event/interactionCreateEvent";
 import { ReplyCommand } from "./command/replyCommand";
 import { MessageCreateEvent } from "./event/messageCreateEvent";
 import { ReactionRoleCommand } from "./command/reactionRoleCommand";
-import { NotifyCommand } from "./command/notifyCommand";
+import { GuildNotifyCommand } from "./command/guildNotifyCommand";
 import { MessageDeleteEvent } from "./event/messageDeleteEvent";
 import { MessageReactionAddEvent } from "./event/messageReactionAddEvent";
 import { MessageReactionRemoveEvent } from "./event/messageReactionRemoveEvent";
 import { GuildCreateEvent } from "./event/guildCreateEvent";
 import { GuildMemberAddEvent } from "./event/guildMemberAddEvent";
 import { GuildMemberRemoveEvent } from "./event/guildMemberRemoveEvent";
+import { TwitchNotifyCommand } from "./command/twitchNotifyCommand";
 
 const CLIENT_VERSION = '4.1.0'
 
@@ -32,7 +33,7 @@ const partialsOptions: Partials[] = [
 ]
 
 const commandList: Command[] = [
-    StatusCommand, ReplyCommand, ReactionRoleCommand, NotifyCommand
+    StatusCommand, ReplyCommand, ReactionRoleCommand, GuildNotifyCommand, TwitchNotifyCommand
 ]
 
 const eventList: EventListener[] = [
@@ -45,14 +46,13 @@ const eventList: EventListener[] = [
     MessageDeleteEvent,
     MessageReactionAddEvent,
     MessageReactionRemoveEvent,
-
 ]
 
 const embedColor: Map<string, ColorResolvable> = new Map([
     ['reply', '#f0b01d'],
     ['status', '#0099ff'],
     ['reactionRole', '#fa8d2d'],
-    ['notify', '#f58e69']
+    ['guild-notify', '#f58e69']
 ])
 
 export {

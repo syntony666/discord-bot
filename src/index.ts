@@ -1,5 +1,5 @@
 import { Client } from "discord.js";
-import process from "process";
+import process, { exit } from "process";
 import { intentOptions, partialsOptions } from "./config";
 import { registerCmd } from "./util/registerCmd";
 import { registerEvent } from "./util/registerEvent";
@@ -16,5 +16,5 @@ import { validateEnv } from "./util/validateEnv";
 
     await client.login(process.env.CLIENT_TOKEN);
 
-    process.on('SIGINT', () => client.destroy())
+    process.on('SIGINT', () => { client.destroy(); exit(0); })
 })();
