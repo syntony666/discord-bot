@@ -10,8 +10,6 @@ import { validateEnv } from "./util/validateEnv";
 
     const client = new Client({ intents: intentOptions, partials: partialsOptions });
 
-    client.destroy();
-
     registerCmd();
 
     registerEvent(client);
