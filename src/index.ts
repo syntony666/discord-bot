@@ -18,5 +18,15 @@ import { validateEnv } from "./util/validateEnv";
 
     await client.login(process.env.CLIENT_TOKEN);
 
-    process.on('SIGINT', () => { client.destroy(); exit(0); })
+    // ctrl+c
+    process.on('SIGINT', () => {
+      client.destroy();
+      exit(0);
+    });
+
+    //docker stop signal
+    process.on('SIGTERM', () => {
+      client.destroy();
+      exit(0);
+    });
 })();
