@@ -8,24 +8,30 @@ import _ from 'lodash';
 export abstract class IntervalActionHelper {
   public static twitchNotifyInterval = (client: Client) =>
     setInterval(() => {
-      const twitchNotifyDTO = DBConnectionService(TwitchNotifyModel);
-      const twitchStatusDTO = DBConnectionService(TwitchStatusModel);
-      Promise.all([twitchNotifyDTO.findAll(), twitchStatusDTO.findAll()]).then((result) => {
+      const promiseList = [];
+      promiseList.push(DBConnectionService(TwitchNotifyModel).findAll());
+      promiseList.push(DBConnectionService(TwitchStatusModel).findAll());
+      Promise.all(promiseList).then((result) => {
         const notifyData = result[0];
         const statusData = result[1];
         const twitchConnectionService = new TwitchConnectionService();
         twitchConnectionService.getStreamStatus(statusData.map((data: any) => data.twitch_id))?.then((res) => {
-          const updatedStatus = _.differenceBy(res, statusData, 'is_streaming');
-          statusData.forEach((dtoData: any) => {
-            const targetData = updatedStatus.find((data) => data.twitch_id === dtoData.twitch_id);
-            console.log('1 >>>', targetData);
+          const updatedStatus = statusData.filter((status: any) =>
+            res.some(
+              (resData) => resData.is_streaming !== status.is_streaming && resData.twitch_id === status.twitch_id
+            )
+          );
+
+          updatedStatus.forEach((dtoData) => {
+            const targetData = res.find((data) => data.twitch_id === (dtoData as any).twitch_id);
             if (!targetData) {
               return;
             }
+
             dtoData.update(targetData);
+
             if (targetData.is_streaming) {
               const postData = notifyData.filter((notify: any) => notify.twitch_id === targetData?.twitch_id);
-              console.log('2 >>>', postData);
               postData.forEach((post: any) => {
                 const postMessage = post.message ? post.message + '\n' : '';
                 client.channels
@@ -38,5 +44,5 @@ export abstract class IntervalActionHelper {
           });
         });
       });
-    }, 30000);
+    }, 10000);
 }
