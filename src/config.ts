@@ -49,11 +49,12 @@ const eventList: EventListener[] = [
 ]
 
 const embedColor: Map<string, ColorResolvable> = new Map([
-    ['reply', '#f0b01d'],
-    ['status', '#0099ff'],
-    ['reactionRole', '#fa8d2d'],
-    ['guild-notify', '#f58e69']
-])
+  ['reply', '#f0b01d'],
+  ['status', '#0099ff'],
+  ['reactionRole', '#fa8d2d'],
+  ['guild-notify', '#f58e69'],
+  ['twitch-notify', '#6441a5'],
+]);
 
 export {
     CLIENT_VERSION, intentOptions, partialsOptions, commandList, eventList, embedColor
