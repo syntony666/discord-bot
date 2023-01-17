@@ -48,6 +48,7 @@ export class TwitchConnectionService {
           is_streaming: true,
           title: res.title,
           game_name: res.game_name,
+          name: res.user_name
         }))
       );
   }
