@@ -1,6 +1,6 @@
 import { ColorResolvable, GatewayIntentBits, Partials } from "discord.js";
-import { Command } from "./command/command";
-import { EventListener } from "./event/eventListener";
+import { Command } from "./interface/command";
+import { EventListener } from "./interface/eventListener";
 import { StatusCommand } from "./command/statusCommand";
 import { ClientReadyEvent } from "./event/clientReadyEvent";
 import { InteractionCreateEvent } from "./event/interactionCreateEvent";

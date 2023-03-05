@@ -1,5 +1,5 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
-import { Command } from "./command";
+import { Command } from "../interface/command";
 import { TwitchNotifyCommandService, TwitchNotifyOperation } from "./twitchNotifyCommand.service";
 
 export const TwitchNotifyCommand: Command = {

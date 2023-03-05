@@ -1,6 +1,6 @@
 import { Events, GuildMember } from "discord.js";
 import { EventActionHelper } from "../helper/eventActionHelper";
-import { EventListener } from "./eventListener";
+import { EventListener } from "../interface/eventListener";
 
 export const GuildMemberAddEvent: EventListener = {
     name: Events.GuildMemberAdd,

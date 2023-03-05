@@ -1,5 +1,5 @@
 import { Emoji, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
-import { Command } from "./command";
+import { Command } from "../interface/command";
 import { ReactionRoleCommandService, ReactionRoleOperation } from "./reactionRoleCommand.service";
 
 export const ReactionRoleCommand: Command = {

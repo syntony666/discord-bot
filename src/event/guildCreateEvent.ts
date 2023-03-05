@@ -1,7 +1,7 @@
 import { Events, Guild } from "discord.js";
 import { GuildModel } from "../database/guildModel";
 import { DBConnectionService } from "../service/DBConnectionService";
-import { EventListener } from "./eventListener";
+import { EventListener } from "../interface/eventListener";
 
 export const GuildCreateEvent: EventListener = {
     name: Events.GuildCreate,

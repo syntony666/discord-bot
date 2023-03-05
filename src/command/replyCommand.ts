@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
-import { Command } from "./command";
+import { Command } from "../interface/command";
 import { ReplyCommandService, ReplyOperation } from "./replyCommand.service";
 
 export const ReplyCommand: Command = {

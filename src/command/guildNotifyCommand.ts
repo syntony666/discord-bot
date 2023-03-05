@@ -1,5 +1,5 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
-import { Command } from "./command";
+import { Command } from "../interface/command";
 import { GuildNotifyCommandService, GuildNotifyOperation } from "./guildNotifyCommand.service";
 
 export const GuildNotifyCommand: Command = {
