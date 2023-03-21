@@ -7,34 +7,38 @@ import { InteractionCreateEvent } from "./event/interactionCreateEvent";
 import { ReplyCommand } from "./command/replyCommand";
 import { MessageCreateEvent } from "./event/messageCreateEvent";
 import { ReactionRoleCommand } from "./command/reactionRoleCommand";
-import { GuildNotifyCommand } from "./command/guildNotifyCommand";
 import { MessageDeleteEvent } from "./event/messageDeleteEvent";
 import { MessageReactionAddEvent } from "./event/messageReactionAddEvent";
 import { MessageReactionRemoveEvent } from "./event/messageReactionRemoveEvent";
 import { GuildCreateEvent } from "./event/guildCreateEvent";
 import { GuildMemberAddEvent } from "./event/guildMemberAddEvent";
 import { GuildMemberRemoveEvent } from "./event/guildMemberRemoveEvent";
-import { TwitchNotifyCommand } from "./command/twitchNotifyCommand";
+import { TwitchNotifyCommand } from "./command/notify/twitchNotifyCommand";
+import { NotifyCommand } from "./command/notify/notifyCommand";
 
-const CLIENT_VERSION = '4.1.0'
+const CLIENT_VERSION = "4.1.0";
 
 const intentOptions: GatewayIntentBits[] = [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.MessageContent
-]
+  GatewayIntentBits.Guilds,
+  GatewayIntentBits.GuildMembers,
+  GatewayIntentBits.GuildMessages,
+  GatewayIntentBits.GuildMessageReactions,
+  GatewayIntentBits.MessageContent,
+];
 
 const partialsOptions: Partials[] = [
-    Partials.Message,
-    Partials.Channel,
-    Partials.Reaction
-]
+  Partials.Message,
+  Partials.Channel,
+  Partials.Reaction,
+];
 
 const commandList: Command[] = [
-    StatusCommand, ReplyCommand, ReactionRoleCommand, GuildNotifyCommand, TwitchNotifyCommand
-]
+  StatusCommand,
+  ReplyCommand,
+  ReactionRoleCommand,
+  NotifyCommand,
+  TwitchNotifyCommand,
+];
 
 const eventList: EventListener[] = [
     ClientReadyEvent,
