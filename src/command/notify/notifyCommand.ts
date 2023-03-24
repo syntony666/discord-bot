@@ -20,16 +20,24 @@ export const NotifyCommand: Command = {
     const channel = interaction.options.get("channel")?.value as string;
     const message =
       (interaction.options.get("message")?.value as string) ?? undefined;
-    const commonNotify =
-      interaction.options.getSubcommandGroup() as CommonNotify;
-    if (interaction.options.getSubcommand() === CommonNotifyOperation.ADD) {
-      service.add(commonNotify, channel, message);
-    }
-    if (interaction.options.getSubcommand() === CommonNotifyOperation.REMOVE) {
-      service.remove(commonNotify);
-    }
-    if (interaction.options.getSubcommand() === CommonNotifyOperation.LIST) {
-      service.list(commonNotify);
+    if (
+      Object.values(CommonNotify).find(
+        (val) => val === interaction.options.getSubcommandGroup()
+      )
+    ) {
+      const commonNotify =
+        interaction.options.getSubcommandGroup() as CommonNotify;
+      if (interaction.options.getSubcommand() === CommonNotifyOperation.ADD) {
+        service.add(commonNotify, channel, message);
+      }
+      if (
+        interaction.options.getSubcommand() === CommonNotifyOperation.REMOVE
+      ) {
+        service.remove(commonNotify);
+      }
+      if (interaction.options.getSubcommand() === CommonNotifyOperation.LIST) {
+        service.list(commonNotify);
+      }
     }
   },
 };
