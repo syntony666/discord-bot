@@ -1,11 +1,16 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { Command } from "../../interface/command";
 import { CommonNotifySubcommandGroup } from "./commonNotify.subcmd";
+import { TwitchNotifySubcommandGroup } from "./twitchNotify.subcmd";
 import {
   CommonNotify,
   CommonNotifyCommandService,
   CommonNotifyOperation,
 } from "./commonNotifyCommand.service";
+import {
+  TwitchNotify,
+  TwitchNotifyCommandService,
+} from "./twitchNotifyCommand.service";
 
 export const NotifyCommand: Command = {
   data: new SlashCommandBuilder()
@@ -14,12 +19,12 @@ export const NotifyCommand: Command = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addSubcommandGroup(CommonNotifySubcommandGroup.guildJoin)
     .addSubcommandGroup(CommonNotifySubcommandGroup.guildLeave)
-    .addSubcommandGroup(CommonNotifySubcommandGroup.MessageDelete),
+    .addSubcommandGroup(CommonNotifySubcommandGroup.MessageDelete)
+    .addSubcommandGroup(TwitchNotifySubcommandGroup),
   execute: async (interaction) => {
-    const service = new CommonNotifyCommandService(interaction);
-    const channel = interaction.options.get("channel")?.value as string;
-    const message =
-      (interaction.options.get("message")?.value as string) ?? undefined;
+    const commonNotifyService = new CommonNotifyCommandService(interaction);
+    const twitchNotifyService = new TwitchNotifyCommandService(interaction);
+
     if (
       Object.values(CommonNotify).find(
         (val) => val === interaction.options.getSubcommandGroup()
@@ -27,16 +32,39 @@ export const NotifyCommand: Command = {
     ) {
       const commonNotify =
         interaction.options.getSubcommandGroup() as CommonNotify;
-      if (interaction.options.getSubcommand() === CommonNotifyOperation.ADD) {
-        service.add(commonNotify, channel, message);
+      switch (interaction.options.getSubcommand()) {
+        case CommonNotifyOperation.ADD:
+          const channel = interaction.options.get("channel")?.value as string;
+          const message =
+            (interaction.options.get("message")?.value as string) ?? undefined;
+          commonNotifyService.add(commonNotify, channel, message);
+          break;
+        case CommonNotifyOperation.REMOVE:
+          commonNotifyService.remove(commonNotify);
+          break;
+        case CommonNotifyOperation.LIST:
+          commonNotifyService.list(commonNotify);
+          break;
       }
-      if (
-        interaction.options.getSubcommand() === CommonNotifyOperation.REMOVE
-      ) {
-        service.remove(commonNotify);
-      }
-      if (interaction.options.getSubcommand() === CommonNotifyOperation.LIST) {
-        service.list(commonNotify);
+    } else if (
+      interaction.options.getSubcommandGroup() === TwitchNotify.TWITCH
+    ) {
+      let twitchUsername: string | null, channel: string | null;
+      switch (interaction.options.getSubcommand()) {
+        case CommonNotifyOperation.ADD:
+          twitchUsername = interaction.options.get("twitch-username")
+            ?.value as string;
+          channel = interaction.options.get("channel")?.value as string;
+          twitchNotifyService.add(twitchUsername, channel);
+          break;
+        case CommonNotifyOperation.REMOVE:
+          twitchUsername = interaction.options.get("twitch-username")
+            ?.value as string;
+          twitchNotifyService.remove(twitchUsername);
+          break;
+        case CommonNotifyOperation.LIST:
+          twitchNotifyService.list();
+          break;
       }
     }
   },

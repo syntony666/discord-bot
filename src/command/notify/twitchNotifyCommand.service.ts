@@ -9,6 +9,10 @@ export enum TwitchNotifyOperation {
   LIST = "list",
 }
 
+export enum TwitchNotify {
+  TWITCH = 'twitch'
+}
+
 export class TwitchNotifyCommandService {
   private _interaction: ChatInputCommandInteraction;
   private _twitchNotifyDTO = DBConnectionService(TwitchNotifyModel);

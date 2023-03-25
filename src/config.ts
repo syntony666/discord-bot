@@ -13,7 +13,6 @@ import { MessageReactionRemoveEvent } from "./event/messageReactionRemoveEvent";
 import { GuildCreateEvent } from "./event/guildCreateEvent";
 import { GuildMemberAddEvent } from "./event/guildMemberAddEvent";
 import { GuildMemberRemoveEvent } from "./event/guildMemberRemoveEvent";
-import { TwitchNotifyCommand } from "./command/notify/twitchNotifyCommand";
 import { NotifyCommand } from "./command/notify/notifyCommand";
 
 const CLIENT_VERSION = "4.1.0";
@@ -37,7 +36,6 @@ const commandList: Command[] = [
   ReplyCommand,
   ReactionRoleCommand,
   NotifyCommand,
-  TwitchNotifyCommand,
 ];
 
 const eventList: EventListener[] = [
