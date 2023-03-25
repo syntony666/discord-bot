@@ -69,10 +69,10 @@ export class TwitchConnectionService {
     return this._getAuthData()
       .then((data) =>
         fetch(userUrl, {
-          method: 'GET',
+          method: "GET",
           headers: {
             Authorization: `${data.type} ${data.token}`,
-            'Client-Id': this._clientID,
+            "Client-Id": this._clientID,
           },
         })
       )
@@ -80,9 +80,10 @@ export class TwitchConnectionService {
       .then((data) =>
         data.data
           ? data.data.map((res: any) => ({
-          twitch_id: res.login,
-          profile_image_url: res.profile_image_url,
-          }))
+              twitch_id: res.login,
+              name: res.display_name,
+              profile_image_url: res.profile_image_url,
+            }))
           : []
       );
   }

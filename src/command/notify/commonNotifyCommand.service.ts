@@ -39,7 +39,7 @@ export class CommonNotifyCommandService {
 
   private _getEmbedMessage(): EmbedBuilder {
     return new EmbedBuilder()
-      .setColor(embedColor.get("guild-notify") ?? null)
+      .setColor(embedColor.get("common-notify") ?? null)
       .setAuthor({
         name: this._interaction.client.user?.username ?? "",
         iconURL: this._interaction.client.user?.avatarURL() ?? undefined,

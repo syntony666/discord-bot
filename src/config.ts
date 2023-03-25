@@ -39,23 +39,23 @@ const commandList: Command[] = [
 ];
 
 const eventList: EventListener[] = [
-    ClientReadyEvent,
-    GuildCreateEvent,
-    GuildMemberAddEvent,
-    GuildMemberRemoveEvent,
-    InteractionCreateEvent,
-    MessageCreateEvent,
-    MessageDeleteEvent,
-    MessageReactionAddEvent,
-    MessageReactionRemoveEvent,
-]
+  ClientReadyEvent,
+  GuildCreateEvent,
+  GuildMemberAddEvent,
+  GuildMemberRemoveEvent,
+  InteractionCreateEvent,
+  MessageCreateEvent,
+  MessageDeleteEvent,
+  MessageReactionAddEvent,
+  MessageReactionRemoveEvent,
+];
 
 const embedColor: Map<string, ColorResolvable> = new Map([
-  ['reply', '#f0b01d'],
-  ['status', '#0099ff'],
-  ['reactionRole', '#fa8d2d'],
-  ['guild-notify', '#f58e69'],
-  ['twitch-notify', '#6441a5'],
+  ["reply", "#f0b01d"],
+  ["status", "#0099ff"],
+  ["reactionRole", "#fa8d2d"],
+  ["common-notify", "#f58e69"],
+  ["twitch-notify", "#6441a5"],
 ]);
 
 export {
