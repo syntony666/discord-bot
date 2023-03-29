@@ -1,4 +1,6 @@
 import {
+  channelLink,
+  channelMention,
   ChatInputCommandInteraction,
   EmbedBuilder,
   hyperlink,
@@ -48,7 +50,7 @@ export class TwitchNotifyCommandService {
       })
       .setTimestamp();
   }
-  public add(twitchUsername: string, channel: string) {
+  public add(twitchUsername: string, channel: string, message?: string) {
     let streamerInfo: any;
     new TwitchConnectionService()
       .getUserInfo([twitchUsername])
@@ -73,15 +75,16 @@ export class TwitchNotifyCommandService {
         }
         return;
       })
-      .then(() =>
-        this._twitchNotifyDTO.create({
+      .then(() => {
+        return this._twitchNotifyDTO.create({
           guild_id: this._guildId,
           channel_id: channel,
           twitch_id: twitchUsername,
-        })
-      )
+          message: message,
+        });
+      })
       .then(() => {
-        this._onAddSuccess(streamerInfo);
+        this._onAddSuccess(streamerInfo, channel, message);
       })
       .catch((err) => console.log(err));
   }
@@ -108,20 +111,24 @@ export class TwitchNotifyCommandService {
     this._twitchNotifyDTO
       .findAll({
         where: {
-          guild_id: this._guildId,
+          // guild_id: this._guildId,
         },
       })
       .then(
-        (res) =>
-          new Promise((resolve, reject) => {
-            if (res.length == 0) {
-              return reject();
-            }
-            return resolve(res);
-          })
+        (res) => console.log(res)
+        // new Promise((resolve, reject) => {
+        //   if (res.length == 0) {
+        //     return reject();
+        //   }
+        //   return resolve(res);
+        // })
       );
   }
-  private _onAddSuccess(streamerInfo: any) {
+  private _onAddSuccess(
+    streamerInfo: any,
+    channel: string,
+    message: string | undefined
+  ) {
     let embed = this._getEmbedMessage()
       .setTitle("Twitch 通知已設定")
       .setDescription(
@@ -129,6 +136,16 @@ export class TwitchNotifyCommandService {
           `**${streamerInfo.name}** (${streamerInfo.twitch_id})`,
           `https://twitch.tv/${streamerInfo.twitch_id}`
         )
+      )
+      .addFields(
+        {
+          name: "通知頻道",
+          value: channelMention(channel),
+        },
+        {
+          name: message ? "通知訊息" : "❎ 通知訊息",
+          value: message ? message : "\u200B",
+        }
       )
       .setThumbnail(streamerInfo.profile_image_url ?? null);
     this._interaction.reply({ embeds: [embed], ephemeral: false });

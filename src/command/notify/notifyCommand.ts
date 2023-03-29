@@ -52,10 +52,13 @@ export const NotifyCommand: Command = {
       let twitchUsername: string | null, channel: string | null;
       switch (interaction.options.getSubcommand()) {
         case CommonNotifyOperation.ADD:
+          const message = interaction.options.get("message")?.value as
+            | string
+            | undefined;
           twitchUsername = interaction.options.get("twitch-username")
             ?.value as string;
           channel = interaction.options.get("channel")?.value as string;
-          twitchNotifyService.add(twitchUsername, channel);
+          twitchNotifyService.add(twitchUsername, channel, message);
           break;
         case CommonNotifyOperation.REMOVE:
           twitchUsername = interaction.options.get("twitch-username")
