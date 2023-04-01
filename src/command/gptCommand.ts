@@ -1,6 +1,7 @@
 import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { Command } from "../interface/command";
 import { Configuration, OpenAIApi } from "openai";
+import { random } from "lodash";
 
 export const GPTCommand: Command = {
   data: new SlashCommandBuilder()
@@ -31,11 +32,14 @@ export const GPTCommand: Command = {
           { role: "system", content: "使用繁體中文" },
           { role: "user", content: content },
         ],
+        temperature: random(0, 2, true),
+        max_tokens: 500,
       })
       .then((res) => {
-        const embed = new EmbedBuilder().setDescription(
-          res.data.choices[0].message?.content ?? null
-        );
+        const embed = new EmbedBuilder()
+          .setDescription(res.data.choices[0].message?.content ?? null)
+          .setFooter({ text: "Powered by OpenAI GPT-3.5 Turbo" })
+          .setTimestamp();
         interaction.editReply({ embeds: [embed] });
       })
       .catch((err) => console.log(err));
