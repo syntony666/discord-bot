@@ -1,7 +1,7 @@
 import { Events, Message } from "discord.js";
 import { ReplyModel } from "../database/replyModel";
 import { DBConnectionService } from "../service/DBConnectionService";
-import { EventListener } from "./eventListener";
+import { EventListener } from "../interface/eventListener";
 
 export const MessageCreateEvent: EventListener = {
     name: Events.MessageCreate,

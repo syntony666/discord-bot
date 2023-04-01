@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import { Model } from "../database/model";
+import { Model } from "../interface/model";
 
 export const DBConnectionService = (model: Model) => {
     const databaseName: any = process.env.DATABASE_NAME;

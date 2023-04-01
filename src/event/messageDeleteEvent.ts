@@ -2,7 +2,7 @@ import { channelMention, EmbedBuilder, Events, Message, TextChannel, time, userM
 import { embedColor } from "../config";
 import { GuildModel } from "../database/guildModel";
 import { DBConnectionService } from "../service/DBConnectionService";
-import { EventListener } from "./eventListener";
+import { EventListener } from "../interface/eventListener";
 export const MessageDeleteEvent: EventListener = {
     name: Events.MessageCreate,
     execute: async (message: Message) => {

@@ -34,22 +34,24 @@ export class TwitchConnectionService {
     return this._getAuthData()
       .then((data) =>
         fetch(userUrl, {
-          method: 'GET',
+          method: "GET",
           headers: {
             Authorization: `${data.type} ${data.token}`,
-            'Client-Id': this._clientID,
+            "Client-Id": this._clientID,
           },
         })
       )
       .then((res) => res.json())
       .then((data) =>
-        data.data.map((res: any) => ({
-          twitch_id: res.user_login,
-          is_streaming: true,
-          title: res.title,
-          game_name: res.game_name,
-          name: res.user_name
-        }))
+        data.data
+          ? data.data.map((res: any) => ({
+              twitch_id: res.user_login,
+              is_streaming: true,
+              title: res.title,
+              game_name: res.game_name,
+              name: res.user_name,
+            }))
+          : []
       );
   }
 
@@ -67,19 +69,22 @@ export class TwitchConnectionService {
     return this._getAuthData()
       .then((data) =>
         fetch(userUrl, {
-          method: 'GET',
+          method: "GET",
           headers: {
             Authorization: `${data.type} ${data.token}`,
-            'Client-Id': this._clientID,
+            "Client-Id": this._clientID,
           },
         })
       )
       .then((res) => res.json())
       .then((data) =>
-        data.data.map((res: any) => ({
-          twitch_id: res.login,
-          profile_image_url: res.profile_image_url,
-        }))
+        data.data
+          ? data.data.map((res: any) => ({
+              twitch_id: res.login,
+              name: res.display_name,
+              profile_image_url: res.profile_image_url,
+            }))
+          : []
       );
   }
 }

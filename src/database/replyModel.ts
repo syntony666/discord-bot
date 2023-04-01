@@ -1,5 +1,5 @@
 import { STRING } from 'sequelize';
-import { Model } from './model';
+import { Model } from "../interface/model";
 
 export const ReplyModel: Model = {
     databaseName: 'reply_message',

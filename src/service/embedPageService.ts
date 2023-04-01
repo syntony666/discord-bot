@@ -57,22 +57,24 @@ export class EmbedPageService {
         }
         const msg = this._interaction.replied ? await this._interaction.followUp(data) : await this._interaction.reply(data);
         const collector = msg.createMessageComponentCollector({
-            time: timeout
+          time: timeout,
         });
-        collector.on('collect', res => {
-            if (res.customId == 'first') {
-                currentPage = 1;
-            } else if (res.customId == 'previous') {
-                currentPage--;
-            } else if (res.customId == 'next') {
-                currentPage++;
-            } else if (res.customId == 'last') {
-                currentPage = maxPage;
-            }
-            res.update({
-                components: [this._getButtons(currentPage, maxPage)],
-                embeds: [this._getCurrentPage(currentPage, maxPage)],
+        collector.on("collect", (res) => {
+          if (res.customId == "first") {
+            currentPage = 1;
+          } else if (res.customId == "previous") {
+            currentPage--;
+          } else if (res.customId == "next") {
+            currentPage++;
+          } else if (res.customId == "last") {
+            currentPage = maxPage;
+          }
+          this._interaction
+            .editReply({
+              components: [this._getButtons(currentPage, maxPage)],
+              embeds: [this._getCurrentPage(currentPage, maxPage)],
             })
+            .then(() => res.deferUpdate());
         });
     }
 

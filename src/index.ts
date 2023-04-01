@@ -6,25 +6,28 @@ import { registerEvent } from "./util/registerEvent";
 import { validateEnv } from "./util/validateEnv";
 
 (async () => {
-    if (!validateEnv()) return;
+  if (!validateEnv()) return;
 
-    const client = new Client({ intents: intentOptions, partials: partialsOptions });
+  const client = new Client({
+    intents: intentOptions,
+    partials: partialsOptions,
+  });
 
-    registerCmd();
+  registerCmd();
 
-    registerEvent(client);
+  registerEvent(client);
 
-    await client.login(process.env.CLIENT_TOKEN);
+  await client.login(process.env.CLIENT_TOKEN);
 
-    // ctrl+c
-    process.on('SIGINT', () => {
-      client.destroy();
-      exit(0);
-    });
+  // ctrl+c
+  process.on("SIGINT", () => {
+    client.destroy();
+    exit(0);
+  });
 
-    //docker stop signal
-    process.on('SIGTERM', () => {
-      client.destroy();
-      exit(0);
-    });
+  //docker stop signal
+  process.on("SIGTERM", () => {
+    client.destroy();
+    exit(0);
+  });
 })();

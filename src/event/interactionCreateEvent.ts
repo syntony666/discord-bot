@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, Events } from "discord.js";
 import { commandList } from "../config";
-import { EventListener } from "./eventListener";
+import { EventListener } from "../interface/eventListener";
 
 export const InteractionCreateEvent: EventListener = {
     name: Events.InteractionCreate,

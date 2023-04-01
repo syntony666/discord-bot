@@ -2,7 +2,7 @@ import { Client, Events } from "discord.js";
 import { GuildModel } from "../database/guildModel";
 import { IntervalActionHelper } from "../helper/intervalActionHelper";
 import { DBConnectionService } from "../service/DBConnectionService";
-import { EventListener } from "./eventListener";
+import { EventListener } from "../interface/eventListener";
 
 export const ClientReadyEvent: EventListener = {
     name: Events.ClientReady,

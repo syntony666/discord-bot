@@ -1,5 +1,5 @@
 import { BOOLEAN, STRING } from 'sequelize';
-import { Model } from './model';
+import { Model } from "../interface/model";
 
 export const TwitchStatusModel: Model = {
     databaseName: 'twitch_statuses',

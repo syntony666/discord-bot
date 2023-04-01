@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, } from "discord.js";
-import { Command } from "./command";
+import { Command } from "../interface/command";
 import { StatusCommandService, StatusOperation } from "./statusCommand.sevice";
 
 export const StatusCommand: Command = {
