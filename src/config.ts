@@ -14,6 +14,7 @@ import { GuildCreateEvent } from "./event/guildCreateEvent";
 import { GuildMemberAddEvent } from "./event/guildMemberAddEvent";
 import { GuildMemberRemoveEvent } from "./event/guildMemberRemoveEvent";
 import { NotifyCommand } from "./command/notify/notifyCommand";
+import { GPTCommand } from "./command/gptCommand";
 
 const CLIENT_VERSION = "4.0.6";
 
@@ -38,6 +39,8 @@ const commandList: Command[] = [
   NotifyCommand,
 ];
 
+const guildCommandList: Command[] = [GPTCommand];
+
 const eventList: EventListener[] = [
   ClientReadyEvent,
   GuildCreateEvent,
@@ -59,5 +62,11 @@ const embedColor: Map<string, ColorResolvable> = new Map([
 ]);
 
 export {
-    CLIENT_VERSION, intentOptions, partialsOptions, commandList, eventList, embedColor
-}
+  CLIENT_VERSION,
+  intentOptions,
+  partialsOptions,
+  commandList,
+  guildCommandList,
+  eventList,
+  embedColor,
+};
