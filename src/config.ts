@@ -15,7 +15,7 @@ import { GuildMemberAddEvent } from "./event/guildMemberAddEvent";
 import { GuildMemberRemoveEvent } from "./event/guildMemberRemoveEvent";
 import { NotifyCommand } from "./command/notify/notifyCommand";
 
-const CLIENT_VERSION = "4.1.0";
+const CLIENT_VERSION = "4.0.6";
 
 const intentOptions: GatewayIntentBits[] = [
   GatewayIntentBits.Guilds,
