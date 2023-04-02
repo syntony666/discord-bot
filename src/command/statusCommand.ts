@@ -1,36 +1,36 @@
 import { SlashCommandBuilder, } from "discord.js";
 import { Command } from "../interface/command";
 import { StatusCommandService, StatusOperation } from "./statusCommand.sevice";
+import { CommandError } from "../error/commandError";
+import { ErrorBase } from "../error/errorBase";
 
 export const StatusCommand: Command = {
-    data: new SlashCommandBuilder()
-        .setName('status')
-        .setDescription('取得相關資訊')
-        .addSubcommand(subcommand => {
-            return subcommand
-                .setName(StatusOperation.BOT)
-                .setDescription('取得機器人資訊')
-        })
-        .addSubcommand(subcommand => {
-            return subcommand
-                .setName(StatusOperation.SERVER)
-                .setDescription('取得伺服器資訊')
-        }),
-    execute: async (interaction) => {
-        const statusCommandService = new StatusCommandService(interaction);
+  data: new SlashCommandBuilder()
+    .setName("status")
+    .setDescription("取得相關資訊")
+    .addSubcommand((subcommand) => {
+      return subcommand
+        .setName(StatusOperation.BOT)
+        .setDescription("取得機器人資訊");
+    })
+    .addSubcommand((subcommand) => {
+      return subcommand
+        .setName(StatusOperation.SERVER)
+        .setDescription("取得伺服器資訊");
+    }),
+  execute: async (interaction) => {
+    const statusCommandService = new StatusCommandService(interaction);
+    switch (interaction.options.getSubcommand()) {
+      case StatusOperation.BOT:
+        statusCommandService.bot();
+        break;
 
-        switch (interaction.options.getSubcommand()) {
-            case StatusOperation.BOT:
-                statusCommandService.bot();
-                break;
+      case StatusOperation.SERVER:
+        statusCommandService.server();
+        break;
 
-            case StatusOperation.SERVER:
-                statusCommandService.server();
-                break;
-
-            default:
-                // TODO: add error type
-                throw new Error('')
-        }
+      default:
+        throw new CommandError("No such command", interaction.toString());
     }
-}
+  },
+};

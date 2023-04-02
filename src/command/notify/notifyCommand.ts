@@ -11,6 +11,8 @@ import {
   TwitchNotify,
   TwitchNotifyCommandService,
 } from "./twitchNotifyCommand.service";
+import { CommandError } from "../../error/commandError";
+import { ErrorBase } from "../../error/errorBase";
 
 export const NotifyCommand: Command = {
   data: new SlashCommandBuilder()
@@ -24,7 +26,6 @@ export const NotifyCommand: Command = {
   execute: async (interaction) => {
     const commonNotifyService = new CommonNotifyCommandService(interaction);
     const twitchNotifyService = new TwitchNotifyCommandService(interaction);
-
     if (
       Object.values(CommonNotify).find(
         (val) => val === interaction.options.getSubcommandGroup()
@@ -45,6 +46,8 @@ export const NotifyCommand: Command = {
         case CommonNotifyOperation.LIST:
           commonNotifyService.list(commonNotify);
           break;
+        default:
+          throw new CommandError("No such command", interaction.toString());
       }
     } else if (
       interaction.options.getSubcommandGroup() === TwitchNotify.TWITCH
@@ -68,7 +71,11 @@ export const NotifyCommand: Command = {
         case CommonNotifyOperation.LIST:
           twitchNotifyService.list();
           break;
+        default:
+          throw new CommandError("No such command", interaction.toString());
       }
+    } else {
+      throw new CommandError("No such command", interaction.toString());
     }
   },
 };

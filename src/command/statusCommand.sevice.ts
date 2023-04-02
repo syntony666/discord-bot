@@ -9,15 +9,14 @@ import {
   time,
 } from "discord.js";
 import { embedColor, CLIENT_VERSION } from "../config";
+import { CommandServiceBase } from "./commandServiceBase";
 
 export enum StatusOperation {
   BOT = "bot",
   SERVER = "server",
 }
 
-export class StatusCommandService {
-  private _interaction: ChatInputCommandInteraction;
-  private _guild: Guild;
+export class StatusCommandService extends CommandServiceBase {
   private _avatar_bg: AttachmentBuilder = new AttachmentBuilder(
     "./assets/avatar_bg.png"
   );
@@ -25,13 +24,7 @@ export class StatusCommandService {
   private _discord_js = new AttachmentBuilder("./assets/discord_js.png");
 
   constructor(interaction: ChatInputCommandInteraction) {
-    if (interaction.guild != null) {
-      this._interaction = interaction;
-      this._guild = interaction.guild;
-    } else {
-      // TODO: add error type
-      throw new Error("");
-    }
+    super(interaction);
   }
 
   private _getEmbedMessage(): EmbedBuilder {

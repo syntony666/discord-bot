@@ -11,6 +11,7 @@ import { TwitchStatusModel } from "../../database/twitchStatusModel";
 import { DBConnectionService } from "../../service/DBConnectionService";
 import { EmbedPageService } from "../../service/embedPageService";
 import { TwitchConnectionService } from "../../service/twitchConnectionService";
+import { CommandServiceBase } from "../commandServiceBase";
 
 export enum TwitchNotifyOperation {
   ADD = "add",
@@ -22,19 +23,11 @@ export enum TwitchNotify {
   TWITCH = "twitch",
 }
 
-export class TwitchNotifyCommandService {
-  private _interaction: ChatInputCommandInteraction;
+export class TwitchNotifyCommandService extends CommandServiceBase {
   private _twitchNotifyDTO = DBConnectionService(TwitchNotifyModel);
   private _twitchStatusDTO = DBConnectionService(TwitchStatusModel);
-  private _guildId: string = "";
   constructor(interaction: ChatInputCommandInteraction) {
-    if (interaction.guild != null) {
-      this._interaction = interaction;
-      this._guildId = interaction.guild.id;
-    } else {
-      // TODO: add error type
-      throw new Error("");
-    }
+    super(interaction)
   }
 
   private _getEmbedMessage(): EmbedBuilder {
@@ -78,7 +71,7 @@ export class TwitchNotifyCommandService {
       })
       .then(() => {
         return this._twitchNotifyDTO.create({
-          guild_id: this._guildId,
+          guild_id: this._guild.id,
           channel_id: channel,
           twitch_id: twitchUsername,
           message: message,
@@ -93,7 +86,7 @@ export class TwitchNotifyCommandService {
     this._twitchNotifyDTO
       .destroy({
         where: {
-          guild_id: this._guildId,
+          guild_id: this._guild.id,
           twitch_id: twitchUsername,
         },
       })
@@ -118,7 +111,7 @@ export class TwitchNotifyCommandService {
     this._twitchNotifyDTO
       .findAll({
         where: {
-          guild_id: this._guildId,
+          guild_id: this._guild.id,
         },
       })
       .then(

@@ -5,6 +5,7 @@ import { ReactionRoleModel } from "../database/ReactionRoleModel";
 import { DBConnectionService } from "../service/DBConnectionService";
 import { EmbedPageService } from "../service/embedPageService";
 import { MessageUrlService } from "../service/messageUrlService";
+import { CommandServiceBase } from "./commandServiceBase";
 
 export enum ReactionRoleOperation {
     ADD = 'add',
@@ -13,19 +14,11 @@ export enum ReactionRoleOperation {
     LIST = 'list'
 }
 
-export class ReactionRoleCommandService {
-    private _interaction: ChatInputCommandInteraction;
+export class ReactionRoleCommandService extends CommandServiceBase {
     private _reactionRoleDTO = DBConnectionService(ReactionRoleModel);
-    private _guildId: string = '';
 
     constructor(interaction: ChatInputCommandInteraction) {
-        if (interaction.guild != null) {
-            this._interaction = interaction;
-            this._guildId = interaction.guild.id;
-        } else {
-            // TODO: add error type
-            throw new Error('')
-        }
+        super(interaction)
     }
 
     public _getEmbedMessage(): EmbedBuilder {
@@ -38,13 +31,13 @@ export class ReactionRoleCommandService {
     }
 
     public add(role: string, emoji: string, messageUrl: string) {
-        const messageUrlService = new MessageUrlService(messageUrl, this._guildId, this._interaction.client);
+        const messageUrlService = new MessageUrlService(messageUrl, this._guild.id, this._interaction.client);
         messageUrlService.getMessage()
             .then(message => message.react(emoji))
             .then(() => {
                 this._reactionRoleDTO.create({
                     role_id: role,
-                    guild_id: this._guildId,
+                    guild_id: this._guild.id,
                     reaction: emoji,
                     message_url: messageUrl
                 })
@@ -57,7 +50,7 @@ export class ReactionRoleCommandService {
         this._reactionRoleDTO.destroy({
             where: {
                 role_id: role,
-                guild_id: this._guildId
+                guild_id: this._guild.id
             }
         })
         .then(res => new Promise<void>((resolve, reject) =>{
@@ -75,7 +68,7 @@ export class ReactionRoleCommandService {
     public removeMessage(messageUrl: string) {
         const criteria = {
             message_url: messageUrl,
-            guild_id: this._guildId
+            guild_id: this._guild.id
         }
         this._reactionRoleDTO.findAll({
             where: criteria
@@ -98,7 +91,7 @@ export class ReactionRoleCommandService {
     public list() {
         this._reactionRoleDTO.findAll({
             where: {
-                guild_id: this._guildId
+                guild_id: this._guild.id
             }
         })
         .then(res => new Promise((resolve, reject) => {

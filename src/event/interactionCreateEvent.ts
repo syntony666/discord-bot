@@ -1,5 +1,7 @@
 import { ChatInputCommandInteraction, Events } from "discord.js";
+import _ from "lodash";
 import { commandList, guildCommandList } from "../config";
+import { ErrorBase } from "../error/errorBase";
 import { EventListener } from "../interface/eventListener";
 
 export const InteractionCreateEvent: EventListener = {
@@ -11,9 +13,9 @@ export const InteractionCreateEvent: EventListener = {
 
     if (!interaction.isCommand()) return;
 
-    const command = commandList
-      .concat(guildCommandList)
-      .filter((cmd) => interaction.commandName === cmd.data.name)[0];
+    const command = _.concat(commandList, guildCommandList).filter(
+      (cmd) => interaction.commandName === cmd.data.name
+    )[0];
 
     if (!command) return;
 
@@ -21,10 +23,11 @@ export const InteractionCreateEvent: EventListener = {
       await command.execute(interaction);
     } catch (error) {
       console.error(error);
-      await interaction.reply({
-        content: "There was an error while executing this command!",
-        ephemeral: true,
-      });
+      if (error instanceof ErrorBase)
+        await interaction.reply({
+          content: error.getMessage(),
+          ephemeral: true,
+        });
     }
   },
 };

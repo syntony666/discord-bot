@@ -9,6 +9,7 @@ import { GuildModel } from "../../database/guildModel";
 import { DBConnectionService } from "../../service/DBConnectionService";
 
 import { FormatterHelper } from "../../helper/formatterHelper";
+import { CommandServiceBase } from "../commandServiceBase";
 
 export enum CommonNotify {
   GUILD_JOIN = "guild-join",
@@ -22,19 +23,11 @@ export enum CommonNotifyOperation {
   LIST = "list",
 }
 
-export class CommonNotifyCommandService {
+export class CommonNotifyCommandService extends CommandServiceBase {
   private _guildDTO = DBConnectionService(GuildModel);
-  private _interaction: ChatInputCommandInteraction;
-  private _guildId: string = "";
 
   constructor(interaction: ChatInputCommandInteraction) {
-    if (interaction.guild != null) {
-      this._interaction = interaction;
-      this._guildId = interaction.guild.id;
-    } else {
-      // TODO: add error type
-      throw new Error("");
-    }
+    super(interaction);
   }
 
   private _getEmbedMessage(): EmbedBuilder {
@@ -55,7 +48,7 @@ export class CommonNotifyCommandService {
   public add(option: CommonNotify, channel: string, message?: string) {
     this._guildDTO
       .update(this._getAddQuery(option, channel, message), {
-        where: { guild_id: this._guildId },
+        where: { guild_id: this._guild.id },
       })
       .then(() => this._onAddSuccess(option, channel, message ?? undefined))
       .catch((err) => this._onOperationFail(err));
@@ -64,7 +57,7 @@ export class CommonNotifyCommandService {
   public remove(option: CommonNotify) {
     this._guildDTO
       .update(this._getRemoveQuery(option), {
-        where: { guild_id: this._guildId },
+        where: { guild_id: this._guild.id },
       })
       .then(() => this._onRemoveSuccess(option))
       .catch((err) => this._onOperationFail(err));
@@ -74,7 +67,7 @@ export class CommonNotifyCommandService {
     this._guildDTO
       .findOne({
         where: {
-          guild_id: this._guildId,
+          guild_id: this._guild.id,
         },
       })
       .then((res) => this._onListSuccess(option, res))
