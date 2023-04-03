@@ -25,7 +25,7 @@ export const InteractionCreateEvent: EventListener = {
       console.error(error);
       if (error instanceof ErrorBase)
         await interaction.reply({
-          content: error.getMessage(),
+          content: error.message,
           ephemeral: true,
         });
     }

@@ -2,14 +2,14 @@ export class ErrorBase<T extends string> extends Error {
   name: T;
   message: string;
   cause: string;
-  constructor(name: T, message: string, cause?: any) {
+  constructor(name: T, message = "", cause?: any) {
     super();
     this.name = name;
-    this.message = message;
+    this.message = this.getMessage();
     this.cause = cause;
   }
 
-  getMessage() {
+  protected getMessage() {
     return this.message;
   }
 }

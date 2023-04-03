@@ -47,7 +47,7 @@ export const NotifyCommand: Command = {
           commonNotifyService.list(commonNotify);
           break;
         default:
-          throw new CommandError("No such command", interaction.toString());
+          throw new CommandError("NoSuchCommand", interaction.toString());
       }
     } else if (
       interaction.options.getSubcommandGroup() === TwitchNotify.TWITCH
@@ -72,10 +72,10 @@ export const NotifyCommand: Command = {
           twitchNotifyService.list();
           break;
         default:
-          throw new CommandError("No such command", interaction.toString());
+          throw new CommandError("NoSuchCommand", interaction.toString());
       }
     } else {
-      throw new CommandError("No such command", interaction.toString());
+      throw new CommandError("NoSuchCommand", interaction.toString());
     }
   },
 };

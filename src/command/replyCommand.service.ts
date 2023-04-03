@@ -5,6 +5,7 @@ import { ReplyModel } from "../database/replyModel";
 import { DBConnectionService } from "../service/DBConnectionService";
 import { EmbedPageService } from "../service/embedPageService";
 import { CommandServiceBase } from "./commandServiceBase";
+import { DatabaseOperationError } from "../error/databaseOperationError";
 
 export enum ReplyOperation {
   ADD = "add",
@@ -21,7 +22,7 @@ export class ReplyCommandService extends CommandServiceBase {
     super(interaction);
   }
 
-  public _getEmbedMessage(): EmbedBuilder {
+  private _getEmbedMessage(): EmbedBuilder {
     return new EmbedBuilder()
       .setColor(embedColor.get("reply") ?? null)
       .setAuthor({
@@ -200,16 +201,9 @@ export class ReplyCommandService extends CommandServiceBase {
   }
 
   private _onOperationFail(err: Error) {
-    // TODO: add error behavior
-    if (err.name == "SequelizeUniqueConstraintError") {
-      this._interaction.reply({ content: "關鍵字已重複", ephemeral: true });
-    } else {
-      console.log(err);
-      this._interaction.reply({
-        content: "回覆內容操作失敗，可能是資料庫損壞",
-        ephemeral: true,
-      });
-    }
+    if (err.name == "SequelizeUniqueConstraintError")
+      throw new DatabaseOperationError("DataExisted");
+    throw new DatabaseOperationError("Unexpected");
   }
 
   private _replyListResult(res: any, query: string | null): EmbedPageService {

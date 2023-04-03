@@ -90,7 +90,7 @@ export const ReactionRoleCommand: Command = {
         break;
 
       default:
-        throw new CommandError("No such command", interaction.toString());
+        throw new CommandError("NoSuchCommand", interaction.toString());
     }
   },
 };

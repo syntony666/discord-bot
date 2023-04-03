@@ -10,6 +10,7 @@ import { DBConnectionService } from "../../service/DBConnectionService";
 
 import { FormatterHelper } from "../../helper/formatterHelper";
 import { CommandServiceBase } from "../commandServiceBase";
+import { DatabaseOperationError } from "../../error/databaseOperationError";
 
 export enum CommonNotify {
   GUILD_JOIN = "guild-join",
@@ -199,7 +200,8 @@ export class CommonNotifyCommandService extends CommandServiceBase {
   }
 
   private _onOperationFail(err: Error) {
-    //TODO: add error type
-    console.log(err);
+    if (err.name == "SequelizeUniqueConstraintError")
+      throw new DatabaseOperationError("DataExisted");
+    throw new DatabaseOperationError("Unexpected");
   }
 }
