@@ -33,7 +33,7 @@ export const GPTCommand: Command = {
           { role: "user", content: content },
         ],
         temperature: random(0, 2, true),
-        max_tokens: 500,
+//         max_tokens: 500,
       })
       .then((res) => {
         const embed = new EmbedBuilder()
