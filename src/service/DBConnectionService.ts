@@ -2,9 +2,9 @@ import { Sequelize } from "sequelize";
 import { Model } from "../interface/model";
 
 export const DBConnectionService = (model: Model) => {
-    const databaseName: any = process.env.DATABASE_NAME;
-    const databaseUser: any = process.env.DATABASE_USER;
-    const databasePassword: any = process.env.DATABASE_PASSWORD ?? null;
+    const databaseName: any = process.env.MARIADB_DATABASE;
+    const databaseUser: any = process.env.MARIADB_USER;
+    const databasePassword: any = process.env.MARIADB_ROOT_PASSWORD ?? null;
     const databaseHost: any = process.env.DATABASE_HOST;
     const client = new Sequelize(
         databaseName, databaseUser, databasePassword, {

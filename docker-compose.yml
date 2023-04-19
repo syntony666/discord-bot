@@ -1,13 +1,35 @@
-version: "2"
+version: "2.1"
 services:
-  node:
+  app:
     image: "node:lts"
     user: "node"
     restart: always
     working_dir: /home/node/app
     environment:
       - NODE_ENV=development
+    depends_on:
+      database:
+        condition: service_healthy
     volumes:
       - ./:/home/node/app
     command: >
-      sh -c "npm install && npm run app"
+      sh -c "npm install && npm run migrate && npm run app"
+  database:
+    image: mariadb
+    ports:
+      - '13306:3306'
+    restart: always
+    environment:
+      - MARIADB_USER=user
+      - MARIADB_DATABASE
+      - MARIADB_ROOT_PASSWORD
+      - MARIADB_CHARACTER_SET=utf8mb4
+      - MARIADB_COLLATE=utf8mb4_general_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    volumes:
+      - database:/var/lib/mysql
+volumes:
+  database: {}

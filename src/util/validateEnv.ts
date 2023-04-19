@@ -12,17 +12,17 @@ export const validateEnv = () => {
         console.warn("Missing database host (required). (DATABASE_HOST)");
         isValidate = false;
     }
-    if(!process.env.DATABASE_USER) {
-        console.warn("Missing database username (required). (DATABASE_USER)");
-        isValidate = false;
+    if (!process.env.MARIADB_USER) {
+      console.warn("Missing database username (required). (MARIADB_USER)");
+      isValidate = false;
     }
-    if(!process.env.DATABASE_PASSWORD) {
-        console.warn("Missing database password. (DATABASE_PASSWORD)");
-        isValidate = true;
+    if (!process.env.MARIADB_ROOT_PASSWORD) {
+      console.warn("Missing database password. (MARIADB_ROOT_PASSWORD)");
+      isValidate = true;
     }
-    if(!process.env.DATABASE_NAME) {
-        console.warn("Missing database name (required). (DATABASE_NAME)");
-        isValidate = false;
+    if (!process.env.MARIADB_DATABASE) {
+      console.warn("Missing database name (required). (MARIADB_DATABASE)");
+      isValidate = false;
     }
     return isValidate;
 }
