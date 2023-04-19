@@ -32,7 +32,7 @@ export const GPTCommand: Command = {
           { role: "system", content: "使用繁體中文" },
           { role: "user", content: content },
         ],
-        temperature: random(0, 2, true),
+        temperature: random(0, 1, true),
 //         max_tokens: 500,
       })
       .then((res) => {
