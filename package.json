@@ -5,6 +5,7 @@
   "main": "./prod/index.js",
   "scripts": {
     "build": "npx tsc",
+    "migrate": "npx -y sequelize-cli db:migrate --env production",
     "start": "node -r dotenv/config ./prod/index.js",
     "app": "npm run build && npm run start"
   },
@@ -17,7 +18,8 @@
     "discord.js": "^14.3.0",
     "dotenv": "^16.0.2",
     "lodash": "^4.17.21",
-    "mariadb": "^3.0.1",
+    "mariadb": "^3.1.1",
+    "mysql2": "^3.2.3",
     "openai": "^3.2.1",
     "sequelize": "^6.21.4"
   },
