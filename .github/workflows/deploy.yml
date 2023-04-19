@@ -15,4 +15,4 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSHKEY }}
-          script: cd discord-bot && sh ./depoly.sh
+          script: cd discord-bot && sh ./deploy.sh

@@ -17,7 +17,7 @@ services:
   database:
     image: mariadb
     ports:
-      - '3306:3306'
+      - '13306:3306'
     restart: always
     environment:
       - MARIADB_USER=user
