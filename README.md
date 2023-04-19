@@ -1,3 +1,7 @@
+> # Old version, waiting for update
+
+---
+
 # Discord Bot
 
 [![Made with TypeScript](https://img.shields.io/github/package-json/dependency-version/syntony666/discord-bot/dev/typescript?logo=typescript&logoColor=3178C6&color=f328a8)](https://typescriptlang.org "Go to TypeScript homepage")

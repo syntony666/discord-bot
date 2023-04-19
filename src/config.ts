@@ -16,7 +16,7 @@ import { GuildMemberRemoveEvent } from "./event/guildMemberRemoveEvent";
 import { NotifyCommand } from "./command/notify/notifyCommand";
 import { GPTCommand } from "./command/gptCommand";
 
-const CLIENT_VERSION = "4.0.6-gpt.Beta";
+const CLIENT_VERSION = "4.1.0-gpt.Beta"; // optimize for docker
 
 const intentOptions: GatewayIntentBits[] = [
   GatewayIntentBits.Guilds,
