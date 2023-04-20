@@ -1,7 +1,3 @@
-> # Old version, waiting for update
-
----
-
 # Discord Bot
 
 [![Made with TypeScript](https://img.shields.io/github/package-json/dependency-version/syntony666/discord-bot/dev/typescript?logo=typescript&logoColor=3178C6&color=f328a8)](https://typescriptlang.org "Go to TypeScript homepage")
@@ -16,6 +12,20 @@
 ## Prerequisite
 
 Fill the `.env.example` and rename to `.env`
+
+If you don't use MariaDB, some hard-coded stuff you need to do by yourself. 
+
+## Quick Install
+
+### Using Docker
+
+You can just build it and run it in single command `docker-compose up`
+
+If you want to run in the background: `docker-compose up -d`
+
+## Manual Install
+
+### Database
 
 Prepare the clean database with `utf8mb4` encoding and run it
 
@@ -37,22 +47,18 @@ services:
       - MARIADB_CHARACTER_SET=utf8mb4
       - MARIADB_COLLATE=utf8mb4_general_ci
     volumes:
-      - ./db/data:/var/lib/mysql
+      - data:/var/lib/mysql
 ```
 
-Migrate the schema from [syntony666/discord-bot-database](https://github.com/syntony666/discord-bot-database)
+Migrate the schema
 
 ```bash
-cd discord-database
-
-npm install
-
 npm run migrate
 ```
 
-## Install and Run the bot
+### Install and Run the bot
 
-Node.js 19.6.0+ is required.
+Node.js 18.12.0+ is required.
 
 ```bash
 npm install
