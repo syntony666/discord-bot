@@ -29,11 +29,15 @@ export const GPTCommand: Command = {
       .createChatCompletion({
         model: "gpt-3.5-turbo",
         messages: [
-          { role: "system", content: "使用繁體中文" },
+          {
+            role: "system",
+            content:
+              "You are the well-trained AI model. Please provide a reasonable and complete response, avoiding meaningless piecing together of words to maintain the fluency and coherence of the conversation. Please answer in Traditional Chinese. Thank you.",
+          },
           { role: "user", content: content },
         ],
-        temperature: random(0, 1, true),
-//         max_tokens: 500,
+        temperature: 0.4,
+        //         max_tokens: 500,
       })
       .then((res) => {
         const embed = new EmbedBuilder()
