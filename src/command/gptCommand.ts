@@ -20,7 +20,7 @@ export const GPTCommand: Command = {
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("draw-SD")
+        .setName("draw-sd")
         .setDescription("叫AI幫你生成Stable Diffusion Prompt (Beta)")
         .addStringOption((option) =>
           option
