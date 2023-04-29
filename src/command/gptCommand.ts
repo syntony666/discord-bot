@@ -17,6 +17,17 @@ export const GPTCommand: Command = {
             .setDescription("設定你要跟他說的話")
             .setRequired(true)
         )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("draw-SD")
+        .setDescription("叫AI幫你生成Stable Diffusion Prompt (Beta)")
+        .addStringOption((option) =>
+          option
+            .setName("content")
+            .setDescription("設定你要叫他生成的圖")
+            .setRequired(true)
+        )
     ),
   execute: async (interaction) => {
     const content = interaction.options.get("content")?.value as string;
@@ -25,6 +36,11 @@ export const GPTCommand: Command = {
     });
     const openai = new OpenAIApi(configuration);
     await interaction.deferReply();
+    const systemPrompt = {
+      chat: "You are the well-trained AI model. Please provide a reasonable and complete response, avoiding meaningless piecing together of words to maintain the fluency and coherence of the conversation. Please answer in Traditional Chinese. Thank you.",
+      "draw-SD": `以下是一個繪圖AI的Prompt範例，描繪"穿著透明毛衣的女孩": (best quality) (masterpiece), (highly detailed), original, extremely detailed wallpaper,solo,{beautiful detailed eyes},1girl,full body,turtleneck,ribbed sweater,see-through,wet clothes。 以下是一個繪圖AI的Prompt範例，描繪"圍著浴巾的出浴少女": (best quality) (masterpiece), (highly detailed), original, extremely detailed wallpaper,solo,{beautiful detailed eyes},1girl,full body,(best quality) (masterpiece), (highly detailed), original, extremely detailed wallpaper,solo,1girl,full body,towel,standing,wet hair,wet,naughty face。 以下是一個繪圖AI的Prompt範例，描繪"花田裡的新娘": (best quality) (masterpiece), (highly detailed), original, extremely detailed wallpaper,solo,{beautiful detailed eyes},1girl siting in flower field,{an extremely delicate and beautiful},long pink hair.beautiful and detailed eyes.(a lot of Colorful bubbles).White wedding dress,wedding veil.butterflys flying.Hair fluttering.(smile)。 請根據以上規則，撰寫一個Prompt。`,
+    };
+    const subcommand: string = interaction.options.getSubcommand();
     openai
       .createChatCompletion({
         model: "gpt-3.5-turbo",
@@ -32,7 +48,7 @@ export const GPTCommand: Command = {
           {
             role: "system",
             content:
-              "You are the well-trained AI model. Please provide a reasonable and complete response, avoiding meaningless piecing together of words to maintain the fluency and coherence of the conversation. Please answer in Traditional Chinese. Thank you.",
+              systemPrompt[subcommand as keyof typeof systemPrompt] ?? null,
           },
           { role: "user", content: content },
         ],
