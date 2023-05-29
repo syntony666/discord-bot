@@ -24,7 +24,7 @@ function replyMessages(message: Message) {
     }).then((msg: any) => {
         if (msg !== null) {
             message.reply(msg.response);
-            console.log(`${message.content} ===> ${msg.response}`);
+            console.log(`message responsed: ${message.content}`);
         }
     }).catch(err => { console.log(err) });
 }
