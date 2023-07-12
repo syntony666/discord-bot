@@ -58,7 +58,7 @@ export const GPTCommand: Command = {
       .then((res) => {
         const embed = new EmbedBuilder()
           .setDescription(res.data.choices[0].message?.content ?? null)
-          .setFooter({ text: "Powered by OpenAI GPT-3.5 Turbo" })
+          .setFooter({ text: "Powered by OpenAI GPT-4" })
           .setTimestamp();
         interaction.editReply({ embeds: [embed] });
       })
