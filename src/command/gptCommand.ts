@@ -43,7 +43,7 @@ export const GPTCommand: Command = {
     const subcommand: string = interaction.options.getSubcommand();
     openai
       .createChatCompletion({
-        model: "gpt-4",
+        model: "gpt-3.5-turbo",
         messages: [
           {
             role: "system",
@@ -58,7 +58,7 @@ export const GPTCommand: Command = {
       .then((res) => {
         const embed = new EmbedBuilder()
           .setDescription(res.data.choices[0].message?.content ?? null)
-          .setFooter({ text: "Powered by OpenAI GPT-4" })
+          .setFooter({ text: "Powered by OpenAI GPT-3.5 Turbo" })
           .setTimestamp();
         interaction.editReply({ embeds: [embed] });
       })
