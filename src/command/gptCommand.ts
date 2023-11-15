@@ -43,7 +43,7 @@ export const GPTCommand: Command = {
     const subcommand: string = interaction.options.getSubcommand();
     openai
       .createChatCompletion({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
