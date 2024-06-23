@@ -1,5 +1,6 @@
 import { ApplicationCommandOptionTypes } from "discordeno/types";
 import { BaseCommand } from "../command.interface";
+import { statusCmdHandler } from "./status.cmd-handler";
 
 const statusCmd: BaseCommand = {
   name: "status",
@@ -20,6 +21,6 @@ const statusCmd: BaseCommand = {
       },
     ],
   },
+  handler: statusCmdHandler,
 };
-
-export default statusCmd;
+module.exports = statusCmd;

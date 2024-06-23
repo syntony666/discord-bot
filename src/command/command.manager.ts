@@ -16,7 +16,7 @@ export class CommandManager {
     }).filter((file) => file.endsWith(".cmd.js"));
 
     commandFiles.forEach((file) => {
-      const cmd: BaseCommand = require(path.resolve(__dirname, file)).default;
+      const cmd: BaseCommand = require(path.resolve(__dirname, file));
       if (cmd.scope === "Guild") {
         this.client.helpers.createGlobalApplicationCommand(cmd.data);
       }

@@ -1,14 +1,11 @@
 import { GatewayIntents, createBot, startBot } from "discordeno";
 import { CommandManager } from "./command/command.manager";
+import { EventManager } from "./event/event.manager";
+
+const eventHandlerManager = new EventManager();
 
 const client = createBot({
-  events: {
-    ready(client: any, payload: any) {
-      console.log(
-        `Successfully connected Shard ${payload.shardId} to the gateway`
-      );
-    },
-  },
+  events: eventHandlerManager.getAllEvents(),
   intents: GatewayIntents.Guilds | GatewayIntents.GuildMessages,
   token: process.env.BOT_TOKEN ?? "",
 });
