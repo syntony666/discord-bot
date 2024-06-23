@@ -16,6 +16,7 @@
   "author": "syntony666",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^20.14.8",
     "typescript": "^5.5.2"
   },
   "dependencies": {

@@ -1,4 +1,5 @@
-import { GatewayIntents, Intents, createBot, startBot } from "discordeno";
+import { GatewayIntents, createBot, startBot } from "discordeno";
+import { CommandManager } from "./command/command.manager";
 
 const client = createBot({
   events: {
@@ -8,8 +9,12 @@ const client = createBot({
       );
     },
   },
-  intents: GatewayIntents.Guilds + GatewayIntents.GuildMessages,
+  intents: GatewayIntents.Guilds | GatewayIntents.GuildMessages,
   token: process.env.BOT_TOKEN ?? "",
 });
+
+const commandManager = new CommandManager(client);
+
+commandManager.load();
 
 startBot(client);
