@@ -1,5 +1,8 @@
 # Dependency directory
 node_modules
 
-# database
-database.sqlite
+# output
+dist
+
+# secret
+.env
