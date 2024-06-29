@@ -10,7 +10,7 @@
     "discord-bot"
   ],
   "author": "syntony666",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "devDependencies": {
     "typescript": "^5.5.2"
   }
