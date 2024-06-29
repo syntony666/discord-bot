@@ -10,8 +10,8 @@ const client = createBot({
   token: process.env.BOT_TOKEN ?? "",
 });
 
-const commandManager = new CommandManager(client);
+const commandManager = new CommandManager();
 
-commandManager.load();
+commandManager.load(client);
 
 startBot(client);

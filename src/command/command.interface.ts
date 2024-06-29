@@ -6,5 +6,5 @@ export interface BaseCommand {
   name: string;
   scope: "Guild" | "DM" | "AuthorGuild";
   data: CreateSlashApplicationCommand;
-  handler: (bot: Bot, interaction: Interaction) => Promise<void>;
+  handler: (bot: Bot, interaction: Interaction) => Promise<void | Error>;
 }
