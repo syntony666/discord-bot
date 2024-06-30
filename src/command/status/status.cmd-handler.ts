@@ -7,6 +7,7 @@ import {
 } from "discordeno/types";
 import { CONFIG } from "../../config";
 import { Bot } from "discordeno/*";
+import { AssetsHelpers } from "../../helper/assets.helper";
 
 export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
   if (!interaction.data?.options) {
@@ -31,6 +32,7 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
         },
         footer: {
           text: `ver. ${CONFIG.bot.version}`,
+          iconUrl: "attachment://logo.png",
         },
         timestamp: new Date().getTime(),
         fields: [
@@ -48,6 +50,12 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
       };
       message = {
         embeds: [embed],
+        file: [
+          {
+            blob: AssetsHelpers.logoIcon,
+            name: "logo.png",
+          },
+        ],
         components: [
           {
             type: MessageComponentTypes.ActionRow,
