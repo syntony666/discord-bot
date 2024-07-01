@@ -32,7 +32,7 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
         },
         footer: {
           text: `ver. ${CONFIG.bot.version}`,
-          iconUrl: "attachment://logo.png",
+          iconUrl: AssetsHelpers.logoIcon.getAttachmentURL(),
         },
         timestamp: new Date().getTime(),
         fields: [
@@ -50,12 +50,7 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
       };
       message = {
         embeds: [embed],
-        file: [
-          {
-            blob: AssetsHelpers.logoIcon,
-            name: "logo.png",
-          },
-        ],
+        file: [AssetsHelpers.logoIcon.getFileContent()],
         components: [
           {
             type: MessageComponentTypes.ActionRow,
