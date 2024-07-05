@@ -8,6 +8,8 @@ import {
 import { CONFIG } from "../../config";
 import { Bot } from "discordeno/*";
 import { AssetsHelpers } from "../../helper/assets.helper";
+import { time } from "@discordjs/formatters";
+import { SnowflakeHelper } from "../../helper/snowflake.helper";
 
 export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
   if (!interaction.data?.options) {
@@ -21,6 +23,7 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
     case "bot":
       const botUser = await bot.helpers.getUser(bot.id);
       const ping = await getPing(bot, interaction);
+      console.log(bot.helpers.getAvatarURL(bot.id, botUser.discriminator));
       embed = {
         author: {
           name: "自我介紹",
@@ -43,7 +46,7 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
           },
           {
             name: "Ping",
-            value: `\`${ping}\``,
+            value: `\`${ping}\`ms`,
             inline: true,
           },
         ],
@@ -75,6 +78,7 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
     case "guild":
       if (!interaction.guildId) break;
       const guild = await bot.helpers.getGuild(interaction.guildId);
+      console.log(guild);
       embed = {
         author: {
           name: "伺服器資訊",
@@ -85,17 +89,29 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
         },
         footer: {
           text: `ver. ${CONFIG.bot.version}`,
+          iconUrl: AssetsHelpers.logoIcon.getAttachmentURL(),
         },
         timestamp: new Date().getTime(),
         fields: [
           {
-            name: "test",
-            value: ``,
+            name: "創立時間",
+            value: time(SnowflakeHelper.getCreationTime(guild.id)),
+          },
+          {
+            name: "成員",
+            value: `\`${guild.approximateMemberCount}\`人`,
+            inline: true,
+          },
+          {
+            name: "在線",
+            value: `\`${guild.approximatePresenceCount}\`人`,
+            inline: true,
           },
         ],
       };
       message = {
         embeds: [embed],
+        file: [AssetsHelpers.logoIcon.getFileContent()],
       };
       break;
   }
@@ -112,7 +128,7 @@ function getPing(bot: Bot, interaction: Interaction): Promise<string> {
     bot.helpers
       .sendMessage(interaction.channelId, { content: "Pinging..." })
       .then((message) => {
-        resolve(`${message.timestamp - currentTime.getTime()}ms`);
+        resolve(`${message.timestamp - currentTime.getTime()}`);
         bot.helpers.deleteMessage(message.channelId, message.id);
       });
   });
