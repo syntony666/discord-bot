@@ -23,7 +23,6 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
     case "bot":
       const botUser = await bot.helpers.getUser(bot.id);
       const ping = await getPing(bot, interaction);
-      console.log(bot.helpers.getAvatarURL(bot.id, botUser.discriminator));
       embed = {
         author: {
           name: "自我介紹",
@@ -31,7 +30,9 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
         title: botUser.username,
         description: CONFIG.bot.description,
         thumbnail: {
-          url: bot.helpers.getAvatarURL(bot.id, botUser.discriminator),
+          url: bot.helpers.getAvatarURL(bot.id, botUser.discriminator, {
+            avatar: botUser.avatar,
+          }),
         },
         footer: {
           text: `ver. ${CONFIG.bot.version}`,
