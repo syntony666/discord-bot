@@ -15,12 +15,7 @@ export class MessageReplyDataService {
       attributes: this._attributes,
     });
   }
-  public addData(
-    guild_id: bigint,
-    last_editor_id: bigint,
-    input: string,
-    output: string
-  ) {
+  public addData(guild_id: bigint, last_editor_id: bigint, input: string, output: string) {
     return this._client.create({ guild_id, last_editor_id, input, output });
   }
   public editData(guild_id: bigint, input: string, output: string) {

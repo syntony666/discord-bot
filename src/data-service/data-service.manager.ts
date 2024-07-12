@@ -13,12 +13,7 @@ export class DataServiceManager {
   }
 
   private initSequelize() {
-    return new Sequelize(
-      config.database,
-      config.username,
-      config.password,
-      config
-    );
+    return new Sequelize(config.database, config.username, config.password, config);
   }
 
   public get sequelize(): Sequelize {

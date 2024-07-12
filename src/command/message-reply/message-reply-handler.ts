@@ -1,9 +1,6 @@
 import { Bot } from "discordeno/*";
 import { Interaction, Embed } from "discordeno/transformers";
-import {
-  InteractionCallbackData,
-  InteractionResponseTypes,
-} from "discordeno/types";
+import { InteractionCallbackData, InteractionResponseTypes } from "discordeno/types";
 import { MessageReplyDataService } from "../../data-service/message-reply.data-service";
 import { Op } from "sequelize";
 import { CONFIG } from "../../config";
@@ -25,8 +22,8 @@ export const messageReplyCmdHandler = async (bot: Bot, interaction: Interaction)
   const output = interaction.data.options[0].options.find((option) => option.name === "output")?.value?.toString();
 
   if (operation === "add") {
-    if (!output) {
-      throw new Error("NO OUTPUT");
+    if (!output || !input) {
+      throw new Error("NO OUTPUT OR INPUT");
     }
     const data = await messageReplyDataService.getData(interaction.guildId);
     if (data.length > CONFIG.LIMIT.MAX_MESSAGE_REPLY) {

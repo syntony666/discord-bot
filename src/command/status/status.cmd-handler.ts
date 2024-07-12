@@ -125,11 +125,9 @@ function getPing(bot: Bot, interaction: Interaction): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!interaction.channelId) return "出現未預期錯誤";
     const currentTime = new Date();
-    bot.helpers
-      .sendMessage(interaction.channelId, { content: "Pinging..." })
-      .then((message) => {
-        resolve(`${message.timestamp - currentTime.getTime()}`);
-        bot.helpers.deleteMessage(message.channelId, message.id);
-      });
+    bot.helpers.sendMessage(interaction.channelId, { content: "Pinging..." }).then((message) => {
+      resolve(`${message.timestamp - currentTime.getTime()}`);
+      bot.helpers.deleteMessage(message.channelId, message.id);
+    });
   });
 }

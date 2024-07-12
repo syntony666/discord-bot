@@ -41,21 +41,17 @@ export class CommandManager {
         }
         console.log(error);
         if (interaction.channelId)
-          bot.helpers.sendInteractionResponse(
-            interaction.id,
-            interaction.token,
-            {
-              type: InteractionResponseTypes.ChannelMessageWithSource,
-              data: {
-                embeds: [
-                  {
-                    title: errorTitle,
-                    description: errorMessage,
-                  },
-                ],
-              },
-            }
-          );
+          bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+            type: InteractionResponseTypes.ChannelMessageWithSource,
+            data: {
+              embeds: [
+                {
+                  title: errorTitle,
+                  description: errorMessage,
+                },
+              ],
+            },
+          });
       });
   }
 }
