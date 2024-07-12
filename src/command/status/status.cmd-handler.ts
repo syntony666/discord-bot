@@ -28,14 +28,14 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
           name: "自我介紹",
         },
         title: botUser.username,
-        description: CONFIG.bot.description,
+        description: CONFIG.BOT.description,
         thumbnail: {
           url: bot.helpers.getAvatarURL(bot.id, botUser.discriminator, {
             avatar: botUser.avatar,
           }),
         },
         footer: {
-          text: `ver. ${CONFIG.bot.version}`,
+          text: `ver. ${CONFIG.BOT.version}`,
           iconUrl: AssetsHelpers.logoIcon.attachmentURL,
         },
         timestamp: new Date().getTime(),
@@ -88,7 +88,7 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
           url: bot.helpers.getGuildIconURL(guild.id, guild.icon) ?? "",
         },
         footer: {
-          text: `ver. ${CONFIG.bot.version}`,
+          text: `ver. ${CONFIG.BOT.version}`,
           iconUrl: AssetsHelpers.logoIcon.attachmentURL,
         },
         timestamp: new Date().getTime(),

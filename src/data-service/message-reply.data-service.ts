@@ -1,3 +1,4 @@
+import { WhereOptions } from "sequelize";
 import { MessageReplyModel } from "../data-model/message-reply.data-model";
 import { DataServiceManager } from "./data-service.manager";
 
@@ -8,7 +9,7 @@ export class MessageReplyDataService {
     this._client = new DataServiceManager().getClient(MessageReplyModel);
     this._attributes = ["guild_id", "last_editor_id", "input", "output"];
   }
-  public getData(guild_id: bigint, input?: string) {
+  public getData(guild_id: bigint, input?: string | WhereOptions<any>) {
     return this._client.findAll({
       where: input ? { guild_id, input } : { guild_id },
       attributes: this._attributes,
