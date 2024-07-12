@@ -11,17 +11,17 @@ module.exports = {
           primaryKey: true,
           type: Sequelize.INTEGER,
         },
-        request: {
+        input: {
           allowNull: false,
           type: Sequelize.STRING,
         },
-        response: {
+        output: {
           allowNull: false,
           type: Sequelize.STRING,
         },
         guild_id: {
           allowNull: false,
-          type: Sequelize.STRING,
+          type: Sequelize.BIGINT,
           references: {
             model: "guild",
             key: "id",
@@ -44,7 +44,7 @@ module.exports = {
       })
       .then(() => {
         return queryInterface.addConstraint("message_reply", {
-          fields: ["request", "guild_id"],
+          fields: ["input", "guild_id"],
           type: "unique",
           name: "replyMessageIndex",
         });

@@ -36,7 +36,7 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
         },
         footer: {
           text: `ver. ${CONFIG.bot.version}`,
-          iconUrl: AssetsHelpers.logoIcon.getAttachmentURL(),
+          iconUrl: AssetsHelpers.logoIcon.attachmentURL,
         },
         timestamp: new Date().getTime(),
         fields: [
@@ -54,7 +54,7 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
       };
       message = {
         embeds: [embed],
-        file: [AssetsHelpers.logoIcon.getFileContent()],
+        file: [AssetsHelpers.logoIcon.fileContent],
         components: [
           {
             type: MessageComponentTypes.ActionRow,
@@ -79,7 +79,6 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
     case "guild":
       if (!interaction.guildId) break;
       const guild = await bot.helpers.getGuild(interaction.guildId);
-      console.log(guild);
       embed = {
         author: {
           name: "伺服器資訊",
@@ -90,7 +89,7 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
         },
         footer: {
           text: `ver. ${CONFIG.bot.version}`,
-          iconUrl: AssetsHelpers.logoIcon.getAttachmentURL(),
+          iconUrl: AssetsHelpers.logoIcon.attachmentURL,
         },
         timestamp: new Date().getTime(),
         fields: [
@@ -112,7 +111,7 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
       };
       message = {
         embeds: [embed],
-        file: [AssetsHelpers.logoIcon.getFileContent()],
+        file: [AssetsHelpers.logoIcon.fileContent],
       };
       break;
   }

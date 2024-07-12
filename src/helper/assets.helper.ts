@@ -7,21 +7,21 @@ class Asset {
   constructor(path: string) {
     this.path = path;
   }
-  public getName() {
+  public get name() {
     return this.path.split("/").at(-1) ?? "unknown";
   }
-  public getAttachmentURL() {
-    return `attachment://${this.getName()}`;
+  public get attachmentURL() {
+    return `attachment://${this.name}`;
   }
-  public getBlob() {
+  public get blob() {
     return new Blob([readFileSync(this.path)], {
       type: "image/png",
     });
   }
-  public getFileContent(): FileContent {
+  public get fileContent(): FileContent {
     return {
-      blob: this.getBlob(),
-      name: this.getName(),
+      blob: this.blob,
+      name: this.name,
     };
   }
 }

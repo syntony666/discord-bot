@@ -7,11 +7,11 @@ module.exports = {
       id: {
         allowNull: false,
         primaryKey: true,
-        type: Sequelize.STRING,
+        type: Sequelize.BIGINT,
         unique: true,
       },
       guild_join_cid: {
-        type: Sequelize.STRING,
+        type: Sequelize.BIGINT,
         allowNull: true,
       },
       guild_join_msg: {
@@ -19,7 +19,7 @@ module.exports = {
         allowNull: true,
       },
       guild_leave_cid: {
-        type: Sequelize.STRING,
+        type: Sequelize.BIGINT,
         allowNull: true,
       },
       guild_leave_msg: {
@@ -27,7 +27,7 @@ module.exports = {
         allowNull: true,
       },
       message_delete_cid: {
-        type: Sequelize.STRING,
+        type: Sequelize.BIGINT,
         allowNull: true,
       },
       createdAt: {

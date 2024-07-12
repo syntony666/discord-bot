@@ -12,6 +12,6 @@ const client = createBot({
 
 const commandManager = new CommandManager();
 
-commandManager.load(client);
+// commandManager.load(client);
 
 startBot(client);
