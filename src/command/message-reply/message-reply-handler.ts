@@ -57,6 +57,58 @@ export const messageReplyCmdHandler = async (bot: Bot, interaction: Interaction)
     };
   }
 
+  if (operation === "edit") {
+    if (!output || !input) {
+      throw new Error("NO OUTPUT OR INPUT");
+    }
+    const data = await messageReplyDataService.getData(interaction.guildId, input);
+    if (data.length === 0) {
+      embed = {
+        title: "修改失敗",
+        description: "找不到符合的資料",
+      };
+      message = {
+        embeds: [embed],
+      };
+      return;
+    }
+
+    const oldOutput = data[0].get("output");
+    messageReplyDataService.editData(interaction.guildId, input, output);
+    embed = {
+      title: "修改資料",
+      description: `已修改資料：\n${input}\n${output}\n- 原始回應：${oldOutput}`,
+    };
+    message = {
+      embeds: [embed],
+    };
+  }
+
+  if (operation === "remove") {
+    if (!input) {
+      throw new Error("NO INPUT");
+    }
+    const data = await messageReplyDataService.getData(interaction.guildId, input);
+    if (data.length === 0) {
+      embed = {
+        title: "刪除失敗",
+        description: "找不到符合的資料",
+      };
+      message = {
+        embeds: [embed],
+      };
+      return;
+    }
+    messageReplyDataService.removeData(interaction.guildId, input);
+    embed = {
+      title: "刪除資料",
+      description: `已刪除資料：\n${input}\n${data[0].get("output")}`,
+    };
+    message = {
+      embeds: [embed],
+    };
+  }
+
   if (operation === "list" || operation === "search") {
     const query = input ? { [Op.substring]: input } : undefined;
     const data = await messageReplyDataService.getData(interaction.guildId, query ?? input);
