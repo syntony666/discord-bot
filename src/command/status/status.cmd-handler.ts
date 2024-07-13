@@ -95,7 +95,7 @@ export const statusCmdHandler = async (bot: Bot, interaction: Interaction) => {
         fields: [
           {
             name: "創立時間",
-            value: time(SnowflakeHelper.getCreationTime(guild.id)),
+            value: time(new SnowflakeHelper(guild.id).timestamp),
           },
           {
             name: "成員",

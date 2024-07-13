@@ -4,9 +4,11 @@ import { FileContent } from "discordeno/types";
 
 class Asset {
   private path: string;
+
   constructor(path: string) {
     this.path = path;
   }
+
   public get name() {
     return this.path.split("/").at(-1) ?? "unknown";
   }

@@ -1,6 +1,11 @@
 import { Bot } from "discordeno/*";
 import { Interaction, Embed } from "discordeno/transformers";
-import { InteractionCallbackData, InteractionResponseTypes } from "discordeno/types";
+import {
+  ButtonStyles,
+  InteractionCallbackData,
+  InteractionResponseTypes,
+  MessageComponentTypes,
+} from "discordeno/types";
 import { MessageReplyDataService } from "../../data-service/message-reply.data-service";
 import { Op } from "sequelize";
 import { CONFIG } from "../../config";
@@ -46,14 +51,32 @@ export const messageReplyCmdHandler = async (bot: Bot, interaction: Interaction)
       };
       return;
     }
-    const addResult = await messageReplyDataService.addData(interaction.guildId, interaction.user.id, input, output);
+    // const addResult = await messageReplyDataService.addData(interaction.guildId, interaction.user.id, input, output);
+    // embed = {
+    //   title: "新增資料",
+    //   description: `已新增資料：\n${addResult.get("input")}\n${addResult.get("output")}
+    //   -# 目前關鍵字回應數量: ${data.length + 1}/${CONFIG.LIMIT.MAX_MESSAGE_REPLY}`,
+    // };
     embed = {
       title: "新增資料",
-      description: `已新增資料：\n${addResult.get("input")}\n${addResult.get("output")}
+      description: `已新增資料：\n${input}\n${output}
       -# 目前關鍵字回應數量: ${data.length + 1}/${CONFIG.LIMIT.MAX_MESSAGE_REPLY}`,
     };
     message = {
       embeds: [embed],
+      components: [
+        {
+          type: MessageComponentTypes.ActionRow,
+          components: [
+            {
+              type: MessageComponentTypes.Button,
+              style: ButtonStyles.Primary,
+              label: "確定",
+              customId: "confirm-add-message-reply",
+            },
+          ],
+        },
+      ],
     };
   }
 
@@ -130,21 +153,6 @@ export const messageReplyCmdHandler = async (bot: Bot, interaction: Interaction)
     message = {
       embeds: [embed],
     };
-  }
-
-  switch (interaction.data?.options[0].name) {
-    case "add":
-      break;
-    case "edit":
-      break;
-    case "remove":
-      break;
-    case "list":
-      break;
-    case "search":
-      break;
-    default:
-      break;
   }
 
   bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
