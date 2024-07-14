@@ -1,4 +1,4 @@
-import { EventHandlers } from "discordeno/*";
+import { EventHandlers } from "@discordeno/bot";
 import { readdirSync } from "fs";
 import path from "path";
 

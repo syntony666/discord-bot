@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionTypes } from "discordeno/types";
+import { ApplicationCommandOptionTypes } from "@discordeno/bot";
 import { BaseCommand } from "../command.interface";
 import { statusCmdHandler } from "./status.cmd-handler";
 

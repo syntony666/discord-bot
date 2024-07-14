@@ -1,9 +1,7 @@
 import { readdirSync } from "fs";
 import path from "path";
 import { BaseCommand } from "./command.interface";
-import { Bot } from "discordeno/*";
-import { Interaction } from "discordeno/transformers";
-import { InteractionResponseTypes } from "discordeno/types";
+import { Bot, Interaction, InteractionResponseTypes } from "@discordeno/bot";
 
 export class CommandManager {
   private commandFiles: string[];
@@ -22,14 +20,14 @@ export class CommandManager {
       }
     });
   }
-  public run(name: string | undefined, bot: Bot, interaction: Interaction) {
+  public run(name: string | undefined, interaction: Interaction) {
     if (!name) {
       return;
     }
     this.commandFiles
       .map((file) => require(path.resolve(__dirname, file)))
       .find((command) => command.name === name)
-      .handler(bot, interaction)
+      .handler(interaction)
       .catch((error: unknown) => {
         let errorTitle: string | undefined;
         let errorMessage = "Unknown Error";
@@ -41,7 +39,7 @@ export class CommandManager {
         }
         console.log(error);
         if (interaction.channelId)
-          bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+          interaction.bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
             type: InteractionResponseTypes.ChannelMessageWithSource,
             data: {
               embeds: [

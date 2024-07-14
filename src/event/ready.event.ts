@@ -1,8 +1,8 @@
-import { EventHandlers } from "discordeno/*";
+import { EventHandlers } from "@discordeno/bot";
 import { GuildDataService } from "../data-service/guild.data-service";
 
 export const ready: Partial<EventHandlers> = {
-  async ready(bot, payload, rawPayload) {
+  async ready(payload, rawPayload) {
     await prepareDatabase(payload.guilds);
     console.info(`Successfully connected Shard ${payload.shardId} to the gateway`);
   },

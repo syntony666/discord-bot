@@ -1,10 +1,8 @@
-import { Bot } from "discordeno/*";
-import { Interaction } from "discordeno/transformers";
-import { CreateSlashApplicationCommand } from "discordeno/types";
+import { CreateSlashApplicationCommand, Bot, Interaction } from "@discordeno/bot";
 
 export interface BaseCommand {
   name: string;
   scope: "Guild" | "DM" | "AuthorGuild";
   data: CreateSlashApplicationCommand;
-  handler: (bot: Bot, interaction: Interaction) => Promise<void | Error>;
+  handler: (interaction: Interaction) => Promise<void | Error>;
 }

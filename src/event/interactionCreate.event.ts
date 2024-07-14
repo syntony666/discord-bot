@@ -1,11 +1,10 @@
-import { EventHandlers } from "discordeno/*";
+import { EventHandlers } from "@discordeno/bot";
 import { CommandManager } from "../command/command.manager";
 
 export const interactionCreate: Partial<EventHandlers> = {
-  interactionCreate(bot, interaction) {
-    console.log("interactionCreate", interaction);
+  interactionCreate(interaction) {
     const commandManager = new CommandManager();
-    commandManager.run(interaction.data?.name, bot, interaction);
+    commandManager.run(interaction.data?.name, interaction);
   },
 };
 

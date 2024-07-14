@@ -1,6 +1,5 @@
 import { readFileSync } from "fs";
-import { Blob } from "buffer";
-import { FileContent } from "discordeno/types";
+import { FileContent } from "@discordeno/bot";
 
 class Asset {
   private path: string;

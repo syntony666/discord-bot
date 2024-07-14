@@ -1,4 +1,4 @@
-const DISCORD_EPOCH = 1420070400000; // Discord 紀元 (2015-01-01T00:00:00Z)
+const DISCORD_EPOCH = 1420070400000n; // Discord 紀元 (2015-01-01T00:00:00Z)
 
 export class SnowflakeHelper {
   private _snowflake: bigint;
@@ -8,7 +8,7 @@ export class SnowflakeHelper {
   }
 
   public get timestamp() {
-    return Number(this._snowflake >> 22n) + DISCORD_EPOCH;
+    return Number(((this._snowflake >> 22n) + DISCORD_EPOCH) / 1000n);
   }
 
   public get workerId() {

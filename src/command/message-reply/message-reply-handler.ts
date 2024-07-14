@@ -1,16 +1,17 @@
-import { Bot } from "discordeno/*";
-import { Interaction, Embed } from "discordeno/transformers";
-import {
-  ButtonStyles,
-  InteractionCallbackData,
-  InteractionResponseTypes,
-  MessageComponentTypes,
-} from "discordeno/types";
 import { MessageReplyDataService } from "../../data-service/message-reply.data-service";
 import { Op } from "sequelize";
 import { CONFIG } from "../../config";
+import {
+  Bot,
+  Interaction,
+  InteractionCallbackData,
+  MessageFlags,
+  MessageComponentTypes,
+  ButtonStyles,
+  InteractionResponseTypes,
+} from "@discordeno/bot";
 
-export const messageReplyCmdHandler = async (bot: Bot, interaction: Interaction) => {
+export const messageReplyCmdHandler = async (interaction: Interaction) => {
   if (!interaction.data?.options || !interaction.data.options[0].options) {
     throw new Error("NO DATA");
   }
@@ -18,7 +19,7 @@ export const messageReplyCmdHandler = async (bot: Bot, interaction: Interaction)
     throw new Error("NO GUILD ID");
   }
 
-  let embed: Embed = {};
+  let embed: InteractionCallbackData["embeds"] | undefined;
   let message: InteractionCallbackData = {};
 
   const messageReplyDataService = new MessageReplyDataService();
@@ -32,22 +33,27 @@ export const messageReplyCmdHandler = async (bot: Bot, interaction: Interaction)
     }
     const data = await messageReplyDataService.getData(interaction.guildId);
     if (data.length > CONFIG.LIMIT.MAX_MESSAGE_REPLY) {
-      embed = {
-        title: "新增失敗",
-        description: `已超過最大回應數量：${CONFIG.LIMIT.MAX_MESSAGE_REPLY}`,
-      };
+      embed = [
+        {
+          title: "新增失敗",
+          description: `已超過最大回應數量：${CONFIG.LIMIT.MAX_MESSAGE_REPLY}`,
+        },
+      ];
       message = {
-        embeds: [embed],
+        embeds: embed,
+        flags: MessageFlags.Ephemeral,
       };
       return;
     }
     if (data.find((item) => item.get("input") === input)) {
-      embed = {
-        title: "新增失敗",
-        description: "已有相同的關鍵字回應，請使用 `/message-reply edit` 指令修改",
-      };
+      embed = [
+        {
+          title: "新增失敗",
+          description: "已有相同的關鍵字回應，請使用 `/message-reply edit` 指令修改",
+        },
+      ];
       message = {
-        embeds: [embed],
+        embeds: embed,
       };
       return;
     }
@@ -57,13 +63,15 @@ export const messageReplyCmdHandler = async (bot: Bot, interaction: Interaction)
     //   description: `已新增資料：\n${addResult.get("input")}\n${addResult.get("output")}
     //   -# 目前關鍵字回應數量: ${data.length + 1}/${CONFIG.LIMIT.MAX_MESSAGE_REPLY}`,
     // };
-    embed = {
-      title: "新增資料",
-      description: `已新增資料：\n${input}\n${output}
+    embed = [
+      {
+        title: "新增資料",
+        description: `已新增資料：\n${input}\n${output}
       -# 目前關鍵字回應數量: ${data.length + 1}/${CONFIG.LIMIT.MAX_MESSAGE_REPLY}`,
-    };
+      },
+    ];
     message = {
-      embeds: [embed],
+      embeds: embed,
       components: [
         {
           type: MessageComponentTypes.ActionRow,
@@ -86,24 +94,28 @@ export const messageReplyCmdHandler = async (bot: Bot, interaction: Interaction)
     }
     const data = await messageReplyDataService.getData(interaction.guildId, input);
     if (data.length === 0) {
-      embed = {
-        title: "修改失敗",
-        description: "找不到符合的資料",
-      };
+      embed = [
+        {
+          title: "修改失敗",
+          description: "找不到符合的資料",
+        },
+      ];
       message = {
-        embeds: [embed],
+        embeds: embed,
       };
       return;
     }
 
     const oldOutput = data[0].get("output");
     messageReplyDataService.editData(interaction.guildId, input, output);
-    embed = {
-      title: "修改資料",
-      description: `已修改資料：\n${input}\n${output}\n- 原始回應：${oldOutput}`,
-    };
+    embed = [
+      {
+        title: "修改資料",
+        description: `已修改資料：\n${input}\n${output}\n- 原始回應：${oldOutput}`,
+      },
+    ];
     message = {
-      embeds: [embed],
+      embeds: embed,
     };
   }
 
@@ -113,22 +125,26 @@ export const messageReplyCmdHandler = async (bot: Bot, interaction: Interaction)
     }
     const data = await messageReplyDataService.getData(interaction.guildId, input);
     if (data.length === 0) {
-      embed = {
-        title: "刪除失敗",
-        description: "找不到符合的資料",
-      };
+      embed = [
+        {
+          title: "刪除失敗",
+          description: "找不到符合的資料",
+        },
+      ];
       message = {
-        embeds: [embed],
+        embeds: embed,
       };
       return;
     }
     messageReplyDataService.removeData(interaction.guildId, input);
-    embed = {
-      title: "刪除資料",
-      description: `已刪除資料：\n${input}\n${data[0].get("output")}`,
-    };
+    embed = [
+      {
+        title: "刪除資料",
+        description: `已刪除資料：\n${input}\n${data[0].get("output")}`,
+      },
+    ];
     message = {
-      embeds: [embed],
+      embeds: embed,
     };
   }
 
@@ -136,26 +152,30 @@ export const messageReplyCmdHandler = async (bot: Bot, interaction: Interaction)
     const query = input ? { [Op.substring]: input } : undefined;
     const data = await messageReplyDataService.getData(interaction.guildId, query ?? input);
     if (data.length === 0) {
-      embed = {
-        title: "查無資料",
-        description: "找不到符合的資料",
-      };
+      embed = [
+        {
+          title: "查無資料",
+          description: "找不到符合的資料",
+        },
+      ];
     } else {
-      embed = {
-        title: "資料列表",
-        fields: data.map((item) => ({
-          name: `${item.get("input")}`,
-          value: `${item.get("output")}
+      embed = [
+        {
+          title: "資料列表",
+          fields: data.map((item) => ({
+            name: `${item.get("input")}`,
+            value: `${item.get("output")}
           - <@${item.get("last_editor_id")}>`,
-        })),
-      };
+          })),
+        },
+      ];
     }
     message = {
-      embeds: [embed],
+      embeds: embed,
     };
   }
 
-  bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+  interaction.bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
     type: InteractionResponseTypes.ChannelMessageWithSource,
     data: message,
   });

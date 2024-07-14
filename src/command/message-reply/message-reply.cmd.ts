@@ -1,6 +1,5 @@
-import { ApplicationCommandOptionTypes } from "discordeno/types";
+import { ApplicationCommandOption, ApplicationCommandOptionTypes } from "@discordeno/bot";
 import { BaseCommand } from "../command.interface";
-import { ApplicationCommandOption } from "discordeno/transformers";
 import { messageReplyCmdHandler } from "./message-reply-handler";
 
 const inputOptions: ApplicationCommandOption = {
