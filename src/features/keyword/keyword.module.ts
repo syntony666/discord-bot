@@ -12,7 +12,7 @@ export interface CreateKeywordRuleInput {
 export interface KeywordModule {
   getRulesByGuild$(guildId: string): Observable<KeywordRule[]>;
   createRule$(input: CreateKeywordRuleInput): Observable<KeywordRule>;
-  deleteRule$(id: string): Observable<void>;
+  deleteRule$(guildId: string, pattern: string): Observable<void>;
 }
 
 export function createKeywordModule(prisma: PrismaClient): KeywordModule {
@@ -51,10 +51,17 @@ export function createKeywordModule(prisma: PrismaClient): KeywordModule {
       });
     },
 
-    deleteRule$(id: string): Observable<void> {
+    deleteRule$(guildId: string, pattern: string): Observable<void> {
       return new Observable<void>((subscriber) => {
         prisma.keywordRule
-          .delete({ where: { id } })
+          .delete({
+            where: {
+              guildId_pattern: {
+                guildId,
+                pattern,
+              },
+            },
+          })
           .then(() => {
             subscriber.next();
             subscriber.complete();

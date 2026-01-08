@@ -14,14 +14,15 @@ datasource db {
 }
 
 model KeywordRule {
-  id        String           @id @default(cuid())
   guildId   String
   pattern   String
   matchType KeywordMatchType
   response  String
-  enabled   Boolean          @default(true)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([guildId, pattern])
 }
 
 enum KeywordMatchType {

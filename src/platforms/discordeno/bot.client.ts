@@ -5,10 +5,13 @@ import {
   DesiredPropertiesBehavior,
   type Message,
   CompleteDesiredProperties,
+  Interaction,
+  createRestManager,
+  RestManager,
 } from '@discordeno/bot';
 import { config } from '@core/config';
 import { createLogger } from '@core/logger';
-import { messageCreate$ } from '@core/rx/bus';
+import { interactionCreate$, messageCreate$ } from '@core/rx/bus';
 
 const log = createLogger('DiscordenoBot');
 
@@ -25,6 +28,11 @@ const rawDesiredProperties = createDesiredPropertiesObject(
       id: true,
       username: true,
       toggles: true,
+    },
+    interaction: {
+      type: true,
+      id: true,
+      token: true,
     },
   },
   true
@@ -48,17 +56,26 @@ export function createBotClient() {
       ready(_bot, payload) {
         log.info({ user: payload.user }, 'Bot is ready');
       },
-      messageCreate(message: Message) {
-        messageCreate$.next(message as any);
+      messageCreate(message) {
+        messageCreate$.next(message);
+      },
+      interactionCreate(interaction) {
+        interactionCreate$.next(interaction);
       },
     },
   });
 
   async function start() {
-    bot.start();
+    log.info('Starting Discordeno bot...');
+    await bot.start();
+    log.info('Discordeno bot.start() resolved');
   }
 
-  return { bot, start };
+  const rest = createRestManager({
+    token: config.discordToken,
+  });
+
+  return { bot, rest, start };
 }
 
 export type { BotDesiredProperties };

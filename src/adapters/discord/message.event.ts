@@ -3,13 +3,11 @@ import { messageCreate$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import type { KeywordService } from '@features/keyword/keyword.service';
 import { lastValueFrom } from 'rxjs';
+import { Bot } from '@discordeno/bot';
 
 const log = createLogger('MessageHandler');
 
-export function registerMessageHandler(
-  bot: { id: bigint; helpers: { sendMessage: Function } },
-  keywordService: KeywordService
-) {
+export function registerMessageHandler(bot: Bot, keywordService: KeywordService) {
   messageCreate$.subscribe(async (message: BotMessage) => {
     try {
       if (!message.guildId) return;
