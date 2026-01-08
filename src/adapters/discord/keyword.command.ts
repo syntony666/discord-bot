@@ -2,6 +2,8 @@ import type { KeywordModule } from '@features/keyword/keyword.module';
 import type { Bot } from '@discordeno/bot';
 import { KeywordMatchType } from '@prisma-client/client';
 import { lastValueFrom } from 'rxjs';
+import { paginateTextList } from './paginator/paginator.helper';
+import { embedReplyHelper } from './embedReply.helper';
 
 export function createKeywordCommandHandler(bot: Bot, module: KeywordModule) {
   return async (interaction: any) => {
@@ -32,11 +34,13 @@ export function createKeywordCommandHandler(bot: Bot, module: KeywordModule) {
         })
       );
 
-      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-        type: 4,
-        data: {
-          content: 'Keyword rule added.',
-        },
+      await embedReplyHelper({
+        bot,
+        interaction,
+        title: 'Keyword',
+        description: 'Keyword rule added.',
+        color: 0x57f287,
+        timestamp: true,
       });
     }
 
@@ -45,12 +49,16 @@ export function createKeywordCommandHandler(bot: Bot, module: KeywordModule) {
       if (!guildId) return;
 
       const rules = await lastValueFrom(module.getRulesByGuild$(guildId));
-      const lines = rules.map((r) => `\`[${r.matchType}]\` ${r.pattern} -> ${r.response}`);
-      const content = lines.length ? lines.join('\n') : 'No keyword rules.';
 
-      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-        type: 4,
-        data: { content },
+      await paginateTextList({
+        bot,
+        interaction,
+        items: rules,
+        title: (pageIndex, totalPages) => `Keyword rules`,
+        mapItem: (r) => `\`${r.matchType}\` **${r.pattern}** ⭢ ${r.response}\n`,
+        emptyText: 'No keyword rules.',
+        pageSize: 10,
+        userId: interaction.user?.id?.toString(),
       });
     }
 
@@ -61,11 +69,13 @@ export function createKeywordCommandHandler(bot: Bot, module: KeywordModule) {
 
       await lastValueFrom(module.deleteRule$(guildId, pattern));
 
-      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-        type: 4,
-        data: {
-          content: `Keyword rule for pattern \`${pattern}\` deleted.`,
-        },
+      await embedReplyHelper({
+        bot,
+        interaction,
+        title: 'Keyword',
+        description: `Keyword rule for pattern \`${pattern}\` deleted.`,
+        color: 0x57f287,
+        timestamp: true,
       });
     }
   };
