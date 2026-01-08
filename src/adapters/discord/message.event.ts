@@ -1,4 +1,3 @@
-// src/adapters/discord/message.event.ts
 import type { BotMessage } from '@core/rx/bus';
 import { messageCreate$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';

@@ -1,4 +1,3 @@
-// src/platforms/discordeno/bot.client.ts
 import {
   createBot,
   Intents,

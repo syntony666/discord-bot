@@ -1,4 +1,4 @@
-import type { KeywordRule, KeywordMatchType } from '@prisma-client/client';
+import type { KeywordRule } from '@prisma-client/client';
 import type { KeywordModule } from './keyword.module';
 import { Observable, of, map, switchMap } from 'rxjs';
 import { createSignal } from '@core/signals/signal';

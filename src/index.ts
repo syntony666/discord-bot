@@ -1,5 +1,3 @@
-// src/index.ts
-import 'dotenv/config';
 import { config } from '@core/config';
 import { logger } from '@core/logger';
 import { prisma, connectPrisma } from '@platforms/database/prisma.client';
