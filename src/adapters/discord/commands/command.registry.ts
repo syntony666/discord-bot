@@ -3,6 +3,7 @@ import { interactionCreate$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { Subscription } from 'rxjs';
 import type { BotInteraction } from '@core/rx/bus';
+import { errorReply } from '@adapters/discord/shared/reply.helper';
 
 const log = createLogger('CommandRegistry');
 
@@ -26,6 +27,7 @@ class CommandRegistry {
   activate(bot: Bot): void {
     this.subscription = interactionCreate$.subscribe(async (interaction) => {
       try {
+        // Handle component interactions (buttons, etc.)
         if (interaction.data?.customId) {
           for (const [prefix, handler] of this.customIdHandlers.entries()) {
             if (interaction.data.customId.startsWith(prefix)) {
@@ -35,14 +37,23 @@ class CommandRegistry {
           }
         }
 
+        // Handle slash commands
         if (interaction.type === 2 && interaction.data?.name) {
           const handler = this.commands.get(interaction.data.name);
           if (handler) {
             await handler(interaction, bot);
+          } else {
+            log.warn({ commandName: interaction.data.name }, 'Unknown command received');
           }
         }
       } catch (error) {
-        log.error({ error }, 'Error handling interaction');
+        log.error({ error, interaction: interaction.data }, 'Unhandled error in command handler');
+
+        // 嘗試回應錯誤給用戶
+        await errorReply(bot, interaction, {
+          description: 'An unexpected error occurred. Please try again later.',
+          ephemeral: true,
+        });
       }
     });
 

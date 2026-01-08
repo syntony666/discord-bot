@@ -1,10 +1,12 @@
-import { createLogger } from 'core/logger';
+import { createLogger } from '@core/logger';
 import type { PageRenderer, PageRenderResult, PaginatorSession } from './paginator.types';
 import { PaginatorSessionRepository } from './paginator.repository';
 import { reducePaginatorState, type PaginatorState, type PaginatorEvent } from './paginator.state';
 import { parsePaginatorAction, type PaginatorAction } from './paginator.actions';
 import { buildPaginatorResponse } from './paginator.ui';
+import { errorReply } from '../reply.helper';
 import type { Bot } from '@discordeno/bot';
+import type { BotInteraction } from '@core/rx/bus';
 
 const log = createLogger('Paginator');
 
@@ -62,13 +64,18 @@ export class PaginatorService {
       totalPages,
     });
 
-    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-      type: 4,
-      data,
-    });
+    try {
+      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+        type: 4,
+        data,
+      });
 
-    this.repo.save(session);
-    return sessionId;
+      this.repo.save(session);
+      return sessionId;
+    } catch (error) {
+      log.error({ error, sessionId }, 'Failed to create paginator');
+      throw error;
+    }
   }
 
   private buildPages<T>(
@@ -92,43 +99,67 @@ export class PaginatorService {
     return pages;
   }
 
-  private async replyEphemeral(bot: Bot, interaction: any, content: string) {
-    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-      type: 4,
-      data: { content, flags: 64 },
-    });
+  /**
+   * 更新原訊息並移除按鈕（用於過期訊息）
+   */
+  private async updateMessageAsExpired(bot: Bot, interaction: BotInteraction): Promise<void> {
+    try {
+      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+        type: 7, // UPDATE_MESSAGE
+        data: {
+          embeds: [
+            {
+              description: '❌ This paginator has expired.',
+              color: 0xe6161a,
+            },
+          ],
+          components: [], // 移除所有按鈕
+        },
+      });
+    } catch (error) {
+      log.error({ error }, 'Failed to update expired paginator');
+    }
   }
 
-  private async replyReplace(bot: Bot, interaction: any, content: string) {
-    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-      type: 7,
-      data: { content, embeds: [], components: [] },
-    });
-  }
-
-  async handleButton(bot: Bot, interaction: any): Promise<void> {
+  async handleButton(bot: Bot, interaction: BotInteraction): Promise<void> {
     const customId: string | undefined = interaction.data?.customId;
-    if (!customId) return;
+    if (!customId) {
+      log.warn('Button interaction without customId');
+      return;
+    }
 
     const parsed = parsePaginatorAction(customId);
-    if (!parsed) return;
+    if (!parsed) {
+      log.warn({ customId }, 'Invalid paginator customId format');
+      return;
+    }
 
     const { sessionId, action } = parsed;
     const session = this.repo.get(sessionId);
+
+    // Session 不存在 - 使用 ephemeral 訊息
     if (!session) {
-      await this.replyEphemeral(bot, interaction, 'This paginator has expired.');
+      await errorReply(bot, interaction, {
+        description: 'This paginator has expired.',
+        ephemeral: true,
+      });
       return;
     }
 
     const now = Date.now();
+    // Session 過期 - 更新原訊息並移除按鈕
     if (session.expiresAt <= now) {
       this.repo.delete(sessionId);
-      await this.replyReplace(bot, interaction, 'This paginator has expired.');
+      await this.updateMessageAsExpired(bot, interaction);
       return;
     }
 
+    // 權限檢查 - 使用 ephemeral 訊息
     if (session.userId && interaction.user?.id?.toString() !== session.userId) {
-      await this.replyEphemeral(bot, interaction, 'You cannot control this paginator.');
+      await errorReply(bot, interaction, {
+        description: 'You cannot control this paginator.',
+        ephemeral: true,
+      });
       return;
     }
 
@@ -149,8 +180,14 @@ export class PaginatorService {
     this.repo.save(updated);
 
     const page = updated.pages[updated.currentPage];
+
+    // 頁面不存在 - 使用 ephemeral 訊息
     if (!page) {
       log.error({ sessionId, currentPage: updated.currentPage }, 'Paginator page not found');
+      await errorReply(bot, interaction, {
+        description: 'An error occurred. Please try again.',
+        ephemeral: true,
+      });
       return;
     }
 
@@ -161,9 +198,13 @@ export class PaginatorService {
       totalPages: updated.totalPages,
     });
 
-    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-      type: 7,
-      data,
-    });
+    try {
+      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+        type: 7, // UPDATE_MESSAGE
+        data,
+      });
+    } catch (error) {
+      log.error({ error, sessionId }, 'Failed to update paginator');
+    }
   }
 }

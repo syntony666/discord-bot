@@ -42,8 +42,16 @@ export function setupKeywordFeature(prisma: PrismaClient, bot: Bot): KeywordFeat
         await bot.helpers.sendMessage(message.channelId, {
           content: match.rule.response,
         });
-      } catch (error) {
-        log.error({ error }, 'Error handling keyword message');
+      } catch (error: any) {
+        // 處理發送訊息權限錯誤
+        if (error.code === 50013 || error.code === 50001) {
+          log.warn(
+            { channelId: message.channelId, error: error.message },
+            'Missing permission to send keyword response'
+          );
+        } else {
+          log.error({ error, messageId: message.id }, 'Error handling keyword message');
+        }
       }
     });
 
