@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { RestManager } from '@discordeno/rest';
 import { createLogger } from '@core/logger';
-import { config } from '@core/config';
+import { appConfig } from '@core/config';
 
 const log = createLogger('CommandsLoader');
 
@@ -13,13 +13,9 @@ export async function registerApplicationCommands(rest: RestManager) {
 
   log.info({ count: commands.length }, 'Registering application commands');
 
-  await rest.put(
-    // 全域指令
-    `/applications/${config.discordAppId}/commands`,
-    {
-      body: commands,
-    }
-  );
+  await rest.put(`/applications/${appConfig.discord.appId}/commands`, {
+    body: commands,
+  });
 
   log.info('Application commands registered');
 }
