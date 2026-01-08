@@ -1,17 +1,27 @@
+// src/index.ts
+import 'dotenv/config';
 import { config } from '@core/config';
 import { logger } from '@core/logger';
-import { connectPrisma } from '@platforms/database/prisma.client';
+import { prisma, connectPrisma } from '@platforms/database/prisma.client';
 import { createBotClient } from '@platforms/discordeno/bot.client';
+
+import { createKeywordModule } from '@features/keyword/keyword.module';
+import { createKeywordService } from '@features/keyword/keyword.service';
+import { registerMessageHandler } from '@adapters/discord/message.event';
 
 async function main() {
   logger.info({ env: config.nodeEnv }, 'Starting bot');
 
   await connectPrisma();
 
-  const client = createBotClient();
-  await client.start();
+  const keywordModule = createKeywordModule(prisma);
+  const keywordService = createKeywordService(keywordModule);
 
-  logger.info('Bot start requested');
+  const { bot, start } = createBotClient();
+
+  registerMessageHandler(bot, keywordService);
+
+  await start();
 }
 
 main().catch((error) => {

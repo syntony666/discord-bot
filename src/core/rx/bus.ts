@@ -1,6 +1,12 @@
 import { Subject } from 'rxjs';
-import { Bot, handleMessageCreate } from '@discordeno/bot';
+import type { SetupDesiredProps, Message } from '@discordeno/bot';
+import type { DesiredPropertiesBehavior } from '@discordeno/bot';
+import { BotDesiredProperties } from '@platforms/discordeno/bot.client';
 
-type MessageCreateEvent = Parameters<NonNullable<Bot['events']['messageCreate']>>[0];
+export type BotMessage = SetupDesiredProps<
+  Message,
+  BotDesiredProperties,
+  DesiredPropertiesBehavior.RemoveKey
+>;
 
-export const messageCreate$ = new Subject<MessageCreateEvent>();
+export const messageCreate$ = new Subject<BotMessage>();
