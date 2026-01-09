@@ -333,6 +333,173 @@ await replyAutoError(bot, interaction, error, {
 - **Commands**: `*.command.ts`
 - **Types**: `*.types.ts`
 
+### 6. JSDoc & Comments
+
+#### What to Document
+
+**DO** document:
+- **Public APIs**: All exported functions, classes, interfaces
+- **Complex logic**: Business rules that aren't self-explanatory
+- **Constraints**: When/why parameters have specific requirements
+- **Side effects**: State mutations, I/O operations, event emissions
+
+**DON'T** document:
+- **Self-explanatory code**: `getUserById(id)` doesn't need explanation
+- **Implementation details**: How it works internally (let code speak)
+- **Obvious patterns**: Standard getters/setters, CRUD operations
+- **TODOs in production**: Use issue tracker instead
+
+#### JSDoc Format
+
+```typescript
+/**
+ * Strategy interface for rendering paginated items.
+ * Implement this to create custom page layouts.
+ */
+export interface PageRenderer<T> {
+  /**
+   * Render a page of items into Discord embed format.
+   * 
+   * @param items - Slice of items to display on current page
+   * @param pageIndex - Zero-based page index
+   * @param totalPages - Total number of pages available
+   * @returns Discord embed and components for the page
+   */
+  renderPage(items: T[], pageIndex: number, totalPages: number): PageRenderResult;
+}
+```
+
+#### Inline Comments Style
+
+```typescript
+// ❌ BAD: States the obvious
+const guildId = interaction.guildId?.toString();
+if (!guildId) return; // Check if guildId exists
+
+// ✅ GOOD: Explains WHY
+const guildId = interaction.guildId?.toString();
+// Commands only work in guilds, not DMs
+if (!guildId) return;
+```
+
+```typescript
+// ❌ BAD: Describes WHAT code does
+// Loop through all rules
+for (const rule of rules) {
+  // Check if pattern matches
+  if (applyMatch(rule, content)) {
+    // Return the matched rule
+    return rule;
+  }
+}
+
+// ✅ GOOD: No comments needed - code is self-explanatory
+for (const rule of rules) {
+  if (applyMatch(rule, content)) {
+    return rule;
+  }
+}
+```
+
+```typescript
+// ✅ GOOD: Explains business constraint
+// TTL must refresh on each interaction to prevent mid-use expiration
+const newState = reducePaginatorState(prevState, event, now, this.ttlMs);
+```
+
+#### Function Documentation
+
+```typescript
+// ❌ BAD: Over-documented simple function
+/**
+ * Delete a keyword rule
+ * @param guildId - The guild ID
+ * @param pattern - The pattern to delete
+ * @returns Observable that completes when deleted
+ */
+deleteRule$(guildId: string, pattern: string): Observable<void>;
+
+// ✅ GOOD: Only document when adding value
+/**
+ * Delete keyword rule by composite key.
+ * Throws NotFoundError if pattern doesn't exist in guild.
+ */
+deleteRule$(guildId: string, pattern: string): Observable<void>;
+```
+
+#### Class/Module Documentation
+
+```typescript
+/**
+ * Manages paginator session lifecycle and button interactions.
+ * 
+ * Sessions expire after 30 seconds of inactivity and are automatically
+ * cleaned up. Only the user who initiated the paginator can control it.
+ */
+export class PaginatorButtonStrategy {
+  // Implementation...
+}
+```
+
+#### Error Handling Comments
+
+```typescript
+// ✅ Explain error handling strategy
+try {
+  await lastValueFrom(module.createRule$(input));
+} catch (error) {
+  // Map Prisma unique constraint to user-friendly message
+  await replyAutoError(bot, interaction, error, {
+    duplicate: `關鍵字 \`${pattern}\` 已經存在`,
+  });
+}
+```
+
+#### When NOT to Comment
+
+```typescript
+// ❌ Don't explain obvious code
+const rules = await getRulesByGuild(guildId); // Get rules from database
+
+// ❌ Don't describe language features
+const { pattern, response } = input; // Destructure input object
+
+// ❌ Don't comment out code - delete it
+// const oldImplementation = () => { ... };
+
+// ❌ Don't leave TODOs in production
+// TODO: Add rate limiting (use GitHub issues instead)
+```
+
+#### Comments for Complex Logic
+
+```typescript
+/**
+ * Apply match based on rule type.
+ * 
+ * EXACT: Both sides trimmed, case-sensitive comparison
+ * CONTAINS: Case-sensitive substring match
+ */
+function applyMatch(rule: KeywordRule, content: string): boolean {
+  const text = content.trim();
+  const pattern = rule.pattern.trim();
+
+  if (rule.matchType === 'EXACT') return text === pattern;
+  if (rule.matchType === 'CONTAINS') return text.includes(pattern);
+  
+  return false;
+}
+```
+
+#### General Guidelines
+
+1. **Write self-documenting code first** - Good names > comments
+2. **Comment WHY, not WHAT** - Code shows what, comments explain why
+3. **Keep comments updated** - Outdated comments are worse than no comments
+4. **Use JSDoc for APIs** - Enables IDE IntelliSense
+5. **Avoid redundant comments** - Don't restate the code
+6. **Explain constraints** - Document business rules and limitations
+
 ## 🔄 Bootstrap Flow
 
 ```typescript

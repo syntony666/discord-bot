@@ -151,13 +151,13 @@ export class PaginatorButtonStrategy {
           title: '跳轉至指定頁面',
           components: [
             {
-              type: 1, // Action Row
+              type: 1,
               components: [
                 {
-                  type: 4, // Text Input
+                  type: 4,
                   customId: 'page_number',
                   label: '頁碼',
-                  style: 1, // Short
+                  style: 1,
                   placeholder: `請輸入 1-${session.totalPages} 之間的數字`,
                   required: true,
                   minLength: 1,
