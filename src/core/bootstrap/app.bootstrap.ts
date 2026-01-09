@@ -4,10 +4,9 @@ import { PrismaClient } from '@prisma-client/client';
 import { setupKeywordFeature } from '@features/keyword/keyword.feature';
 import { registerApplicationCommands } from '@platforms/discordeno/commands-loader';
 import { commandRegistry } from '@adapters/discord/commands/command.registry';
-import { PaginatorService } from '@adapters/discord/shared/paginator/paginator.service';
-import { PaginatorSessionRepository } from '@adapters/discord/shared/paginator/paginator.repository';
 import { ready$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
+import { PaginatorButtonStrategy } from '@adapters/discord/shared/paginator/strategy/paginator-button.strategy';
 
 const log = createLogger('Bootstrap');
 
@@ -20,11 +19,11 @@ export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaCl
 
   await registerApplicationCommands(rest);
 
-  const paginatorRepo = new PaginatorSessionRepository();
-  const paginatorService = new PaginatorService(paginatorRepo);
-  commandRegistry.registerCustomIdHandler('pg:', (interaction) =>
-    paginatorService.handleButton(bot, interaction)
-  );
+  const paginatorButtonStrategy = new PaginatorButtonStrategy();
+
+  commandRegistry.registerCustomIdHandler('pg:', async (interaction, bot) => {
+    await paginatorButtonStrategy.handle(bot, interaction);
+  });
 
   setupKeywordFeature(prisma, bot);
 

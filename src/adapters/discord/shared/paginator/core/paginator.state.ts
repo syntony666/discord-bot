@@ -1,15 +1,22 @@
+/**
+ * Minimal state needed to drive the paginator.
+ */
 export type PaginatorState = {
   currentPage: number;
   totalPages: number;
   expiresAt: number;
 };
-
+/**
+ * Finite set of events that can change paginator state.
+ */
 export type PaginatorEvent =
   | { type: 'PREV' }
   | { type: 'NEXT' }
   | { type: 'PAGE_CLICK' }
   | { type: 'TIMEOUT' };
-
+/**
+ * Pure reducer that calculates the next paginator state.
+ */
 export function reducePaginatorState(
   state: PaginatorState,
   event: PaginatorEvent,

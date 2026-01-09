@@ -2,24 +2,30 @@ import { Bot, InteractionDataOption } from '@discordeno/bot';
 import { KeywordModule } from '@features/keyword/keyword.module';
 import { KeywordMatchType } from '@prisma-client/client';
 import { lastValueFrom } from 'rxjs';
-import { paginateTextList } from '@adapters/discord/shared/paginator/paginator.helper';
-import { successReply, errorReply, autoErrorReply } from '@adapters/discord/shared/reply.helper';
+import { replyTextList } from '@adapters/discord/shared/paginator/paginator.helper';
+import {
+  replySuccess,
+  replyError,
+  replyAutoError,
+} from '@adapters/discord/shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
 import { commandRegistry } from './command.registry';
 import { createLogger } from '@core/logger';
 
 const log = createLogger('KeywordCommand');
-
+/**
+ * Slash command handler for /keyword.
+ * Supports subcommands: add, list, delete.
+ */
 export function createKeywordCommandHandler(bot: Bot, module: KeywordModule) {
   const handler = async (interaction: BotInteraction) => {
     const sub = interaction.data?.options?.[0] as InteractionDataOption;
     const subName = sub?.name;
 
-    // Guard: 確保在伺服器內執行
     const guildId = interaction.guildId?.toString();
     if (!guildId) {
-      await errorReply(bot, interaction, {
-        description: 'This command can only be used in a server.',
+      await replyError(bot, interaction, {
+        description: '此指令只能在伺服器中使用。',
       });
       return;
     }
@@ -31,7 +37,7 @@ export function createKeywordCommandHandler(bot: Bot, module: KeywordModule) {
     } else if (subName === 'delete') {
       await handleDeleteKeyword(bot, interaction, module, guildId, sub);
     }
-  };;
+  };
 
   commandRegistry.registerCommand('keyword', handler);
   return handler;
@@ -54,16 +60,16 @@ async function handleAddKeyword(
   try {
     await lastValueFrom(module.createRule$({ guildId, pattern, matchType, response }));
 
-    await successReply(bot, interaction, {
-      title: 'Keyword Added',
-      description: `Pattern \`${pattern}\` has been added successfully.`,
+    await replySuccess(bot, interaction, {
+      title: '關鍵字已新增',
+      description: `關鍵字 \`${pattern}\` 已成功新增。`,
     });
   } catch (error) {
     log.error({ error, pattern }, 'Failed to add keyword');
 
-    await autoErrorReply(bot, interaction, error, {
-      duplicate: `Pattern \`${pattern}\` already exists. Please use a different pattern or delete the existing one first.`,
-      generic: 'Failed to add keyword rule. Please try again later.',
+    await replyAutoError(bot, interaction, error, {
+      duplicate: `關鍵字 \`${pattern}\` 已經存在，請使用其他關鍵字或先刪除原有規則。`,
+      generic: '新增關鍵字規則時發生錯誤，請稍後再試。',
     });
   }
 }
@@ -77,21 +83,21 @@ async function handleListKeywords(
   try {
     const rules = await lastValueFrom(module.getRulesByGuild$(guildId));
 
-    await paginateTextList({
+    await replyTextList({
       bot,
       interaction,
       items: rules,
-      title: () => `Keyword Rules`,
-      mapItem: (r) => `\`${r.matchType}\` **${r.pattern}** ⭢ ${r.response}`,
-      emptyText: 'No keyword rules found.',
+      title: () => `關鍵字規則列表`,
+      mapItem: (r) => `\`${r.matchType}\` **${r.pattern}** ⭢ ${r.response}\n`,
+      emptyText: '目前沒有任何關鍵字規則。',
       pageSize: 10,
       userId: interaction.user?.id?.toString(),
     });
   } catch (error) {
     log.error({ error }, 'Failed to list keywords');
 
-    await errorReply(bot, interaction, {
-      description: 'Failed to retrieve keyword rules. Please try again later.',
+    await replyError(bot, interaction, {
+      description: '取得關鍵字規則時發生錯誤，請稍後再試。',
     });
   }
 }
@@ -108,16 +114,16 @@ async function handleDeleteKeyword(
   try {
     await lastValueFrom(module.deleteRule$(guildId, pattern));
 
-    await successReply(bot, interaction, {
-      title: 'Keyword Deleted',
-      description: `Pattern \`${pattern}\` has been deleted successfully.`,
+    await replySuccess(bot, interaction, {
+      title: '關鍵字已刪除',
+      description: `關鍵字 \`${pattern}\` 已成功刪除。`,
     });
   } catch (error) {
     log.error({ error, pattern }, 'Failed to delete keyword');
 
-    await autoErrorReply(bot, interaction, error, {
-      notFound: `Pattern \`${pattern}\` does not exist.`,
-      generic: 'Failed to delete keyword rule. Please try again later.',
+    await replyAutoError(bot, interaction, error, {
+      notFound: `關鍵字 \`${pattern}\` 不存在。`,
+      generic: '刪除關鍵字規則時發生錯誤，請稍後再試。',
     });
   }
 }

@@ -1,5 +1,11 @@
+/**
+ * Supported paginator button actions encoded in customIds.
+ */
 export type PaginatorAction = 'prev' | 'page' | 'next';
-
+/**
+ * Parse a paginator customId into a session id and action.
+ * Returns null when the format is invalid.
+ */
 export function parsePaginatorAction(
   customId: string
 ): { sessionId: string; action: PaginatorAction } | null {

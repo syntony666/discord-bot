@@ -1,12 +1,13 @@
 import { createSignal } from '@core/signals/signal';
-import type { PaginatorSession, PaginatorSessionId } from './paginator.types';
+import type { PaginatorSession } from '../paginator.types';
 
-const [getSessions, setSessions] = createSignal<Map<PaginatorSessionId, PaginatorSession>>(
-  new Map()
-);
-
+const [getSessions, setSessions] = createSignal<Map<string, PaginatorSession>>(new Map());
+/**
+ * In-memory repository for paginator sessions.
+ * Backed by a reactive signal so other parts can observe changes if needed.
+ */
 export class PaginatorSessionRepository {
-  get(id: PaginatorSessionId): PaginatorSession | undefined {
+  get(id: string): PaginatorSession | undefined {
     return getSessions().get(id);
   }
 
@@ -16,7 +17,7 @@ export class PaginatorSessionRepository {
     setSessions(mapCopy);
   }
 
-  delete(id: PaginatorSessionId): void {
+  delete(id: string): void {
     const mapCopy = new Map(getSessions());
     mapCopy.delete(id);
     setSessions(mapCopy);

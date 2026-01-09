@@ -1,66 +1,71 @@
-// paginator.list-helper.ts
+import { PaginatorFactory } from './paginator.factory';
+import { PaginatorType } from './paginator.types';
+import type { PaginatorOptions, PageRenderer } from './paginator.types';
 import type { Bot } from '@discordeno/bot';
-import { PaginatorSessionRepository } from './paginator.repository';
-import { PaginatorService } from './paginator.service';
-import type { PageRenderResult, PageRenderer } from './paginator.types';
 
-function createTextListRenderer<T>(options: {
-  title: (pageIndex: number, totalPages: number) => string;
-  mapItem: (item: T) => string;
-  emptyText?: string;
-}): PageRenderer<T> {
-  const { title, mapItem, emptyText = 'No items.' } = options;
+export { PaginatorType } from './paginator.types';
 
-  const renderer: PageRenderer<T> = {
-    renderPage(items: T[], pageIndex: number, totalPages: number): PageRenderResult {
-      const description = items.length === 0 ? emptyText : items.map(mapItem).join('\n');
-
-      return {
-        embeds: [
-          {
-            title: title(pageIndex, totalPages),
-            description,
-          },
-        ],
-      };
-    },
-  };
-
-  return renderer;
+/**
+ * Low-level entry point for all paginated replies.
+ */
+export async function replyPaginated<T>(options: PaginatorOptions<T>): Promise<string> {
+  const strategy = PaginatorFactory.createStrategy(options);
+  return strategy.execute();
 }
 
-export async function paginateTextList<T>(params: {
+// ==================== Convenience functions ====================
+
+/**
+ * Reply with a paginated text list.
+ */
+export async function replyTextList<T>(options: {
   bot: Bot;
   interaction: any;
   items: T[];
-  title: (pageIndex: number, totalPages: number) => string;
+  title: string | ((pageIndex: number, totalPages: number) => string);
   mapItem: (item: T) => string;
   emptyText?: string;
   pageSize?: number;
   userId?: string;
-}) {
-  const {
-    bot,
-    interaction,
-    items,
-    title,
-    mapItem,
-    emptyText = 'No Data.',
-    pageSize = 10,
-    userId = interaction.user?.id?.toString(),
-  } = params;
-
-  const paginatorRepo = new PaginatorSessionRepository();
-  const paginatorService = new PaginatorService(paginatorRepo);
-
-  const renderer = createTextListRenderer<T>({
-    title,
-    mapItem,
-    emptyText: emptyText ?? 'No Data.',
+}): Promise<string> {
+  return replyPaginated({
+    type: PaginatorType.TEXT_LIST,
+    ...options,
   });
+}
 
-  await paginatorService.createPaginator(bot, interaction, items, renderer, {
-    pageSize,
-    userId,
+/**
+ * Reply with a paginated image list.
+ */
+export async function replyImageList<T>(options: {
+  bot: Bot;
+  interaction: any;
+  items: T[];
+  title: string | ((pageIndex: number, totalPages: number) => string);
+  mapItem: (item: T) => { url: string; description?: string };
+  emptyText?: string;
+  pageSize?: number;
+  userId?: string;
+}): Promise<string> {
+  return replyPaginated({
+    type: PaginatorType.IMAGE_LIST,
+    ...options,
+  });
+}
+
+/**
+ * Reply with a custom paginated renderer.
+ */
+export async function replyCustomList<T>(options: {
+  bot: Bot;
+  interaction: any;
+  items: T[];
+  renderer: PageRenderer<T>;
+  pageSize?: number;
+  userId?: string;
+}): Promise<string> {
+  return replyPaginated({
+    type: PaginatorType.CUSTOM,
+    ...options,
   });
 }
