@@ -41,3 +41,38 @@ model MemberNotifyConfig {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+model ReactionRole {
+  guildId     String
+  messageId   String
+  emoji       String
+  roleId      String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@id([guildId, messageId, emoji])
+  @@index([guildId])
+  @@index([messageId])
+}
+
+model ReactionRolePanel {
+  guildId     String
+  messageId   String
+  channelId   String
+  title       String   @default("選擇你的身分組")
+  description String?
+  mode        ReactionRoleMode @default(NORMAL)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@id([guildId, messageId])
+  @@index([guildId])
+}
+
+enum ReactionRoleMode {
+  NORMAL
+  UNIQUE
+  VERIFY
+}
+

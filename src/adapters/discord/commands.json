@@ -167,5 +167,179 @@
         ]
       }
     ]
+  },
+  {
+    "name": "reaction-role",
+    "description": "管理反應身分組",
+    "type": 1,
+    "default_member_permissions": "268435456",
+    "options": [
+      {
+        "type": 2,
+        "name": "panel",
+        "description": "管理 Reaction Role Panel",
+        "options": [
+          {
+            "type": 1,
+            "name": "create",
+            "description": "建立新的 Reaction Role Panel",
+            "options": [
+              {
+                "type": 7,
+                "name": "channel",
+                "description": "選擇要發送 panel 的頻道",
+                "required": true,
+                "channel_types": [0]
+              },
+              {
+                "type": 3,
+                "name": "title",
+                "description": "Panel 標題",
+                "required": false,
+                "max_length": 256
+              },
+              {
+                "type": 3,
+                "name": "description",
+                "description": "Panel 說明文字",
+                "required": false,
+                "max_length": 2048
+              },
+              {
+                "type": 3,
+                "name": "mode",
+                "description": "選擇模式",
+                "required": false,
+                "choices": [
+                  { "name": "NORMAL - 可以選多個身分組", "value": "NORMAL" },
+                  { "name": "UNIQUE - 只能選一個身分組", "value": "UNIQUE" },
+                  { "name": "VERIFY - 驗證模式（給予後移除反應）", "value": "VERIFY" }
+                ]
+              }
+            ]
+          },
+          {
+            "type": 1,
+            "name": "list",
+            "description": "列出所有 Reaction Role Panels"
+          },
+          {
+            "type": 1,
+            "name": "delete",
+            "description": "刪除 Reaction Role Panel",
+            "options": [
+              {
+                "type": 3,
+                "name": "panel_id",
+                "description": "Panel 訊息的 ID（從 panel footer 複製）",
+                "required": true
+              }
+            ]
+          },
+          {
+            "type": 1,
+            "name": "edit",
+            "description": "編輯 Panel 設定",
+            "options": [
+              {
+                "type": 3,
+                "name": "panel_id",
+                "description": "Panel 訊息的 ID",
+                "required": true
+              },
+              {
+                "type": 3,
+                "name": "title",
+                "description": "新的標題",
+                "required": false,
+                "max_length": 256
+              },
+              {
+                "type": 3,
+                "name": "description",
+                "description": "新的說明文字",
+                "required": false,
+                "max_length": 2048
+              },
+              {
+                "type": 3,
+                "name": "mode",
+                "description": "新的模式",
+                "required": false,
+                "choices": [
+                  { "name": "NORMAL - 可以選多個身分組 (多選模式)", "value": "NORMAL" },
+                  { "name": "UNIQUE - 只能選一個身分組 (單選模式)", "value": "UNIQUE" },
+                  { "name": "VERIFY - 驗證模式", "value": "VERIFY" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "add",
+        "description": "為 Panel 添加 Reaction Role",
+        "options": [
+          {
+            "type": 3,
+            "name": "panel_id",
+            "description": "Panel 訊息的 ID",
+            "required": true
+          },
+          {
+            "type": 3,
+            "name": "emoji",
+            "description": "要使用的 emoji（直接貼上 emoji 或自訂表情符號）",
+            "required": true
+          },
+          {
+            "type": 8,
+            "name": "role",
+            "description": "要給予的身分組",
+            "required": true
+          },
+          {
+            "type": 3,
+            "name": "description",
+            "description": "身分組說明（選填）",
+            "required": false,
+            "max_length": 100
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "remove",
+        "description": "移除 Reaction Role",
+        "options": [
+          {
+            "type": 3,
+            "name": "panel_id",
+            "description": "Panel 訊息的 ID",
+            "required": true
+          },
+          {
+            "type": 3,
+            "name": "emoji",
+            "description": "要移除的 emoji",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "list",
+        "description": "列出 Panel 的所有 Reaction Roles",
+        "options": [
+          {
+            "type": 3,
+            "name": "panel_id",
+            "description": "Panel 訊息的 ID",
+            "required": true
+          }
+        ]
+      }
+    ]
   }
 ]

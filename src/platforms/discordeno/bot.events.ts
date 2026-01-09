@@ -6,6 +6,8 @@ import {
   emitReady,
   emitGuildMemberAdd,
   emitGuildMemberRemove,
+  emitReactionAdd,
+  emitReactionRemove,
 } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 
@@ -35,5 +37,13 @@ export const botEventHandlers: CreateBotOptions<
 
   guildMemberRemove(user, guildId) {
     emitGuildMemberRemove(user, guildId);
+  },
+
+  reactionAdd(payload) {
+    emitReactionAdd(payload);
+  },
+
+  reactionRemove(payload) {
+    emitReactionRemove(payload);
   },
 };

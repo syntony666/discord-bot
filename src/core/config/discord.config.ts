@@ -29,6 +29,13 @@ const rawDesiredProperties = createDesiredPropertiesObject(
       memberCount: true,
       approximateMemberCount: true,
     },
+    reaction: {
+      userId: true,
+      channelId: true,
+      messageId: true,
+      guildId: true,
+      emoji: true,
+    },
   },
   true
 );
