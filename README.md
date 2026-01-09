@@ -1,101 +1,117 @@
-# Discord Bot (TypeScript + Discordeno + RxJS + Prisma)
+# Discord Bot
 
-A modular **TypeScript / Discordeno / RxJS / Prisma / PostgreSQL / pino** Discord bot template featuring an Observable-based event pipeline and clean architecture principles. Designed as a scalable foundation for medium to large-scale Discord bots.
+> Modular Discord bot built with TypeScript, Discordeno, RxJS, and Prisma  
+> Featuring reactive event streams, clean architecture, and strict type safety
+
+## 📋 Table of Contents
+
+- [Key Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [Architecture](#-architecture)
+- [Project Structure](#-project-structure)
+- [Quick Start](#-quick-start)
+- [Code Conventions](#-code-conventions)
+- [Design Patterns](#-design-patterns)
+- [Development Workflow](#-development-workflow)
+
+***
+
+## ✨ Key Features
+
+This bot demonstrates a production-ready Discord bot architecture with:
+
+- **🔑 Keyword Auto-Reply** - Pattern-based message responses (exact/contains matching)
+- **🎭 Reaction Roles** - Role assignment via emoji reactions with multiple modes (Normal/Unique/Verify)
+- **👋 Member Notifications** - Customizable join/leave announcements with template variables
+- **📄 Generic Paginator** - Type-safe, reusable pagination system for any data type
+- **🔄 Hot-Reload** - Development mode with automatic restart on code changes
+- **📊 Structured Logging** - Production-ready logging with pino
+
+**Built as a framework/template for creating scalable, maintainable Discord bots.**
+
 
 ## 🛠️ Tech Stack
 
-- **Runtime**: Node.js 18+
-- **Language**: TypeScript (strict mode with `exactOptionalPropertyTypes`)
-- **Discord SDK**: Discordeno v21 (`@discordeno/bot`, `@discordeno/rest`)
-- **Reactive**: RxJS 7.8+
-- **ORM / Database**: Prisma + PostgreSQL
-- **Logging**: pino (with pino-pretty for development)
-- **Configuration**: dotenv
+| Category | Technology | Purpose |
+|----------|-----------|---------|
+| **Runtime** | Node.js 18+ | JavaScript runtime |
+| **Language** | TypeScript 5.9+ | Type-safe development |
+| **Discord** | Discordeno v21 | Lightweight Discord API wrapper |
+| **Reactive** | RxJS 7.8+ | Event stream management |
+| **Database** | Prisma + PostgreSQL | Type-safe ORM |
+| **Logger** | pino | Structured logging |
 
-## 🏗️ Architecture Overview
+
+## 🏗️ Architecture
 
 ### Core Principles
 
-- **Reactive Programming**: All Discord events converted to RxJS Observables
-- **Dependency Inversion**: Services depend on Observable interfaces, not concrete implementations
-- **Modular Design**: Clear separation between core, platforms, features, and adapters
-- **Type Safety**: Strict TypeScript with full type inference
-- **Strategy Pattern**: Pluggable renderers and handlers for extensibility
+1. **Reactive Programming**: All Discord events flow through RxJS Observables
+2. **Dependency Inversion**: Features depend on Observable interfaces, not concrete implementations
+3. **Modular Design**: Clear separation between layers (Core → Platforms → Features → Adapters)
+4. **Type Safety**: Strict TypeScript with full type inference
 
 ### Event Flow
 
 ```
-Discord Event (messageCreate/interactionCreate)
-  ↓
-Discordeno bot.events
-  ↓
-RxJS Subject (messageCreate$ / interactionCreate$)
-  ↓
-Feature/Adapter Subscriptions
-  ↓
-Business Logic (Service Layer)
-  ↓
-Data Layer (Prisma Module)
-  ↓
-Response (bot.helpers)
+Discord Event → bot.events → RxJS Subject → Observable$ → Feature Subscriptions
+→ Service Layer → Module Layer (Prisma) → Database → Response
 ```
+
+***
 
 ## 📁 Project Structure
 
 ```
 src/
-  core/                           # Framework-agnostic core
-    config/                       # Environment & app configuration
-    logger.ts                     # pino logger factory
-    rx/
-      bus.ts                      # RxJS event bus (Subjects for all events)
-    signals/
-      signal.ts                   # Lightweight state management
-    bootstrap/
-      app.bootstrap.ts            # Application initialization & DI
-
-  platforms/                      # External integrations
-    discordeno/
-      bot.client.ts               # Bot creation + events → Observables
-      commands-loader.ts          # Auto-register commands from JSON
-    database/
-      prisma.client.ts            # PrismaClient singleton
-
-  features/                       # Business domains
-    keyword/
-      keyword.feature.ts          # Feature setup & message handler
-      keyword.module.ts           # Data access (Prisma → Observables)
-      keyword.service.ts          # Business logic + caching
-
-  adapters/                       # Discord-specific implementations
-    discord/
-      commands/
-        command.registry.ts       # Command router (slash commands + customId)
-        keyword.command.ts        # Command handlers
-      shared/
-        message/
-          message.factory.ts      # Factory pattern for replies/notifications
-          message.helper.ts       # Convenience functions
-          reply/                  # Reply strategies
-          notification/           # Notification strategies
-        paginator/
-          core/                   # State machine, repository, actions
-          renderer/               # PageRenderer<T> implementations
-          strategy/               # Button interaction handling
-          ui/                     # UI component builders
-      commands.json               # Slash command definitions
+├── core/                       # Framework-agnostic utilities
+│   ├── bootstrap/              # App initialization & DI
+│   ├── config/                 # Environment configuration
+│   ├── rx/
+│   │   └── bus.ts              # RxJS event bus (all events)
+│   ├── signals/                # Lightweight state management
+│   └── logger.ts               # pino logger factory
+│
+├── platforms/                  # External integrations
+│   ├── discordeno/
+│   │   ├── bot.client.ts       # Bot creation + events → Observables
+│   │   └── commands-loader.ts  # Auto-register commands from JSON
+│   └── database/
+│       └── prisma.client.ts    # PrismaClient singleton
+│
+├── features/                   # Business domains
+│   ├── keyword/                # Auto-reply feature
+│   │   ├── keyword.feature.ts  # Setup + event subscriptions
+│   │   ├── keyword.module.ts   # Data access (Prisma → Observable)
+│   │   ├── keyword.service.ts  # Business logic
+│   │   └── keyword.types.ts    # Type definitions
+│   ├── reaction-role/          # Role management via reactions
+│   └── member-notify/          # Join/leave notifications
+│
+├── adapters/                   # Discord-specific implementations
+│   └── discord/
+│       ├── commands/           # Slash command handlers
+│       │   ├── command.registry.ts  # Command router
+│       │   └── *.command.ts    # Individual handlers
+│       └── shared/             # Reusable UI components
+│           ├── message/        # Message factory (Strategy Pattern)
+│           └── paginator/      # Generic paginator
+│
+└── index.ts                    # Application entry point
 ```
 
 ### Layer Responsibilities
 
-| Layer | Responsibility | Dependencies |
-|-------|---------------|-------------|
-| **Core** | Framework-agnostic utilities, logging, config | None |
-| **Platforms** | External service adapters (Discord, DB) | Core |
-| **Features** | Business logic, domain models | Core, Platforms |
-| **Adapters** | Discord-specific UI/UX implementations | Core, Features |
+| Layer | Purpose | Dependencies |
+|-------|---------|-------------|
+| **Core** | Framework-agnostic utilities | None |
+| **Platforms** | External service adapters | Core |
+| **Features** | Business logic | Core, Platforms |
+| **Adapters** | Discord-specific UI/UX | Core, Features |
 
-## 🚀 Development Setup
+***
+
+## 🚀 Quick Start
 
 ### 1. Install Dependencies
 
@@ -103,9 +119,9 @@ src/
 npm install
 ```
 
-### 2. Environment Configuration
+### 2. Environment Setup
 
-Create `.env`:
+Create `.env` file:
 
 ```env
 NODE_ENV=development
@@ -114,242 +130,160 @@ DISCORD_APP_ID=your-application-id
 DATABASE_URL=postgresql://user:password@localhost:5432/discord_bot
 ```
 
-**Required**: Enable **MESSAGE CONTENT INTENT** in [Discord Developer Portal](https://discord.com/developers/applications).
+**Required Intents** (Discord Developer Portal):
+- ✅ MESSAGE CONTENT INTENT
+- ✅ SERVER MEMBERS INTENT
 
-### 3. Database Initialization
+### 3. Database Setup
 
 ```bash
-# Push Prisma schema
+# Push schema to database
 npm run prisma:init
 
-# Or use migrations
+# Or create migration
 npm run prisma:migrate
 ```
 
 ### 4. Run Development Server
 
 ```bash
-npm run dev
+npm run dev        # Dev mode with hot reload
+npm run build      # Production build
+npm start          # Run production
 ```
 
-Hot reload enabled via `ts-node-dev` + `tsconfig-paths`.
+***
 
-### 5. Production Build
+## 📝 Code Conventions
 
-```bash
-npm run build
-npm start
-```
+### 1. File Naming
 
-## 🧩 Design Patterns & Practices
+| Type | Convention | Example |
+|------|-----------|---------|
+| Feature | `*.feature.ts` | `keyword.feature.ts` |
+| Module | `*.module.ts` | `keyword.module.ts` |
+| Service | `*.service.ts` | `keyword.service.ts` |
+| Command | `*.command.ts` | `keyword.command.ts` |
+| Types | `*.types.ts` | `keyword.types.ts` |
 
-### 1. Observable-Based Event Bus
+### 2. Observable Naming
 
-All Discord events flow through RxJS Subjects in `core/rx/bus.ts`:
+- **MUST** use `$` suffix for Observables
+- Use camelCase naming
 
 ```typescript
-// Emit events from Discordeno
-messageCreate.next(message);
-interactionCreate.next(interaction);
+// ✅ Correct
+export const messageCreate$: Observable<BotMessage>;
+const userList$ = from(prisma.user.findMany());
 
-// Subscribe in features/adapters
-messageCreate$.subscribe(msg => { /* handle */ });
+// ❌ Wrong
+export const messageCreate: Observable<BotMessage>;  // Missing $
 ```
 
-**Benefits**: Decouples event sources from handlers, enables reactive pipelines.
-
-### 2. Feature Modules (Observable API)
-
-Features expose Observable-based APIs, hiding Prisma:
+### 3. Observable Methods
 
 ```typescript
-// keyword.module.ts
-export interface KeywordModule {
+// ✅ Observable-returning methods use $ suffix
+interface KeywordModule {
   getRulesByGuild$(guildId: string): Observable<KeywordRule[]>;
   createRule$(input: CreateInput): Observable<KeywordRule>;
   deleteRule$(guildId: string, pattern: string): Observable<void>;
 }
-
-// Implementation wraps Prisma with from()
-return from(prisma.keywordRule.findMany({ where: { guildId } }));
 ```
 
-**Benefits**: Testability, framework independence, composable pipelines.
-
-### 3. Command Registry (Dynamic Routing)
+### 4. TypeScript Best Practices
 
 ```typescript
-// Register command handlers
-commandRegistry.registerCommand('keyword', handler);
+// ❌ Avoid any
+function handleError(error: any) { }
 
-// Register customId prefix handlers (for buttons, modals)
-commandRegistry.registerCustomIdHandler('pg:', paginatorHandler);
-
-// Activate subscriptions
-commandRegistry.activate(bot);
-```
-
-**Benefits**: Centralized routing, auto-cleanup, supports customId patterns.
-
-### 4. Message Factory (Strategy Pattern)
-
-```typescript
-// Unified interface for all message types
-await replySuccess(bot, interaction, { description: 'Done!' });
-await replyError(bot, interaction, { description: 'Failed!' });
-await replyAutoError(bot, interaction, error, { duplicate: 'Custom msg' });
-
-// Notifications
-await notify(bot, channelId, {
-  type: 'announcement',
-  title: 'Title',
-  description: 'Content',
-});
-```
-
-**Benefits**: Consistent styling, automatic error translation, extensible types.
-
-### 5. Generic Paginator
-
-```typescript
-// PageRenderer<T> strategy
-interface PageRenderer<T> {
-  renderPage(items: T[], pageIndex: number, totalPages: number): PageRenderResult;
-}
-
-// Usage
-await replyTextList({
-  bot,
-  interaction,
-  items: data,
-  title: () => `Page Title`,
-  mapItem: item => `- ${item.name}`,
-  pageSize: 10,
-});
-```
-
-**Benefits**: Type-safe, reusable for any data type, customizable rendering.
-
-### 6. State Management (Signals)
-
-Simple reactive state without external dependencies:
-
-```typescript
-const [getCache, setCache] = createSignal(new Map());
-
-// Reactive updates
-setCache(new Map(getCache()));
-```
-
-**Benefits**: Lightweight, no framework lock-in.
-
-## 🔧 Configuration
-
-### TypeScript Config
-
-```json
-{
-  "compilerOptions": {
-    "strict": true,
-    "exactOptionalPropertyTypes": true,
-    "paths": {
-      "@core/*": ["src/core/*"],
-      "@platforms/*": ["src/platforms/*"],
-      "@features/*": ["src/features/*"],
-      "@adapters/*": ["src/adapters/*"]
-    }
+// ✅ Use unknown or explicit types
+function handleError(error: unknown) {
+  if (error instanceof Error) {
+    log.error({ message: error.message });
   }
 }
+
+// ✅ Use discriminated unions
+type ReplyType = 
+  | { type: 'success'; description: string }
+  | { type: 'error'; description: string };
 ```
 
-### Prisma Schema
-
-```prisma
-generator client {
-  provider = "prisma-client-js"
-  output   = "../src/.prisma"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-```
-
-Output path ensures generated client is within `src/` for path aliases.
-
-## 📝 Available Scripts
-
-```bash
-npm run dev              # Development with hot reload
-npm run build            # Production build
-npm start                # Run production build
-npm run prisma:init      # Push schema to database
-npm run prisma:migrate   # Create and apply migrations
-npm run prisma:deploy    # Deploy migrations (production)
-npm run format           # Format with Prettier
-npm run format:check     # Check formatting
-```
-
-## 🧪 Code Conventions
-
-### 1. Observable Naming
-
-- **Suffix with `$`**: `messageCreate$`, `interactionCreate$`
-- **Module methods**: `getRulesByGuild$()`, `createRule$()`
-
-### 2. Logging
+### 5. Logging Standards
 
 ```typescript
 import { createLogger } from '@core/logger';
 const log = createLogger('ModuleName');
 
-log.info({ data }, 'Message');
-log.error({ error }, 'Error message');
+// ✅ Structured logging (object first, message second)
+log.info({ guildId, userId, roleId }, 'Granted role via reaction');
+
+// ✅ Error logging with full context
+log.error({ error, guildId, messageId }, 'Failed to grant role');
+
+// ❌ Don't use string interpolation
+log.info(`Granted role ${roleId} to user ${userId}`);
 ```
 
-### 3. Error Handling
+### 6. Error Handling
 
 ```typescript
-// Automatic Prisma/Discord error translation
-await replyAutoError(bot, interaction, error, {
-  duplicate: 'Already exists',
-  notFound: 'Not found',
-  generic: 'Unknown error',
-});
+// ✅ Handle errors in mergeMap
+reactionAdd$
+  .pipe(
+    mergeMap(async (reaction) => {
+      try {
+        await bot.helpers.addRole(...);
+        log.info({ guildId, userId }, 'Role granted');
+      } catch (error: any) {
+        // Handle Discord API error codes
+        if (error.code === 50013) {
+          log.warn({ guildId, error: error.message }, 'Missing permissions');
+        } else {
+          log.error({ error, guildId }, 'Failed to grant role');
+        }
+      }
+    })
+  )
+  .subscribe();
 ```
 
-### 4. Type Safety
+**Common Discord API Error Codes:**
 
-- Avoid `any` - use `unknown` or proper types
-- Use discriminated unions for message types
-- Leverage TypeScript's strict mode
+| Code | Description | Meaning |
+|------|------------|---------|
+| 50001 | Missing Access | Channel not accessible |
+| 50013 | Missing Permissions | Bot lacks required permissions |
+| 10003 | Unknown Channel | Channel deleted |
+| 10008 | Unknown Message | Message deleted |
+| 10011 | Unknown Role | Role deleted |
 
-### 5. File Naming
+### 7. Comments & Documentation
 
-- **Modules**: `*.module.ts`
-- **Services**: `*.service.ts`
-- **Features**: `*.feature.ts`
-- **Commands**: `*.command.ts`
-- **Types**: `*.types.ts`
+**When to Comment:**
+- ✅ Public APIs (interfaces, exported functions)
+- ✅ Complex business logic
+- ✅ Constraints and side effects
 
-### 6. JSDoc & Comments
+**When NOT to Comment:**
+- ❌ Self-explanatory code
+- ❌ Implementation details (let code speak)
+- ❌ Obvious patterns
 
-#### What to Document
+```typescript
+// ✅ Explain WHY
+// UNIQUE mode requires removing other roles to prevent multiple exclusive roles
+if (match.mode === 'UNIQUE') {
+  await removeOtherRoles();
+}
 
-**DO** document:
-- **Public APIs**: All exported functions, classes, interfaces
-- **Complex logic**: Business rules that aren't self-explanatory
-- **Constraints**: When/why parameters have specific requirements
-- **Side effects**: State mutations, I/O operations, event emissions
+// ❌ Explain WHAT (code already shows this)
+// Check if mode is UNIQUE
+if (match.mode === 'UNIQUE') { }
+```
 
-**DON'T** document:
-- **Self-explanatory code**: `getUserById(id)` doesn't need explanation
-- **Implementation details**: How it works internally (let code speak)
-- **Obvious patterns**: Standard getters/setters, CRUD operations
-- **TODOs in production**: Use issue tracker instead
-
-#### JSDoc Format
+**JSDoc Format:**
 
 ```typescript
 /**
@@ -360,214 +294,406 @@ export interface PageRenderer<T> {
   /**
    * Render a page of items into Discord embed format.
    * 
-   * @param items - Slice of items to display on current page
+   * @param items - Slice of items for current page
    * @param pageIndex - Zero-based page index
-   * @param totalPages - Total number of pages available
-   * @returns Discord embed and components for the page
+   * @param totalPages - Total pages available
+   * @returns Discord embed and components
    */
   renderPage(items: T[], pageIndex: number, totalPages: number): PageRenderResult;
 }
 ```
 
-#### Inline Comments Style
+### 8. RxJS Usage
 
 ```typescript
-// ❌ BAD: States the obvious
-const guildId = interaction.guildId?.toString();
-if (!guildId) return; // Check if guildId exists
+// ✅ Use from() to wrap Promises
+return from(prisma.keywordRule.findMany({ where: { guildId } }));
 
-// ✅ GOOD: Explains WHY
-const guildId = interaction.guildId?.toString();
-// Commands only work in guilds, not DMs
-if (!guildId) return;
+// ✅ Use lastValueFrom instead of .toPromise()
+const match = await lastValueFrom(service.findMatch$(guildId, messageId, emoji));
+
+// ❌ Don't use deprecated .toPromise()
+const match = await service.findMatch$(guildId, messageId, emoji).toPromise();
+
+// ✅ Handle errors inside mergeMap
+messageCreate$
+  .pipe(
+    filter(msg => msg.guildId !== null),
+    mergeMap(async (msg) => {
+      try {
+        // Logic here
+      } catch (error) {
+        log.error({ error }, 'Failed');
+      }
+    })
+  )
+  .subscribe();
 ```
 
+***
+
+## 🎨 Design Patterns
+
+### 1. Observable-Based Module Pattern
+
+**Purpose:** Wrap data access (Prisma) as Observable API for dependency inversion.
+
 ```typescript
-// ❌ BAD: Describes WHAT code does
-// Loop through all rules
-for (const rule of rules) {
-  // Check if pattern matches
-  if (applyMatch(rule, content)) {
-    // Return the matched rule
-    return rule;
-  }
+// Module interface
+export interface KeywordModule {
+  getRulesByGuild$(guildId: string): Observable<KeywordRule[]>;
+  createRule$(input: CreateInput): Observable<KeywordRule>;
 }
 
-// ✅ GOOD: No comments needed - code is self-explanatory
-for (const rule of rules) {
-  if (applyMatch(rule, content)) {
-    return rule;
-  }
-}
-```
-
-```typescript
-// ✅ GOOD: Explains business constraint
-// TTL must refresh on each interaction to prevent mid-use expiration
-const newState = reducePaginatorState(prevState, event, now, this.ttlMs);
-```
-
-#### Function Documentation
-
-```typescript
-// ❌ BAD: Over-documented simple function
-/**
- * Delete a keyword rule
- * @param guildId - The guild ID
- * @param pattern - The pattern to delete
- * @returns Observable that completes when deleted
- */
-deleteRule$(guildId: string, pattern: string): Observable<void>;
-
-// ✅ GOOD: Only document when adding value
-/**
- * Delete keyword rule by composite key.
- * Throws NotFoundError if pattern doesn't exist in guild.
- */
-deleteRule$(guildId: string, pattern: string): Observable<void>;
-```
-
-#### Class/Module Documentation
-
-```typescript
-/**
- * Manages paginator session lifecycle and button interactions.
- * 
- * Sessions expire after 30 seconds of inactivity and are automatically
- * cleaned up. Only the user who initiated the paginator can control it.
- */
-export class PaginatorButtonStrategy {
-  // Implementation...
+// Implementation
+export function createKeywordModule(prisma: PrismaClient): KeywordModule {
+  return {
+    getRulesByGuild$(guildId: string) {
+      return from(prisma.keywordRule.findMany({ where: { guildId } }));
+    },
+    createRule$(input: CreateInput) {
+      return from(prisma.keywordRule.create({ data: input }));
+    },
+  };
 }
 ```
 
-#### Error Handling Comments
+### 2. Feature Setup Pattern
+
+**Purpose:** Unified initialization, subscription, and cleanup.
 
 ```typescript
-// ✅ Explain error handling strategy
-try {
-  await lastValueFrom(module.createRule$(input));
-} catch (error) {
-  // Map Prisma unique constraint to user-friendly message
-  await replyAutoError(bot, interaction, error, {
-    duplicate: `關鍵字 \`${pattern}\` 已經存在`,
+export interface KeywordFeature {
+  module: KeywordModule;
+  service: KeywordService;
+  cleanup: () => void;
+}
+
+export function setupKeywordFeature(prisma: PrismaClient, bot: Bot): KeywordFeature {
+  const module = createKeywordModule(prisma);
+  const service = createKeywordService(module);
+
+  const subscription = messageCreate$
+    .pipe(
+      filter(msg => msg.guildId !== null),
+      mergeMap(async (msg) => { /* handle */ })
+    )
+    .subscribe();
+
+  return {
+    module,
+    service,
+    cleanup: () => {
+      subscription.unsubscribe();
+      log.info('Feature cleaned up');
+    },
+  };
+}
+```
+
+### 3. Command Registry Pattern
+
+**Purpose:** Centralized command routing.
+
+```typescript
+// Register handlers
+commandRegistry.registerCommand('keyword', keywordHandler);
+commandRegistry.registerCustomIdHandler('pg:', paginatorHandler);
+
+// Activate routing
+commandRegistry.activate(bot);
+```
+
+### 4. Message Factory (Strategy Pattern)
+
+**Purpose:** Unified message styling with auto error translation.
+
+```typescript
+// Success/Error replies
+await replySuccess(bot, interaction, { description: 'Done!' });
+await replyError(bot, interaction, { description: 'Failed!' });
+
+// Auto error translation
+await replyAutoError(bot, interaction, error, {
+  duplicate: 'Already exists',
+  notFound: 'Not found',
+});
+```
+
+### 5. Generic Paginator
+
+**Purpose:** Type-safe reusable paginator.
+
+```typescript
+await replyTextList({
+  bot,
+  interaction,
+  items: keywords,
+  title: (count) => `Keywords (${count} total)`,
+  mapItem: (rule) => `• \`${rule.pattern}\` → ${rule.response}`,
+  pageSize: 10,
+});
+```
+
+***
+
+## 🔄 Development Workflow
+
+### Adding a New Feature
+
+#### 1. Define Prisma Schema
+
+```prisma
+// prisma/schema.prisma
+model MyFeature {
+  id        String   @id @default(cuid())
+  guildId   String
+  data      String
+  createdAt DateTime @default(now())
+
+  @@index([guildId])
+}
+```
+
+Run migration:
+```bash
+npm run prisma:migrate
+```
+
+#### 2. Create Module Structure
+
+```
+src/features/my-feature/
+├── my-feature.feature.ts
+├── my-feature.module.ts
+├── my-feature.service.ts
+└── my-feature.types.ts
+```
+
+#### 3. Implement Module (Data Access)
+
+```typescript
+// my-feature.module.ts
+export interface MyFeatureModule {
+  getByGuild$(guildId: string): Observable<MyFeature[]>;
+  create$(input: CreateInput): Observable<MyFeature>;
+}
+
+export function createMyFeatureModule(prisma: PrismaClient): MyFeatureModule {
+  return {
+    getByGuild$(guildId: string) {
+      return from(prisma.myFeature.findMany({ where: { guildId } }));
+    },
+    create$(input: CreateInput) {
+      return from(prisma.myFeature.create({ data: input }));
+    },
+  };
+}
+```
+
+#### 4. Implement Service (Business Logic)
+
+```typescript
+// my-feature.service.ts
+export function createMyFeatureService(module: MyFeatureModule) {
+  return {
+    processData$(guildId: string) {
+      return module.getByGuild$(guildId).pipe(
+        map(items => { /* business logic */ })
+      );
+    },
+  };
+}
+```
+
+#### 5. Implement Feature Setup
+
+```typescript
+// my-feature.feature.ts
+export function setupMyFeature(prisma: PrismaClient, bot: Bot): MyFeatureFeature {
+  const module = createMyFeatureModule(prisma);
+  const service = createMyFeatureService(module);
+
+  const subscription = messageCreate$
+    .pipe(
+      mergeMap(async (msg) => {
+        const result = await lastValueFrom(service.processData$(msg.guildId));
+        // Handle result
+      })
+    )
+    .subscribe();
+
+  return {
+    module,
+    service,
+    cleanup: () => subscription.unsubscribe(),
+  };
+}
+```
+
+#### 6. Create Command Handler
+
+```typescript
+// adapters/discord/commands/my-feature.command.ts
+export function createMyFeatureCommandHandler(bot: Bot, module: MyFeatureModule) {
+  commandRegistry.registerCommand('myfeature', async (interaction, bot) => {
+    try {
+      await lastValueFrom(module.create$(input));
+      await replySuccess(bot, interaction, { description: 'Created!' });
+    } catch (error) {
+      await replyAutoError(bot, interaction, error, {
+        duplicate: 'Already exists',
+      });
+    }
   });
 }
 ```
 
-#### When NOT to Comment
+#### 7. Define Command in JSON
 
-```typescript
-// ❌ Don't explain obvious code
-const rules = await getRulesByGuild(guildId); // Get rules from database
-
-// ❌ Don't describe language features
-const { pattern, response } = input; // Destructure input object
-
-// ❌ Don't comment out code - delete it
-// const oldImplementation = () => { ... };
-
-// ❌ Don't leave TODOs in production
-// TODO: Add rate limiting (use GitHub issues instead)
+```json
+// adapters/discord/commands.json
+[
+  {
+    "name": "myfeature",
+    "description": "My feature management",
+    "options": [
+      {
+        "type": 1,
+        "name": "create",
+        "description": "Create new item",
+        "options": [
+          {
+            "type": 3,
+            "name": "data",
+            "description": "Data content",
+            "required": true
+          }
+        ]
+      }
+    ]
+  }
+]
 ```
 
-#### Comments for Complex Logic
+#### 8. Register in Bootstrap
 
 ```typescript
-/**
- * Apply match based on rule type.
- * 
- * EXACT: Both sides trimmed, case-sensitive comparison
- * CONTAINS: Case-sensitive substring match
- */
-function applyMatch(rule: KeywordRule, content: string): boolean {
-  const text = content.trim();
-  const pattern = rule.pattern.trim();
-
-  if (rule.matchType === 'EXACT') return text === pattern;
-  if (rule.matchType === 'CONTAINS') return text.includes(pattern);
-  
-  return false;
-}
-```
-
-#### General Guidelines
-
-1. **Write self-documenting code first** - Good names > comments
-2. **Comment WHY, not WHAT** - Code shows what, comments explain why
-3. **Keep comments updated** - Outdated comments are worse than no comments
-4. **Use JSDoc for APIs** - Enables IDE IntelliSense
-5. **Avoid redundant comments** - Don't restate the code
-6. **Explain constraints** - Document business rules and limitations
-
-## 🔄 Bootstrap Flow
-
-```typescript
-// src/index.ts
-async function main() {
-  await connectPrisma();
-  const { bot, rest, start } = createBotClient();
-  await bootstrapApp(bot, rest, prisma);
-  await start();
-}
-
-// src/core/bootstrap/app.bootstrap.ts
-export async function bootstrapApp(bot, rest, prisma) {
-  // 1. Register application commands
+// core/bootstrap/app.bootstrap.ts
+export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaClient) {
   await registerApplicationCommands(rest);
   
-  // 2. Setup paginator handlers
-  commandRegistry.registerCustomIdHandler('pg:', paginatorHandler);
+  // Setup features
+  setupMyFeature(prisma, bot);
   
-  // 3. Setup features
-  setupKeywordFeature(prisma, bot);
-  
-  // 4. Activate command registry
   commandRegistry.activate(bot);
 }
 ```
 
-## 🎯 Extending the Bot
+### Development Checklist
 
-### Adding a New Feature
+- [ ] Prisma schema defined and migrated
+- [ ] Module methods return `Observable<T>` using `from()`
+- [ ] Service implements business logic
+- [ ] Feature provides `cleanup()` function
+- [ ] Command handler uses `replyAutoError`
+- [ ] `commands.json` defines slash command structure
+- [ ] Logger created with `createLogger()`
+- [ ] Error handling covers common Discord API codes
+- [ ] All public APIs have explicit types
+- [ ] Complex logic has appropriate comments
 
-1. **Create feature module** (`features/myfeature/myfeature.module.ts`)
-   - Define Observable-based data access API
-   - Wrap Prisma operations with `from()`
+***
 
-2. **Create feature service** (`features/myfeature/myfeature.service.ts`)
-   - Implement business logic
-   - Use module's Observable API
+## 🧪 Testing & Debugging
 
-3. **Create feature setup** (`features/myfeature/myfeature.feature.ts`)
-   - Subscribe to event bus
-   - Register command handlers
-   - Return cleanup function
+### View Logs
 
-4. **Bootstrap** (`core/bootstrap/app.bootstrap.ts`)
-   - Call `setupMyFeature(prisma, bot)`
+```bash
+# Colored logs in dev mode
+npm run dev
 
-### Adding a New Command
+# Filter by module
+npm run dev | grep KeywordFeature
 
-1. **Define in `commands.json`**
-2. **Create handler** in `adapters/discord/commands/`
-3. **Register** with `commandRegistry.registerCommand()`
+# Query structured logs
+npm run dev | grep '"guildId":"123456789"'
+npm run dev | grep '"level":"error"'
+```
 
-## 🔮 Future Improvements
+### Prisma Studio
 
-- **Testing**: Unit tests for services, integration tests for features
-- **Metrics**: Prometheus metrics for observability
-- **Caching**: Redis integration for distributed caching
-- **Queue System**: Bull/BullMQ for background jobs
-- **Multi-Shard**: Discordeno sharding support
+```bash
+npx prisma studio  # Opens GUI at http://localhost:5555
+```
+
+### Common Issues
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Commands not appearing | Not registered or missing intents | Check `commands.json` + Bot Intents |
+| Message content empty | MESSAGE CONTENT INTENT disabled | Enable in Discord Developer Portal |
+| Database connection fails | Wrong DATABASE_URL | Check `.env` configuration |
+| TypeScript paths not resolving | tsconfig-paths not loaded | Verify dev script uses `-r tsconfig-paths/register` |
+
+***
+
+## 🚀 Deployment
+
+### Build Production
+
+```bash
+npm run build
+npm run prisma:deploy
+npm start
+```
+
+### Docker Setup
+
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npm run build
+CMD ["npm", "start"]
+```
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  bot:
+    build: .
+    env_file: .env
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: discord_bot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
+```
+
+***
+
+## 📚 Resources
+
+- [Discordeno Docs](https://discordeno.js.org/)
+- [RxJS Documentation](https://rxjs.dev/)
+- [Prisma Documentation](https://www.prisma.io/docs/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+
+***
 
 ## 📜 License
 
 MIT License - See [LICENSE](./LICENSE)
 
-## 🙏 Built With
+***
 
-- [Discordeno](https://discordeno.js.org/)
-- [RxJS](https://rxjs.dev/)
-- [Prisma](https://www.prisma.io/)
-- [pino](https://getpino.io/)
+**Happy Coding! 🎉**
