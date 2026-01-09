@@ -1,5 +1,5 @@
 import { PrismaClient, KeywordMatchType, type KeywordRule } from '@prisma-client/client';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
 
 export interface CreateKeywordRuleInput {
   guildId: string;
@@ -18,41 +18,29 @@ export interface KeywordModule {
 export function createKeywordModule(prisma: PrismaClient): KeywordModule {
   return {
     getRulesByGuild$(guildId: string): Observable<KeywordRule[]> {
-      return new Observable<KeywordRule[]>((subscriber) => {
-        prisma.keywordRule
-          .findMany({
-            where: { guildId, enabled: true },
-          })
-          .then((rules) => {
-            subscriber.next(rules);
-            subscriber.complete();
-          })
-          .catch((err) => subscriber.error(err));
-      });
+      return from(
+        prisma.keywordRule.findMany({
+          where: { guildId, enabled: true },
+        })
+      );
     },
 
     createRule$(input: CreateKeywordRuleInput): Observable<KeywordRule> {
-      return new Observable<KeywordRule>((subscriber) => {
-        prisma.keywordRule
-          .create({
-            data: {
-              guildId: input.guildId,
-              pattern: input.pattern,
-              matchType: input.matchType,
-              response: input.response,
-              enabled: input.enabled ?? true,
-            },
-          })
-          .then((rule) => {
-            subscriber.next(rule);
-            subscriber.complete();
-          })
-          .catch((err) => subscriber.error(err));
-      });
+      return from(
+        prisma.keywordRule.create({
+          data: {
+            guildId: input.guildId,
+            pattern: input.pattern,
+            matchType: input.matchType,
+            response: input.response,
+            enabled: input.enabled ?? true,
+          },
+        })
+      );
     },
 
     deleteRule$(guildId: string, pattern: string): Observable<void> {
-      return new Observable<void>((subscriber) => {
+      return from(
         prisma.keywordRule
           .delete({
             where: {
@@ -62,12 +50,8 @@ export function createKeywordModule(prisma: PrismaClient): KeywordModule {
               },
             },
           })
-          .then(() => {
-            subscriber.next();
-            subscriber.complete();
-          })
-          .catch((err) => subscriber.error(err));
-      });
+          .then(() => undefined)
+      );
     },
   };
 }
