@@ -1,81 +1,137 @@
 # Discord Bot (TypeScript + Discordeno + RxJS + Prisma)
 
-A modular **TypeScript / Discordeno / RxJS / Prisma / Postgres / pino** Discord bot. It uses an Observable-based event pipeline and feature modules, suitable as a starting point for medium-size to large bots.
+A modular **TypeScript / Discordeno / RxJS / Prisma / PostgreSQL / pino** Discord bot featuring an Observable-based event pipeline and a clean, layered architecture. Designed for scalability and maintainability.
 
-Currently implemented:
+## ✨ Features
 
-- Keyword auto-reply (EXACT / CONTAINS, per-guild config)
-- `/keyword add/list/delete` commands to manage rules
-- Generic paginated paginator (Prev / Page / Next, 30s TTL), reusable for any list
-- Postgres + Prisma schema setup
-- pino logging + pino-pretty (for development)
+### 🔑 Keyword Auto-Reply System
+- **Two Match Modes**:
+  - `EXACT`: Matches trimmed message content exactly
+  - `CONTAINS`: Matches if message contains the pattern
+- **Per-Guild Configuration**: Each server maintains independent keyword rules
+- **Database Persistence**: Rules stored in PostgreSQL with Prisma ORM
+- **Smart Caching**: In-memory cache for optimal performance
+- **Management Commands**:
+  - `/keyword add` - Add new keyword rules with optional match type (defaults to EXACT)
+  - `/keyword list` - View all rules with interactive pagination
+  - `/keyword delete` - Remove keyword rules by pattern
 
-## Tech Stack
+### 📄 Advanced Paginator System
+- **Reusable Component**: Generic paginator for any data type
+- **Interactive Buttons**:
+  - Previous/Next navigation with smart enable/disable
+  - Page indicator button with **jump-to-page modal** functionality
+- **Button Styles**: Primary (blue) for navigation, Success (green) for page jumps
+- **Session Management**: 30-second TTL with automatic cleanup
+- **Strategy Pattern**: Custom `PageRenderer<T>` for flexible page rendering
+- **User Permissions**: Only the command initiator can control the paginator
 
-- Runtime: Node.js 18+
-- Language: TypeScript (strict, exactOptionalPropertyTypes)
-- Discord SDK: Discordeno (`@discordeno/bot`, `@discordeno/rest`)
-- Reactive: RxJS (message / interaction events converted to Observables)
-- ORM / DB: Prisma + PostgreSQL
-- Logging: pino (with pino-pretty in dev)
-- Config: dotenv
+### 🎨 Message System
+- **Unified Message Interface**: Factory pattern for consistent message handling
+- **Reply Types**:
+  - Success (green)
+  - Error (red)
+  - Info (Discord blurple)
+  - Warning (yellow)
+- **Auto Error Handling**: Automatic Prisma and Discord error translation
+- **Notification Support**: Channel notifications for various event types
 
-## Project Structure
+### 🏗️ Architecture Highlights
+- **Reactive Programming**: RxJS-based event pipeline for `messageCreate$` and `interactionCreate$`
+- **Dependency Inversion**: Services depend on Observable interfaces, not concrete implementations
+- **Modular Design**: Clean separation between core, platforms, features, and adapters
+- **Type Safety**: Strict TypeScript with `exactOptionalPropertyTypes`
+- **Graceful Shutdown**: Proper SIGINT/SIGTERM handling for database cleanup
 
-```txt
+## 🛠️ Tech Stack
+
+- **Runtime**: Node.js 18+
+- **Language**: TypeScript (strict mode)
+- **Discord SDK**: Discordeno v21 (`@discordeno/bot`, `@discordeno/rest`)
+- **Reactive**: RxJS 7.8+
+- **ORM / Database**: Prisma + PostgreSQL
+- **Logging**: pino (with pino-pretty for development)
+- **Configuration**: dotenv
+
+## 📁 Project Structure
+
+```
 src/
   core/
-    config.ts                 # env & constants
-    logger.ts                 # pino logger
+    config/
+      app.config.ts           # Application configuration
+      discord.config.ts       # Discord-specific config
+    logger.ts                 # pino logger setup
     rx/
-      bus.ts                  # messageCreate$ / interactionCreate$
+      bus.ts                  # RxJS event bus (messageCreate$, interactionCreate$, ready$)
     signals/
-      signal.ts               # simple signal implementation
+      signal.ts               # Simple signal implementation for state management
+    bootstrap/
+      app.bootstrap.ts        # Application initialization
 
   platforms/
     discordeno/
-      bot.client.ts           # createBot + events → Observables
-      commands-loader.ts      # register slash commands from commands.json
+      bot.client.ts           # createBot + events → RxJS Observables
+      commands-loader.ts      # Auto-register slash commands from commands.json
     database/
-      prisma.client.ts        # PrismaClient singleton
+      prisma.client.ts        # PrismaClient singleton + connection management
 
   features/
     keyword/
-      keyword.module.ts       # Prisma + Observable access for KeywordRule
-      keyword.service.ts      # EXACT / CONTAINS matching + cache
+      keyword.feature.ts      # Feature setup and message handler
+      keyword.module.ts       # Prisma CRUD operations as Observables
+      keyword.service.ts      # Business logic: EXACT/CONTAINS matching + caching
 
   adapters/
     discord/
       commands/
-        keyword.command.ts    # /keyword add/list/delete
-      message.event.ts        # subscribe messageCreate$, call keyword service
-      interaction.event.ts    # subscribe interactionCreate$, dispatch to paginator / keyword
-      paginator/
-        paginator.types.ts
-        paginator.state.ts
-        paginator.repository.ts
-        paginator.actions.ts
-        paginator.service.ts
-      commands.json           # all application commands definitions (JSON)
+        command.registry.ts   # Command router with customId support
+        keyword.command.ts    # /keyword slash command handlers
+      shared/
+        message/
+          message.factory.ts  # Strategy pattern message factory
+          message.helper.ts   # Convenience functions for replies/notifications
+          message.types.ts    # Message type definitions
+          reply/              # Reply strategy implementations
+          notification/       # Notification strategy implementations
+        paginator/
+          core/
+            paginator.actions.ts     # Action parsing (prev/page/next)
+            paginator.repository.ts  # In-memory session storage
+            paginator.state.ts       # State machine reducer
+          renderer/
+            renderer.interface.ts    # PageRenderer<T> interface
+            text-list.renderer.ts    # Text list rendering implementation
+            image-list.renderer.ts   # Image list rendering implementation
+            custom.renderer.ts       # Custom renderer utilities
+          strategy/
+            paginator-button.strategy.ts  # Button interaction handling + jump-to-page modal
+          ui/
+            paginator.ui.ts          # UI component builders
+          paginator.factory.ts       # Paginator creation factory
+          paginator.helper.ts        # Convenience wrapper functions
+          paginator.types.ts         # Type definitions
+      commands.json           # Slash command definitions (JSON schema)
 ```
 
-## Development
+## 🚀 Development
 
-### 1. Install dependencies
+### 1. Install Dependencies
 
 ```bash
 npm install
 ```
 
-If this is a fresh clone, run Prisma init first (creates `prisma/schema.prisma` and `.env`):
+### 2. Database Setup
 
 ```bash
+# Initialize Prisma (creates prisma/schema.prisma and .env)
 npx prisma init --datasource-provider postgresql
 ```
 
-### 2. Configure `.env`
+### 3. Configure Environment
 
-Create a `.env` file in the project root:
+Create `.env` in project root:
 
 ```env
 NODE_ENV=development
@@ -84,75 +140,161 @@ DISCORD_APP_ID=your-application-id
 DATABASE_URL=postgresql://user:password@localhost:5432/discord_bot
 ```
 
-Also enable **MESSAGE CONTENT INTENT** in the Discord Developer Portal.[web:228]
+**Important**: Enable **MESSAGE CONTENT INTENT** in the [Discord Developer Portal](https://discord.com/developers/applications).
 
-### 3. Create / update database schema
+### 4. Database Migration
 
 ```bash
-npm run prisma:init   # prisma db push
-# or, if you prefer migrations:
+# Push schema to database
+npm run prisma:init
+
+# Or create migrations
 npm run prisma:migrate
 ```
 
-### 4. Run the bot in development
+### 5. Run Development Server
 
 ```bash
 npm run dev
 ```
 
-- Uses `ts-node-dev` + `tsconfig-paths`.
-- Connects to Postgres, registers commands, then starts the Discord Gateway.
+Uses `ts-node-dev` with hot reload and `tsconfig-paths` for path aliases.
 
-### 5. Build & run in production
+### 6. Production Build
 
 ```bash
 npm run build
 npm start
 ```
 
-## Implemented Features
+## 📊 Database Schema
 
-### Keyword Auto-Reply
+### KeywordRule
 
-- Per-guild keyword rules stored in `KeywordRule` table (Prisma).[web:221]
-- Two match types:
-  - `EXACT`: trimmed message content equals pattern.
-  - `CONTAINS`: message content includes pattern.
-- Event flow:
-  - Discordeno `messageCreate` → `messageCreate$` (RxJS Subject)
-    → `registerMessageHandler` → `KeywordService.findMatch$` → `bot.helpers.sendMessage()`.
+```prisma
+model KeywordRule {
+  guildId   String
+  pattern   String
+  matchType KeywordMatchType
+  response  String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-### `/keyword` Commands
+  @@id([guildId, pattern])
+}
 
-- `/keyword add pattern match_type response`
-- `/keyword list`
-- `/keyword delete pattern`
-- Command schema is defined in `adapters/discord/commands.json` and registered at startup by `commands-loader.ts`.[web:278][web:279]
+enum KeywordMatchType {
+  EXACT
+  CONTAINS
+}
+```
 
-### Generic Paginator
+**Composite Primary Key**: `(guildId, pattern)` ensures unique patterns per guild.
 
-Located under `adapters/discord/paginator/`:
+## 🎯 Usage Examples
 
-- `PageRenderer<T>` Strategy: converts any `T[]` into a single page (embed / text).
-- `PaginatorService`:
-  - `createPaginator(bot, interaction, items, renderer, options)` – creates a session & sends the first page.
-  - `handleButton(bot, interaction)` – handles Prev / Page / Next button interactions.
-- `PaginatorState + reducePaginatorState` – small state machine (currentPage / totalPages / expiresAt).
-- `PaginatorSessionRepository` – in-memory Map + signals to store sessions.
-- Button `customId`: `pg:<sessionId>:prev|page|next` (sessionId is a random 5-char token).
+### Keyword Commands
 
-`/keyword list` uses the paginator:
+```bash
+# Add keyword with exact match (default)
+/keyword add pattern:hello response:Hi there!
 
-- 10 items per page.
-- Prev / Next automatically enabled/disabled at first/last page.
-- Middle button label shows `current / total` pages; currently clicking it only refreshes TTL, but it’s ready to be extended into a “jump to page” flow.
+# Add keyword with contains match
+/keyword add pattern:hello match_type:CONTAINS response:Hello!
 
-## Conventions
+# List all keywords (with pagination)
+/keyword list
 
-- All Discord events are converted to RxJS Observables in `core/rx/bus.ts`; feature layers should only depend on Observables, not Discord APIs directly.
-- DB access lives in `*.module.ts` files; services only depend on the module’s Observable-based interface, not Prisma directly.
-- Logging uses `createLogger('Scope')` from `core/logger.ts`, combined with `tap` or try/catch.
+# Delete keyword
+/keyword delete pattern:hello
+```
 
-## License
+### Paginator Jump Feature
+
+1. Click the middle page button (green)
+2. Enter desired page number in the modal
+3. Paginator jumps to specified page immediately
+
+## 🔄 Event Flow
+
+### Message Event Flow
+```
+Discord messageCreate
+  → bot.events.messageCreate
+  → messageCreate$ (RxJS Subject)
+  → MessageHandler subscription
+  → KeywordService.findMatch$
+  → bot.helpers.sendMessage()
+```
+
+### Interaction Event Flow
+```
+Discord interaction
+  → bot.events.interactionCreate
+  → interactionCreate$ (RxJS Subject)
+  → CommandRegistry
+  → Route by customId or command name
+  → Handler execution
+  → sendInteractionResponse()
+```
+
+## 🎨 Design Patterns
+
+- **Observer Pattern**: RxJS Subjects for event distribution
+- **Factory Pattern**: Message factory for unified message handling
+- **Strategy Pattern**: PageRenderer for flexible pagination rendering
+- **Repository Pattern**: PaginatorSessionRepository for session management
+- **State Machine**: `reducePaginatorState` for paginator state transitions
+- **Dependency Injection**: Manual DI through factory functions
+
+## 🧪 Code Conventions
+
+- **Observables for I/O**: All Discord events and DB operations use RxJS Observables
+- **Feature Isolation**: Features expose Observable-based interfaces, hiding implementation details
+- **Centralized Logging**: All modules use `createLogger(scope)` from `@core/logger`
+- **Type Safety**: Leverage TypeScript's strict mode and avoid `any` where possible
+- **Error Handling**: Use `autoErrorReply` for automatic error translation
+
+## 📝 Available Scripts
+
+```bash
+npm run dev              # Development with hot reload
+npm run build            # Production build
+npm start                # Run production build
+npm run prisma:init      # Push Prisma schema to database
+npm run prisma:migrate   # Create and apply migrations
+npm run prisma:deploy    # Deploy migrations (production)
+npm run format           # Format code with Prettier
+npm run format:check     # Check code formatting
+```
+
+## 🔮 Future Enhancements
+
+### Potential Features
+- Role assignment via button interactions
+- Twitch integration for live stream notifications
+- Advanced keyword features:
+  - Regular expression support
+  - Keyword usage statistics
+  - Bulk import/export
+  - Permission-based management
+- Multi-language support
+- Scheduled tasks and reminders
+- Custom event listeners
+
+## 📜 License
 
 This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
+
+## 🙏 Acknowledgments
+
+Built with:
+- [Discordeno](https://discordeno.js.org/) - High-performance Discord SDK
+- [RxJS](https://rxjs.dev/) - Reactive programming library
+- [Prisma](https://www.prisma.io/) - Next-generation ORM
+- [pino](https://getpino.io/) - Fast JSON logger
+
+---
+
+**Note**: This bot demonstrates clean architecture principles and is production-ready for medium to large-scale Discord bots.
