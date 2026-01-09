@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma-client/client';
-import { Bot, logger } from '@discordeno/bot';
+import { Bot } from '@discordeno/bot';
 import { Subscription, lastValueFrom, mergeMap } from 'rxjs';
 import { createMemberNotifyModule, MemberNotifyModule } from './member-notify.module';
 import { createMemberNotifyService, MemberNotifyService } from './member-notify.service';
@@ -40,7 +40,6 @@ export function setupMemberNotifyFeature(prisma: PrismaClient, bot: Bot): Member
         try {
           const guild = (await bot.helpers.getGuild(member.guildId)) as BotGuild;
           const memberCount = guild.approximateMemberCount || 0;
-          logger.info('Member count after leave: ' + guild.approximateMemberCount);
 
           const message = service.formatMessage(config!.joinMessage, {
             user: `<@${user.id}>`,
@@ -56,8 +55,28 @@ export function setupMemberNotifyFeature(prisma: PrismaClient, bot: Bot): Member
           });
 
           log.info({ guildId, userId: user.id.toString() }, 'Sent join notification');
-        } catch (error) {
-          log.error({ error, guildId }, 'Failed to send join notification');
+        } catch (error: any) {
+          if (error.code === 50013) {
+            // Missing Permissions
+            log.warn(
+              { channelId: config!.channelId, guildId, error: error.message },
+              'Missing permission to send join notification'
+            );
+          } else if (error.code === 50001) {
+            // Missing Access
+            log.warn(
+              { channelId: config!.channelId, guildId, error: error.message },
+              'Missing access to notification channel'
+            );
+          } else if (error.code === 10003) {
+            // Unknown Channel
+            log.warn(
+              { channelId: config!.channelId, guildId, error: error.message },
+              'Notification channel not found'
+            );
+          } else {
+            log.error({ error, guildId }, 'Failed to send join notification');
+          }
         }
       })
     )
@@ -76,8 +95,6 @@ export function setupMemberNotifyFeature(prisma: PrismaClient, bot: Bot): Member
           const guild = (await bot.helpers.getGuild(guildIdStr)) as BotGuild;
           const memberCount = guild.approximateMemberCount || 0;
 
-          logger.info('Member count after leave: ' + guild.approximateMemberCount);
-
           const message = service.formatMessage(config!.leaveMessage, {
             user: `<@${user.id}>`,
             username: user.username || 'Unknown',
@@ -92,8 +109,25 @@ export function setupMemberNotifyFeature(prisma: PrismaClient, bot: Bot): Member
           });
 
           log.info({ guildId: guildIdStr, userId: user.id.toString() }, 'Sent leave notification');
-        } catch (error) {
-          log.error({ error, guildId: guildIdStr }, 'Failed to send leave notification');
+        } catch (error: any) {
+          if (error.code === 50013) {
+            log.warn(
+              { channelId: config!.channelId, guildId: guildIdStr, error: error.message },
+              'Missing permission to send leave notification'
+            );
+          } else if (error.code === 50001) {
+            log.warn(
+              { channelId: config!.channelId, guildId: guildIdStr, error: error.message },
+              'Missing access to notification channel'
+            );
+          } else if (error.code === 10003) {
+            log.warn(
+              { channelId: config!.channelId, guildId: guildIdStr, error: error.message },
+              'Notification channel not found'
+            );
+          } else {
+            log.error({ error, guildId: guildIdStr }, 'Failed to send leave notification');
+          }
         }
       })
     )

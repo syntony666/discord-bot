@@ -8,7 +8,6 @@ import { ready$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { PaginatorButtonStrategy } from '@adapters/discord/shared/paginator/strategy/paginator-button.strategy';
 import { setupMemberNotifyFeature } from '@features/member-notify/member-notify.feature';
-import { createMemberNotifyCommandHandler } from '@adapters/discord/commands/member-notify.command';
 
 const log = createLogger('Bootstrap');
 

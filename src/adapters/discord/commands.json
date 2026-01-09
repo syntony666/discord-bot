@@ -56,6 +56,7 @@
   {
     "name": "member-notify",
     "description": "設定成員進出通知",
+    "default_member_permissions": "32",
     "type": 1,
     "options": [
       {

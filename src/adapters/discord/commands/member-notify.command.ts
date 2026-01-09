@@ -44,7 +44,7 @@ export function createMemberNotifyCommandHandler(
     }
 
     if (subGroupName === 'status') {
-      await handleStatus(bot, interaction, module, service, guildId);
+      await handleStatus(bot, interaction, module, guildId);
       return;
     }
 
@@ -60,13 +60,13 @@ export function createMemberNotifyCommandHandler(
 
     // Route to handlers with guaranteed config
     if (subGroupName === 'disable') {
-      await handleDisable(bot, interaction, module, guildId, config);
+      await handleDisable(bot, interaction, module, guildId);
     } else if (subGroupName === 'test') {
-      await handleTest(bot, interaction, module, service, guildId, config, subGroup);
+      await handleTest(bot, interaction, service, guildId, config, subGroup);
     } else if (subGroupName === 'message') {
-      await handleMessage(bot, interaction, module, guildId, config, subGroup);
+      await handleMessage(bot, interaction, module, guildId, subGroup);
     } else if (subGroupName === 'toggle') {
-      await handleToggle(bot, interaction, module, guildId, config, subGroup);
+      await handleToggle(bot, interaction, module, guildId, subGroup);
     }
   };
 
@@ -102,8 +102,7 @@ async function handleDisable(
   bot: Bot,
   interaction: BotInteraction,
   module: MemberNotifyModule,
-  guildId: string,
-  config: MemberNotifyConfig
+  guildId: string
 ) {
   try {
     await lastValueFrom(module.toggleEnabled$(guildId, false));
@@ -124,7 +123,6 @@ async function handleStatus(
   bot: Bot,
   interaction: BotInteraction,
   module: MemberNotifyModule,
-  service: MemberNotifyService,
   guildId: string
 ) {
   try {
@@ -179,7 +177,6 @@ async function handleStatus(
 async function handleTest(
   bot: Bot,
   interaction: BotInteraction,
-  module: MemberNotifyModule,
   service: MemberNotifyService,
   guildId: string,
   config: MemberNotifyConfig,
@@ -200,7 +197,7 @@ async function handleTest(
 
     await replyInfo(bot, interaction, {
       title: `${type === 'join' ? '加入' : '離開'}訊息預覽`,
-      description: `以下是測試訊息：\n\n${testMessage}`,
+      description: testMessage,
     });
   } catch (error) {
     log.error({ error, guildId, type }, 'Failed to test message');
@@ -215,7 +212,6 @@ async function handleMessage(
   interaction: BotInteraction,
   module: MemberNotifyModule,
   guildId: string,
-  config: MemberNotifyConfig,
   subGroup: InteractionDataOption
 ) {
   const subCommand = subGroup.options?.[0] as InteractionDataOption;
@@ -242,7 +238,6 @@ async function handleToggle(
   interaction: BotInteraction,
   module: MemberNotifyModule,
   guildId: string,
-  config: MemberNotifyConfig,
   subGroup: InteractionDataOption
 ) {
   const subCommand = subGroup.options?.[0] as InteractionDataOption;
