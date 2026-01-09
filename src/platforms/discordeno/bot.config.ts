@@ -2,7 +2,8 @@ import { Intents, CreateBotOptions, DesiredPropertiesBehavior } from '@discorden
 import { appConfig, desiredProperties, BotDesiredProperties } from '@core/config';
 import { botEventHandlers } from './bot.events';
 
-export const botIntents = Intents.Guilds | Intents.GuildMessages | Intents.MessageContent;
+export const botIntents =
+  Intents.Guilds | Intents.GuildMessages | Intents.GuildMembers | Intents.MessageContent;
 
 export const botDesiredPropertiesBehavior = DesiredPropertiesBehavior.RemoveKey;
 

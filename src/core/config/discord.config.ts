@@ -23,6 +23,12 @@ const rawDesiredProperties = createDesiredPropertiesObject(
       id: true,
       token: true,
     },
+    guild: {
+      id: true,
+      name: true,
+      memberCount: true,
+      approximateMemberCount: true,
+    },
   },
   true
 );

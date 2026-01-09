@@ -29,3 +29,15 @@ enum KeywordMatchType {
   EXACT
   CONTAINS
 }
+
+model MemberNotifyConfig {
+  guildId         String   @id
+  channelId       String?
+  enabled         Boolean  @default(false)
+  joinMessage     String   @default("📥 {user} 加入了 {server}！目前共 {memberCount} 位成員")
+  leaveMessage    String   @default("📤 {username} 離開了 {server}。目前剩餘 {memberCount} 位成員")
+  joinEnabled     Boolean  @default(true)
+  leaveEnabled    Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

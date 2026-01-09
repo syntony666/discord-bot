@@ -1,6 +1,12 @@
 import { CreateBotOptions, DesiredPropertiesBehavior } from '@discordeno/bot';
 import { BotDesiredProperties } from '@core/config';
-import { emitMessageCreate, emitInteractionCreate, emitReady } from '@core/rx/bus';
+import {
+  emitMessageCreate,
+  emitInteractionCreate,
+  emitReady,
+  emitGuildMemberAdd,
+  emitGuildMemberRemove,
+} from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 
 const log = createLogger('BotEvents');
@@ -21,5 +27,13 @@ export const botEventHandlers: CreateBotOptions<
 
   interactionCreate(interaction) {
     emitInteractionCreate(interaction);
+  },
+
+  guildMemberAdd(member, user) {
+    emitGuildMemberAdd(member, user);
+  },
+
+  guildMemberRemove(user, guildId) {
+    emitGuildMemberRemove(user, guildId);
   },
 };
