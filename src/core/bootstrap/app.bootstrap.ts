@@ -22,7 +22,11 @@ export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaCl
   const paginatorButtonStrategy = new PaginatorButtonStrategy();
 
   commandRegistry.registerCustomIdHandler('pg:', async (interaction, bot) => {
-    await paginatorButtonStrategy.handle(bot, interaction);
+    if (interaction.data?.customId?.endsWith(':jump')) {
+      await paginatorButtonStrategy.handleModalSubmit(bot, interaction);
+    } else {
+      await paginatorButtonStrategy.handle(bot, interaction);
+    }
   });
 
   setupKeywordFeature(prisma, bot);

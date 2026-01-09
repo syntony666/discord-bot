@@ -10,6 +10,7 @@ import { buildPaginatorResponse } from '../ui/paginator.ui';
 import { replyError } from '../../message/message.helper';
 import type { Bot } from '@discordeno/bot';
 import type { BotInteraction } from '@core/rx/bus';
+import { PageRenderResult } from '../paginator.types';
 
 const log = createLogger('PaginatorButtonStrategy');
 
@@ -76,6 +77,12 @@ export class PaginatorButtonStrategy {
       return;
     }
 
+    // 處理跳頁按鈕
+    if (action === 'page') {
+      await this.handlePageJump(bot, interaction, session, sessionId);
+      return;
+    }
+
     const event = toEvent(action);
 
     const prevState: PaginatorState = {
@@ -121,12 +128,120 @@ export class PaginatorButtonStrategy {
   }
 
   /**
+   * Handle page jump button click by displaying a modal for user input.
+   * Shows a modal dialog where users can enter the desired page number.
+   *
+   * @param bot - The Discord bot instance
+   * @param interaction - The button interaction that triggered the page jump
+   * @param session - The current paginator session containing page data
+   * @param sessionId - Unique identifier for the paginator session
+   * @returns Promise that resolves when the modal is displayed
+   */
+  private async handlePageJump(
+    bot: Bot,
+    interaction: BotInteraction,
+    session: any,
+    sessionId: string
+  ): Promise<void> {
+    try {
+      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+        type: 9, // MODAL
+        data: {
+          customId: `pg:${sessionId}:jump`,
+          title: '跳轉至指定頁面',
+          components: [
+            {
+              type: 1, // Action Row
+              components: [
+                {
+                  type: 4, // Text Input
+                  customId: 'page_number',
+                  label: '頁碼',
+                  style: 1, // Short
+                  placeholder: `請輸入 1-${session.totalPages} 之間的數字`,
+                  required: true,
+                  minLength: 1,
+                  maxLength: String(session.totalPages).length,
+                },
+              ],
+            },
+          ],
+        },
+      });
+    } catch (error) {
+      log.error({ error, sessionId }, 'Failed to show page jump modal');
+    }
+  }
+
+  /**
+   * Handle modal submission for page jump.
+   * Validates the user input, updates the session to the specified page,
+   * and refreshes the paginator display.
+   */
+  async handleModalSubmit(bot: Bot, interaction: BotInteraction): Promise<void> {
+    const customId: string | undefined = interaction.data?.customId;
+    if (!customId || !customId.startsWith('pg:') || !customId.endsWith(':jump')) {
+      return;
+    }
+
+    const sessionId = customId.split(':')[1] as string;
+    const session = this.repo.get(sessionId);
+
+    if (!session) {
+      await replyError(bot, interaction, {
+        description: '此分頁已過期，請重新執行指令。',
+        ephemeral: true,
+      });
+      return;
+    }
+
+    const pageNumberInput = interaction.data?.components?.[0]?.components?.[0]?.value;
+    const pageNumber = parseInt(pageNumberInput || '1', 10);
+
+    if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > session.totalPages) {
+      await replyError(bot, interaction, {
+        description: `請輸入 1 到 ${session.totalPages} 之間的有效頁碼。`,
+        ephemeral: true,
+      });
+      return;
+    }
+
+    const now = Date.now();
+    const newPage = pageNumber - 1;
+
+    const updatedSession = {
+      ...session,
+      currentPage: newPage,
+      expiresAt: now + this.ttlMs,
+    };
+    this.repo.save(updatedSession);
+
+    const page = updatedSession.pages[newPage] as PageRenderResult;
+
+    const data = buildPaginatorResponse({
+      sessionId,
+      page,
+      currentPage: newPage,
+      totalPages: session.totalPages,
+    });
+
+    try {
+      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+        type: 7,
+        data,
+      });
+    } catch (error) {
+      log.error({ error, sessionId }, 'Failed to jump to page');
+    }
+  }
+
+  /**
    * Update the original message to indicate expiration and remove buttons.
    */
   private async updateMessageAsExpired(bot: Bot, interaction: BotInteraction): Promise<void> {
     try {
       await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-        type: 7, // UPDATE_MESSAGE
+        type: 7,
         data: {
           embeds: [
             {

@@ -1,3 +1,4 @@
+import { CommandColors } from '@core/config';
 import type { PageRenderResult } from '../paginator.types';
 import type { Renderer } from './renderer.interface';
 
@@ -27,6 +28,7 @@ export class TextListRenderer<T> implements Renderer<T> {
         {
           title: titleText,
           description,
+          color: CommandColors.INFO,
         },
       ],
     };

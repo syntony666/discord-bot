@@ -45,14 +45,14 @@ function buildPaginatorComponents(params: {
       components: [
         {
           type: 2,
-          style: 2,
+          style: 1,
           label: 'Prev',
           customId: `pg:${sessionId}:prev`,
           disabled: !hasPrev,
         },
         {
           type: 2,
-          style: 1,
+          style: 3,
           label: pageLabel,
           customId: `pg:${sessionId}:page`,
         },

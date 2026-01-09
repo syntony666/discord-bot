@@ -1,3 +1,4 @@
+import { CommandColors } from '@core/config';
 import type { PageRenderResult } from '../paginator.types';
 import type { Renderer } from './renderer.interface';
 
@@ -27,6 +28,7 @@ export class ImageListRenderer<T> implements Renderer<T> {
           {
             title: titleText,
             description: emptyText,
+            color: CommandColors.INFO,
           },
         ],
       };
@@ -41,6 +43,7 @@ export class ImageListRenderer<T> implements Renderer<T> {
           title: titleText,
           description: mapped.description,
           image: { url: mapped.url },
+          color: CommandColors.INFO,
         },
       ],
     };

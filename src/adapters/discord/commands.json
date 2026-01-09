@@ -1,52 +1,52 @@
 [
   {
     "name": "keyword",
-    "description": "Manage keyword auto replies",
+    "description": "管理關鍵字自動回覆",
     "type": 1,
     "options": [
       {
         "type": 1,
         "name": "add",
-        "description": "Add a keyword reply",
+        "description": "新增關鍵字回覆規則",
         "options": [
           {
             "type": 3,
             "name": "pattern",
-            "description": "Keyword text",
+            "description": "關鍵字文字",
+            "required": true
+          },
+          {
+            "type": 3,
+            "name": "response",
+            "description": "回覆內容",
             "required": true
           },
           {
             "type": 3,
             "name": "match_type",
-            "description": "EXACT or CONTAINS",
-            "required": true,
+            "description": "比對類型（預設：EXACT 精確比對）",
+            "required": false,
             "choices": [
-              { "name": "EXACT", "value": "EXACT" },
-              { "name": "CONTAINS", "value": "CONTAINS" }
+              { "name": "EXACT - 精確比對", "value": "EXACT" },
+              { "name": "CONTAINS - 包含比對", "value": "CONTAINS" }
             ]
-          },
-          {
-            "type": 3,
-            "name": "response",
-            "description": "Reply content",
-            "required": true
           }
         ]
       },
       {
         "type": 1,
         "name": "list",
-        "description": "List keyword rules"
+        "description": "列出所有關鍵字規則"
       },
       {
         "type": 1,
         "name": "delete",
-        "description": "Delete keyword rules by pattern",
+        "description": "刪除關鍵字規則",
         "options": [
           {
             "type": 3,
             "name": "pattern",
-            "description": "Keyword text to delete",
+            "description": "要刪除的關鍵字文字",
             "required": true
           }
         ]
