@@ -9,6 +9,7 @@ import { createLogger } from '@core/logger';
 import { PaginatorButtonStrategy } from '@adapters/discord/shared/paginator/strategy/paginator-button.strategy';
 import { setupMemberNotifyFeature } from '@features/member-notify/member-notify.feature';
 import { setupReactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
+import { createStatusCommandHandler } from '@adapters/discord/commands/status.command';
 
 const log = createLogger('Bootstrap');
 
@@ -34,6 +35,7 @@ export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaCl
   setupKeywordFeature(prisma, bot);
   setupMemberNotifyFeature(prisma, bot);
   setupReactionRoleFeature(prisma, bot);
+  createStatusCommandHandler(bot);
 
   commandRegistry.activate(bot);
 

@@ -8,6 +8,7 @@ import type {
   User,
   Guild,
   DiscordUser,
+  Channel,
 } from '@discordeno/bot';
 import { DesiredPropertiesBehavior } from '@discordeno/bot';
 import { BotDesiredProperties } from '@core/config/discord.config';
@@ -38,6 +39,12 @@ export type BotUser = SetupDesiredProps<
 
 export type BotGuild = SetupDesiredProps<
   Guild,
+  BotDesiredProperties,
+  DesiredPropertiesBehavior.RemoveKey
+>;
+
+export type BotChannel = SetupDesiredProps<
+  Channel,
   BotDesiredProperties,
   DesiredPropertiesBehavior.RemoveKey
 >;

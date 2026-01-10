@@ -341,5 +341,21 @@
         ]
       }
     ]
+  },
+  {
+    "name": "status",
+    "description": "顯示狀態資訊",
+    "options": [
+      {
+        "type": 1,
+        "name": "bot",
+        "description": "顯示機器人狀態資訊"
+      },
+      {
+        "type": 1,
+        "name": "guild",
+        "description": "顯示伺服器資訊"
+      }
+    ]
   }
 ]
