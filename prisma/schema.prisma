@@ -19,6 +19,7 @@ model KeywordRule {
   matchType KeywordMatchType
   response  String
   enabled   Boolean  @default(true)
+  editorId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
