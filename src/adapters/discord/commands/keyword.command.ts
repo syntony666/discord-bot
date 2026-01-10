@@ -33,6 +33,20 @@ const pendingOverwrites = new Map<
 >();
 
 /**
+ * Temporary storage for pending delete confirmations
+ */
+const pendingDeletes = new Map<
+  string,
+  {
+    guildId: string;
+    pattern: string;
+    editorId: string;
+    ruleToDelete: KeywordRule;
+    expiresAt: number;
+  }
+>();
+
+/**
  * Slash command handler for /keyword.
  * Supports subcommands: add, list, edit, delete.
  */
@@ -62,9 +76,13 @@ export function createKeywordCommandHandler(bot: Bot, module: KeywordModule) {
 
   commandRegistry.registerCommand('keyword', handler);
 
-  // Register button handler for overwrite confirmations
+  // Register button handlers
   commandRegistry.registerCustomIdHandler('kw:overwrite:', async (interaction, bot) => {
     await handleOverwriteButton(bot, interaction, module);
+  });
+
+  commandRegistry.registerCustomIdHandler('kw:delete:', async (interaction, bot) => {
+    await handleDeleteButton(bot, interaction, module);
   });
 
   return handler;
@@ -99,7 +117,7 @@ async function handleAddKeyword(
 
     await replySuccess(bot, interaction, {
       title: '關鍵字已新增',
-      description: `關鍵字 \`${pattern}\` 已成功新增。`,
+      description: `\`${matchType}\` **${pattern}** ⭢ ${response}`,
     });
   } catch (error: any) {
     // Check if it's a duplicate error
@@ -212,8 +230,8 @@ async function handleOverwriteButton(bot: Bot, interaction: BotInteraction, modu
     return;
   }
 
-  const confirmationId = match[1] as string; // Everything between 'kw:overwrite:' and ':(confirm|cancel)'
-  const action = match[2]; // 'confirm' or 'cancel'
+  const confirmationId = match[1] as string;
+  const action = match[2];
 
   const pending = pendingOverwrites.get(confirmationId);
 
@@ -307,6 +325,7 @@ async function handleOverwriteButton(bot: Bot, interaction: BotInteraction, modu
 
       pendingOverwrites.delete(confirmationId);
 
+      // Update the ephemeral message
       await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
         type: 7, // Update message
         data: {
@@ -314,7 +333,14 @@ async function handleOverwriteButton(bot: Bot, interaction: BotInteraction, modu
             {
               color: BaseColors.GREEN,
               title: '關鍵字已更新',
-              description: `關鍵字 \`${pending.pattern}\` 已成功覆蓋更新。`,
+              description: `<@${pending.editorId}> 已覆蓋更新關鍵字 \`${pending.pattern}\``,
+              fields: [
+                {
+                  name: '新設定',
+                  value: `\`${pending.matchType}\` **${pending.pattern}** ⭢ ${pending.response}`,
+                  inline: false,
+                },
+              ],
             },
           ],
           components: [],
@@ -342,12 +368,182 @@ async function handleOverwriteButton(bot: Bot, interaction: BotInteraction, modu
   }
 }
 
+async function handleDeleteButton(bot: Bot, interaction: BotInteraction, module: KeywordModule) {
+  const customId = interaction.data?.customId || '';
+
+  // Match pattern: kw:delete:{anything}:(confirm|cancel)
+  const match = customId.match(/^kw:delete:(.+):(confirm|cancel)$/);
+
+  if (!match) {
+    await replyError(bot, interaction, {
+      description: '無效的按鈕操作。',
+    });
+    return;
+  }
+
+  const confirmationId = match[1] as string;
+  const action = match[2];
+
+  const pending = pendingDeletes.get(confirmationId);
+
+  if (!pending) {
+    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+      type: 4,
+      data: {
+        embeds: [
+          {
+            color: BaseColors.RED,
+            title: '確認已過期',
+            description: '此確認請求已過期或已被處理，請重新執行指令。',
+          },
+        ],
+        components: [],
+        flags: 64,
+      },
+    });
+    return;
+  }
+
+  // Check if expired
+  if (Date.now() > pending.expiresAt) {
+    pendingDeletes.delete(confirmationId);
+    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+      type: 4,
+      data: {
+        embeds: [
+          {
+            color: BaseColors.RED,
+            title: '確認已過期',
+            description: '此確認請求已超過 2 分鐘，請重新執行指令。',
+          },
+        ],
+        components: [],
+        flags: 64,
+      },
+    });
+    return;
+  }
+
+  // Check if the user is the same as the one who initiated
+  const currentUserId = interaction.user?.id?.toString() || '';
+  if (currentUserId !== pending.editorId) {
+    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+      type: 4,
+      data: {
+        embeds: [
+          {
+            color: BaseColors.RED,
+            title: '權限不足',
+            description: '只有發起此操作的用戶可以確認或取消。',
+          },
+        ],
+        flags: 64,
+      },
+    });
+    return;
+  }
+
+  if (action === 'cancel') {
+    pendingDeletes.delete(confirmationId);
+
+    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+      type: 7, // Update message
+      data: {
+        embeds: [
+          {
+            color: BaseColors.GRAY,
+            title: '已取消',
+            description: `已取消刪除關鍵字 \`${pending.pattern}\`。`,
+          },
+        ],
+        components: [],
+      },
+    });
+    return;
+  }
+
+  if (action === 'confirm') {
+    try {
+      await lastValueFrom(module.deleteRule$(pending.guildId, pending.pattern));
+
+      pendingDeletes.delete(confirmationId);
+
+      // Update the ephemeral message
+      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+        type: 7, // Update message
+        data: {
+          embeds: [
+            {
+              color: BaseColors.GRAY,
+              title: '關鍵字已刪除',
+              description: `<@${pending.editorId}> 已刪除關鍵字 \`${pending.pattern}\``,
+              fields: [
+                {
+                  name: '已刪除的設定',
+                  value: `\`${pending.ruleToDelete.matchType}\` **${pending.ruleToDelete.pattern}** ⭢ ${pending.ruleToDelete.response}`,
+                  inline: false,
+                },
+              ],
+            },
+          ],
+          components: [],
+        },
+      });
+
+      log.info({ pattern: pending.pattern, guildId: pending.guildId }, 'Keyword deleted');
+    } catch (error: any) {
+      log.error({ error, pattern: pending.pattern }, 'Failed to delete keyword');
+
+      // Check if rule no longer exists
+      if (error?.code === 'P2025' || error?.message?.includes('Record to delete does not exist')) {
+        await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+          type: 7, // Update message
+          data: {
+            embeds: [
+              {
+                color: BaseColors.RED,
+                title: '刪除失敗',
+                description: `關鍵字 \`${pending.pattern}\` 已不存在，可能已被其他人刪除。`,
+              },
+            ],
+            components: [],
+          },
+        });
+      } else {
+        await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+          type: 7, // Update message
+          data: {
+            embeds: [
+              {
+                color: BaseColors.RED,
+                title: '刪除失敗',
+                description: '刪除關鍵字時發生錯誤，請稍後再試。',
+              },
+            ],
+            components: [],
+          },
+        });
+      }
+    }
+  }
+}
+
 function cleanupExpiredConfirmations() {
   const now = Date.now();
+
+  // Clean up overwrite confirmations
   for (const [id, pending] of pendingOverwrites.entries()) {
     if (now > pending.expiresAt) {
       pendingOverwrites.delete(id);
-      log.debug({ confirmationId: id }, 'Cleaned up expired confirmation');
+      log.debug({ confirmationId: id, type: 'overwrite' }, 'Cleaned up expired confirmation');
+    }
+  }
+
+  // Clean up delete confirmations
+  for (const [id, pending] of pendingDeletes.entries()) {
+    if (now > pending.expiresAt) {
+      pendingDeletes.delete(id);
+      log.debug({ confirmationId: id, type: 'delete' }, 'Cleaned up expired confirmation');
     }
   }
 }
@@ -389,9 +585,10 @@ async function handleEditKeyword(
 ) {
   const pattern = sub.options?.find((o: any) => o.name === 'pattern')?.value as string;
   const response = sub.options?.find((o: any) => o.name === 'response')?.value as string;
-  const matchTypeStr = sub.options?.find((o: any) => o.name === 'match_type')?.value as
-    | string
-    | undefined;
+  const matchType =
+    sub.options?.find((o: any) => o.name === 'match_type')?.value === 'CONTAINS'
+      ? KeywordMatchType.CONTAINS
+      : KeywordMatchType.EXACT;
 
   const editorId = interaction.user?.id?.toString() || '';
 
@@ -401,18 +598,14 @@ async function handleEditKeyword(
         guildId,
         pattern,
         response,
-        matchType: matchTypeStr
-          ? matchTypeStr === 'CONTAINS'
-            ? KeywordMatchType.CONTAINS
-            : KeywordMatchType.EXACT
-          : undefined,
+        matchType,
         editorId,
       })
     );
 
     await replySuccess(bot, interaction, {
       title: '關鍵字已更新',
-      description: `關鍵字 \`${pattern}\` 已成功更新。`,
+      description: `\`${matchType}\` **${pattern}** ⭢ ${response}`,
     });
   } catch (error) {
     log.error({ error, pattern }, 'Failed to edit keyword');
@@ -432,20 +625,89 @@ async function handleDeleteKeyword(
   sub: InteractionDataOption
 ) {
   const pattern = sub.options?.find((o: any) => o.name === 'pattern')?.value as string;
+  const editorId = interaction.user?.id?.toString() || '';
 
   try {
-    await lastValueFrom(module.deleteRule$(guildId, pattern));
+    // Fetch the rule to delete
+    const ruleToDelete = await lastValueFrom(module.getRuleByPattern$(guildId, pattern));
 
-    await replySuccess(bot, interaction, {
-      title: '關鍵字已刪除',
-      description: `關鍵字 \`${pattern}\` 已成功刪除。`,
+    if (!ruleToDelete) {
+      await replyAutoError(
+        bot,
+        interaction,
+        { code: 'P2025' },
+        {
+          notFound: `關鍵字 \`${pattern}\` 不存在。`,
+        }
+      );
+      return;
+    }
+
+    // Generate unique confirmation ID
+    const confirmationId = `${guildId}:${pattern}:${Date.now()}`;
+    const expiresAt = Date.now() + 2 * 60 * 1000; // 2 minutes
+
+    // Store pending delete
+    pendingDeletes.set(confirmationId, {
+      guildId,
+      pattern,
+      editorId,
+      ruleToDelete,
+      expiresAt,
     });
-  } catch (error) {
-    log.error({ error, pattern }, 'Failed to delete keyword');
 
-    await replyAutoError(bot, interaction, error, {
-      notFound: `關鍵字 \`${pattern}\` 不存在。`,
-      generic: '刪除關鍵字規則時發生錯誤，請稍後再試。',
+    // Clean up expired confirmations
+    cleanupExpiredConfirmations();
+
+    // Send confirmation message with buttons
+    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+      type: 4,
+      data: {
+        embeds: [
+          {
+            color: BaseColors.ORANGE,
+            title: '確認刪除關鍵字',
+            description: `即將刪除關鍵字 \`${pattern}\`，此操作無法復原。`,
+            fields: [
+              {
+                name: '關鍵字設定',
+                value: `\`${ruleToDelete.matchType}\` <@${ruleToDelete.editorId}>\n**${ruleToDelete.pattern}** ⭢ ${ruleToDelete.response}`,
+                inline: false,
+              },
+            ],
+            footer: {
+              text: '此確認訊息將在 2 分鐘後失效',
+            },
+          },
+        ],
+        components: [
+          {
+            type: 1,
+            components: [
+              {
+                type: 2,
+                style: 4, // Red
+                label: '確認刪除',
+                customId: `kw:delete:${confirmationId}:confirm`,
+              },
+              {
+                type: 2,
+                style: 2, // Gray
+                label: '取消',
+                customId: `kw:delete:${confirmationId}:cancel`,
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    log.info({ pattern, guildId }, 'Delete confirmation requested');
+  } catch (error) {
+    log.error({ error, pattern }, 'Failed to prepare delete confirmation');
+
+    await replyError(bot, interaction, {
+      description: '準備刪除確認時發生錯誤，請稍後再試。',
     });
   }
 }
