@@ -153,18 +153,9 @@ async function handleStatus(
       '**可用變數**: `{user}`, `{username}`, `{server}`, `{memberCount}`',
     ].join('\n');
 
-    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-      type: 4,
-      data: {
-        embeds: [
-          {
-            title: '成員通知狀態',
-            description,
-            color: Colors.INFO,
-            timestamp: new Date().toISOString(),
-          },
-        ],
-      },
+    await replyInfo(bot, interaction, {
+      title: '成員通知狀態',
+      description,
     });
   } catch (error) {
     log.error({ error, guildId }, 'Failed to get status');

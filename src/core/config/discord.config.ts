@@ -17,6 +17,7 @@ const rawDesiredProperties = createDesiredPropertiesObject(
       id: true,
       username: true,
       toggles: true,
+      avatar: true,
     },
     interaction: {
       type: true,

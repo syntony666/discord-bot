@@ -1,6 +1,7 @@
 import { createLogger } from '@core/logger';
 import type { MessageStrategy, ReplyStrategyOptions } from '../message.types';
 import type { DiscordEmbed } from '@discordeno/bot';
+import { appConfig } from '@core/config';
 
 const log = createLogger('ReplyStrategy');
 
@@ -19,6 +20,10 @@ export class ReplyStrategy implements MessageStrategy {
         description,
         color,
         timestamp: new Date().toISOString(),
+        footer: {
+          text: interaction.user.username,
+          icon_url: appConfig.footerIconUrl,
+        },
       };
 
       await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {

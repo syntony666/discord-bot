@@ -37,6 +37,7 @@ export class PaginatorFactory {
           title: options.title,
           mapItem: options.mapItem,
           emptyText: options.emptyText,
+          username: options.interaction.user.username,
         });
 
       case PaginatorType.IMAGE_LIST:
@@ -44,6 +45,7 @@ export class PaginatorFactory {
           title: options.title,
           mapItem: options.mapItem,
           emptyText: options.emptyText,
+          username: options.interaction.user.username,
         });
 
       case PaginatorType.CUSTOM:

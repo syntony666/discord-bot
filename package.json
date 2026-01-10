@@ -29,6 +29,7 @@
     "@discordeno/bot": "^21.0.0",
     "@discordeno/gateway": "^21.0.0",
     "@discordeno/rest": "^21.0.0",
+    "@discordeno/utils": "^21.0.0",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "dotenv": "^17.2.3",

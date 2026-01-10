@@ -15,6 +15,10 @@ export enum PaginatorType {
 export interface PageRenderResult {
   content?: string;
   embeds?: DiscordEmbed[];
+  footer?: {
+    text: string;
+    iconUrl?: string;
+  };
 }
 
 /**

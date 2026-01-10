@@ -2,13 +2,16 @@ import { getBotVersion, getUptime } from '@core/bot-info';
 import { logger } from '@core/logger';
 import { BotChannel, BotGuild, BotInteraction, BotUser } from '@core/rx/bus';
 import {
+  avatarUrl,
   Bot,
   ButtonStyles,
+  guildIconUrl,
   InteractionCallbackData,
   InteractionResponseTypes,
   MessageComponentTypes,
 } from '@discordeno/bot';
 import { commandRegistry } from './command.registry';
+import { appConfig, CommandColors } from '@core/config';
 
 export function createStatusCommandHandler(bot: Bot) {
   commandRegistry.registerCommand('status', async (interaction: BotInteraction, bot: Bot) => {
@@ -28,27 +31,41 @@ async function handleBotStatus(interaction: BotInteraction, bot: Bot) {
   const uptime = getUptime();
   const nodeVersion = process.version;
 
-  // 建立 embed 的輔助函數
+  const botUser = (await bot.helpers.getUser(bot.id)) as BotUser;
+
+  const botIcon = avatarUrl(bot.id, botUser.discriminator);
+
   const createStatusEmbed = (ping: string | number) =>
     ({
       embeds: [
         {
-          title: '📊 Bot Status',
+          title: botUser.username,
           description:
-            '一個模組化的 Discord 機器人\n使用 TypeScript + Discordeno + RxJS + Prisma 構建',
-          color: 0x5865f2,
+            '你想知道什麼呢?\n\n製作: @sakurashigure ‧ [Twitter(X)](https://x.com/SakuraShigure99)',
+          author: {
+            name: '自我介紹',
+          },
+          color: CommandColors.INFO,
+          thumbnail: botIcon
+            ? {
+                url: botIcon,
+              }
+            : undefined,
           fields: [
-            { name: 'Version', value: `${version.version}`, inline: true },
-            { name: 'Uptime', value: `${uptime}`, inline: true },
+            { name: 'Uptime', value: `\`${uptime}\``, inline: false },
             {
-              name: 'Ping',
-              value: typeof ping === 'number' ? `${ping}ms` : `${ping}`,
-              inline: true,
+              name: 'API Latency',
+              value: typeof ping === 'number' ? `\`${ping}ms\`` : `\`${ping}\``,
+              inline: false,
             },
-            { name: 'Node.js', value: `${nodeVersion}`, inline: true },
-            { name: 'Discordeno', value: `${version.discordenoVersion}`, inline: true },
+            { name: 'Node.js', value: `\`${nodeVersion}\``, inline: true },
+            { name: 'Discordeno', value: `\`v${version.discordenoVersion}\``, inline: true },
           ],
           timestamp: new Date().toISOString(),
+          footer: {
+            text: `ver. ${version.version}`,
+            iconUrl: appConfig.footerIconUrl,
+          },
         },
       ],
       components: [
@@ -91,6 +108,8 @@ async function handleBotStatus(interaction: BotInteraction, bot: Bot) {
 
 async function handleGuildStatus(interaction: BotInteraction, bot: Bot) {
   const guildId = interaction.guildId;
+  const version = getBotVersion();
+
   if (!guildId) {
     await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
       type: InteractionResponseTypes.ChannelMessageWithSource,
@@ -103,11 +122,7 @@ async function handleGuildStatus(interaction: BotInteraction, bot: Bot) {
   }
 
   const guild = (await bot.helpers.getGuild(guildId)) as BotGuild;
-  const channels = (await bot.helpers.getChannels(guildId)) as BotChannel[];
   const owner = (await bot.helpers.getUser(guild.ownerId)) as BotUser;
-
-  const textChannels = channels.filter((c) => c.type === 0).length;
-  const voiceChannels = channels.filter((c) => c.type === 2).length;
 
   const createdAt = new Date(Number((guild.id >> 22n) + 1420070400000n));
   const formattedDate = createdAt.toLocaleString('zh-TW', {
@@ -118,28 +133,30 @@ async function handleGuildStatus(interaction: BotInteraction, bot: Bot) {
     minute: '2-digit',
   });
 
+  const guildIcon = guildIconUrl(guild.id, guild.icon, { size: 256 });
+
   await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
     type: 4,
     data: {
       embeds: [
         {
-          title: '伺服器資訊',
-          description: guild.name,
-          color: 0x5865f2,
-          thumbnail: guild.icon
+          author: { name: '伺服器資訊' },
+          title: guild.name,
+          color: CommandColors.INFO,
+          thumbnail: guildIcon
             ? {
-                url: `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=256`,
+                url: guildIcon,
               }
             : undefined,
           fields: [
             {
               name: '創立時間',
-              value: formattedDate,
+              value: `<t:${Math.floor(createdAt.getTime() / 1000)}>`,
               inline: false,
             },
             {
               name: '成員',
-              value: `${guild.memberCount || 0} 人`,
+              value: `${guild.approximateMemberCount || 0} 人`,
               inline: true,
             },
             {
@@ -149,22 +166,13 @@ async function handleGuildStatus(interaction: BotInteraction, bot: Bot) {
             },
             {
               name: '擁有者',
-              value: `${owner.username}`,
-              inline: true,
-            },
-            {
-              name: '文字頻道',
-              value: `${textChannels} 個`,
-              inline: true,
-            },
-            {
-              name: '語音頻道',
-              value: `${voiceChannels} 個`,
-              inline: true,
+              value: `<@${owner.id}>`,
+              inline: false,
             },
           ],
           footer: {
-            text: `伺服器 ID: ${guild.id}`,
+            text: `${guild.id}`,
+            iconUrl: appConfig.footerIconUrl,
           },
           timestamp: new Date().toISOString(),
         },

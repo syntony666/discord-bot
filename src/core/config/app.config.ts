@@ -19,4 +19,5 @@ export const appConfig = {
   database: {
     url: requireEnv('DATABASE_URL'),
   },
+  footerIconUrl: 'https://cdn.jsdelivr.net/gh/syntony666/cdn/logo-128x128.png',
 } as const;
