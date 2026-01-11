@@ -57,20 +57,31 @@ export class ReplyStrategy implements MessageStrategy {
 
         if (isComponentInteraction || isModalInteraction) {
           // Use type: 7 to update the message that triggered the interaction
+          // When editing, remove buttons unless explicitly provided
           await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
             type: 7, // UPDATE_MESSAGE
             data: {
               embeds: [embed],
-              components: components ?? [],
+              components: components ?? [], // Clear components by default when editing
             },
           });
         } else {
           // Use editOriginalInteractionResponse to update bot's own response
           await bot.helpers.editOriginalInteractionResponse(interaction.token, {
             embeds: [embed],
-            components,
+            components: components ?? [], // Clear components by default when editing
           });
         }
+      } else {
+        // Original reply logic for non-edit cases
+        await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+          type: 4, // DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE or CHANNEL_MESSAGE_WITH_SOURCE
+          data: {
+            embeds: [embed],
+            components,
+            flags: ephemeral ? 64 : undefined,
+          },
+        });
       }
 
       return true;
