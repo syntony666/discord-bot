@@ -1,6 +1,6 @@
 import { createLogger } from '@core/logger';
 import type { MessageStrategy, ReplyStrategyOptions } from '../message.types';
-import type { DiscordEmbed, MessageComponents } from '@discordeno/bot';
+import type { DiscordEmbed } from '@discordeno/bot';
 import { appConfig } from '@core/config';
 
 const log = createLogger('ReplyStrategy');
@@ -15,12 +15,21 @@ export class ReplyStrategy implements MessageStrategy {
     const {
       bot,
       interaction,
-      title,
-      description,
       color,
       ephemeral = false,
-      fields,
+      isEdit = false,
       components,
+      // Extract all DiscordEmbed properties
+      title,
+      description,
+      fields,
+      thumbnail,
+      image,
+      footer,
+      author,
+      url,
+      video,
+      provider,
     } = this.options;
 
     try {
@@ -29,21 +38,40 @@ export class ReplyStrategy implements MessageStrategy {
         description,
         color,
         fields,
+        thumbnail,
+        image,
+        author,
+        url,
+        video,
+        provider,
         timestamp: new Date().toISOString(),
-        footer: {
+        footer: footer ?? {
           text: interaction.user.username,
           icon_url: appConfig.footerIconUrl,
         },
       };
 
-      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-        type: 4,
-        data: {
-          embeds: [embed],
-          components,
-          flags: ephemeral ? 64 : undefined,
-        },
-      });
+      if (isEdit) {
+        const isComponentInteraction = interaction.type === 3; // MESSAGE_COMPONENT
+        const isModalInteraction = interaction.type === 5; // MODAL_SUBMIT
+
+        if (isComponentInteraction || isModalInteraction) {
+          // Use type: 7 to update the message that triggered the interaction
+          await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+            type: 7, // UPDATE_MESSAGE
+            data: {
+              embeds: [embed],
+              components: components ?? [],
+            },
+          });
+        } else {
+          // Use editOriginalInteractionResponse to update bot's own response
+          await bot.helpers.editOriginalInteractionResponse(interaction.token, {
+            embeds: [embed],
+            components,
+          });
+        }
+      }
 
       return true;
     } catch (error) {

@@ -1,18 +1,17 @@
 import { getBotVersion, getUptime } from '@core/bot-info';
 import { logger } from '@core/logger';
-import { BotChannel, BotGuild, BotInteraction, BotUser } from '@core/rx/bus';
+import { BotGuild, BotInteraction, BotUser } from '@core/rx/bus';
 import {
   avatarUrl,
   Bot,
   ButtonStyles,
   guildIconUrl,
-  InteractionCallbackData,
-  InteractionResponseTypes,
+  MessageComponents,
   MessageComponentTypes,
 } from '@discordeno/bot';
 import { commandRegistry } from './command.registry';
-import { appConfig, CommandColors } from '@core/config';
-import { replyInfo } from '@adapters/discord/shared/message/message.helper';
+import { appConfig } from '@core/config';
+import { replyInfo, replyError } from '@adapters/discord/shared/message/message.helper';
 
 export function createStatusCommandHandler(bot: Bot) {
   commandRegistry.registerCommand('status', async (interaction: BotInteraction, bot: Bot) => {
@@ -33,93 +32,64 @@ async function handleBotStatus(interaction: BotInteraction, bot: Bot) {
   const nodeVersion = process.version;
 
   const botUser = (await bot.helpers.getUser(bot.id)) as BotUser;
-
   const botIcon = avatarUrl(bot.id, botUser.discriminator);
 
-  // Send initial response with "Calculating..." ping
-  const startTime = Date.now();
+  // Create reusable button components with explicit type
+  const statusButtons: MessageComponents = [
+    {
+      type: 1,
+      components: [
+        {
+          type: MessageComponentTypes.Button,
+          style: ButtonStyles.Link,
+          label: '使用說明',
+          url: 'https://github.com/syntony666/discord-bot#readme',
+        },
+        {
+          type: MessageComponentTypes.Button,
+          style: ButtonStyles.Link,
+          label: '邀請連結',
+          url: `https://discord.com/api/oauth2/authorize?client_id=${bot.id}&permissions=8&scope=bot%20applications.commands`,
+        },
+      ],
+    },
+  ];
 
-  await replyInfo(bot, interaction, {
+  // Helper function to create embed options
+  const createStatusEmbed = (latency: string | number) => ({
     title: botUser.username,
     description:
       '你想知道什麼呢?\n\n製作: @sakurashigure ‧ [Twitter(X)](https://x.com/SakuraShigure99)',
+    author: { name: '自我介紹' },
+    thumbnail: botIcon ? { url: botIcon } : undefined,
     fields: [
       { name: 'Uptime', value: `\`${uptime}\``, inline: false },
-      { name: 'API Latency', value: `\`計算中...\``, inline: false },
+      {
+        name: 'API Latency',
+        value: typeof latency === 'number' ? `\`${latency}ms\`` : `\`${latency}\``,
+        inline: false,
+      },
       { name: 'Node.js', value: `\`${nodeVersion}\``, inline: true },
       { name: 'Discordeno', value: `\`v${version.discordenoVersion}\``, inline: true },
     ],
-    components: [
-      {
-        type: MessageComponentTypes.ActionRow,
-        components: [
-          {
-            type: MessageComponentTypes.Button,
-            style: ButtonStyles.Link,
-            label: '使用說明',
-            url: 'https://github.com/syntony666/discord-bot#readme',
-          },
-          {
-            type: MessageComponentTypes.Button,
-            style: ButtonStyles.Link,
-            label: '邀請連結',
-            url: `https://discord.com/api/oauth2/authorize?client_id=${bot.id}&permissions=8&scope=bot%20applications.commands`,
-          },
-        ],
-      },
-    ],
+    footer: {
+      text: `ver. ${version.version}`,
+      icon_url: appConfig.footerIconUrl,
+    },
+    components: statusButtons,
   });
+
+  const startTime = Date.now();
+
+  // Send initial response with "Calculating..." ping
+  await replyInfo(bot, interaction, createStatusEmbed('計算中...'));
 
   const latency = Date.now() - startTime;
 
   // Update with actual latency
-  await bot.helpers.editOriginalInteractionResponse(interaction.token, {
-    embeds: [
-      {
-        title: botUser.username,
-        description:
-          '你想知道什麼呢?\n\n製作: @sakurashigure ‧ [Twitter(X)](https://x.com/SakuraShigure99)',
-        author: {
-          name: '自我介紹',
-        },
-        color: CommandColors.INFO,
-        thumbnail: botIcon
-          ? {
-              url: botIcon,
-            }
-          : undefined,
-        fields: [
-          { name: 'Uptime', value: `\`${uptime}\``, inline: false },
-          { name: 'API Latency', value: `\`${latency}ms\``, inline: false },
-          { name: 'Node.js', value: `\`${nodeVersion}\``, inline: true },
-          { name: 'Discordeno', value: `\`v${version.discordenoVersion}\``, inline: true },
-        ],
-        timestamp: new Date().toISOString(),
-        footer: {
-          text: `ver. ${version.version}`,
-          iconUrl: appConfig.footerIconUrl,
-        },
-      },
-    ],
-    components: [
-      {
-        type: MessageComponentTypes.ActionRow,
-        components: [
-          {
-            type: MessageComponentTypes.Button,
-            style: ButtonStyles.Link,
-            label: '使用說明',
-            url: 'https://github.com/syntony666/discord-bot#readme',
-          },
-          {
-            type: MessageComponentTypes.Button,
-            style: ButtonStyles.Link,
-            label: '邀請連結',
-            url: `https://discord.com/api/oauth2/authorize?client_id=${bot.id}&permissions=8&scope=bot%20applications.commands`,
-          },
-        ],
-      },
-    ],
+  await replyInfo(bot, interaction, {
+    ...createStatusEmbed(latency),
+    isEdit: true,
   });
 
   logger.info(
@@ -130,36 +100,23 @@ async function handleBotStatus(interaction: BotInteraction, bot: Bot) {
 
 async function handleGuildStatus(interaction: BotInteraction, bot: Bot) {
   const guildId = interaction.guildId;
-  const version = getBotVersion();
 
   if (!guildId) {
-    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-      type: InteractionResponseTypes.ChannelMessageWithSource,
-      data: {
-        content: '此指令只能在伺服器中使用',
-        flags: 64,
-      },
+    await replyError(bot, interaction, {
+      description: '此指令只能在伺服器中使用',
+      ephemeral: true,
     });
     return;
   }
 
   const guild = (await bot.helpers.getGuild(guildId)) as BotGuild;
   const owner = (await bot.helpers.getUser(guild.ownerId)) as BotUser;
-
   const createdAt = new Date(Number((guild.id >> 22n) + 1420070400000n));
-  const formattedDate = createdAt.toLocaleString('zh-TW', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
   const guildIcon = guildIconUrl(guild.id, guild.icon, { size: 256 });
 
   await replyInfo(bot, interaction, {
     title: guild.name,
-    description: undefined!,
+    thumbnail: guildIcon ? { url: guildIcon } : undefined,
     fields: [
       {
         name: '創立時間',
@@ -182,6 +139,10 @@ async function handleGuildStatus(interaction: BotInteraction, bot: Bot) {
         inline: false,
       },
     ],
+    footer: {
+      text: `${guild.id}`,
+      icon_url: appConfig.footerIconUrl,
+    },
   });
 
   logger.info({ guildId: guildId.toString() }, 'Guild status displayed');

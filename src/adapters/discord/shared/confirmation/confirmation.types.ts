@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import { Bot, DiscordEmbed } from '@discordeno/bot';
 import { BotInteraction } from '@core/rx/bus';
 
 export interface ConfirmationConfig<TData = any> {
@@ -11,15 +11,12 @@ export interface ConfirmationConfig<TData = any> {
   buttons?: ConfirmationButtons;
 }
 
-export interface ConfirmationEmbed {
+/**
+ * Confirmation embed options extending DiscordEmbed.
+ */
+export interface ConfirmationEmbed extends Omit<DiscordEmbed, 'type' | 'timestamp' | 'footer'> {
   title: string;
   description: string;
-  color?: number;
-  fields?: Array<{
-    name: string;
-    value: string;
-    inline?: boolean;
-  }>;
   footerText?: string;
 }
 

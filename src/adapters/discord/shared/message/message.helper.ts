@@ -24,12 +24,10 @@ export async function sendMessage(options: MessageOptions): Promise<boolean> {
 export async function replySuccess(
   bot: Bot,
   interaction: BotInteraction,
-  options: {
-    title?: string;
-    description: string;
+  options: Omit<DiscordEmbed, 'type'> & {
     ephemeral?: boolean;
-    fields?: DiscordEmbed['fields'];
     components?: MessageComponents;
+    isEdit?: boolean;
   }
 ): Promise<boolean> {
   return sendMessage({
@@ -46,12 +44,10 @@ export async function replySuccess(
 export async function replyError(
   bot: Bot,
   interaction: BotInteraction,
-  options: {
-    title?: string;
-    description: string;
+  options: Omit<DiscordEmbed, 'type'> & {
     ephemeral?: boolean;
-    fields?: DiscordEmbed['fields'];
     components?: MessageComponents;
+    isEdit?: boolean;
   }
 ): Promise<boolean> {
   return sendMessage({
@@ -68,12 +64,10 @@ export async function replyError(
 export async function replyInfo(
   bot: Bot,
   interaction: BotInteraction,
-  options: {
-    title?: string;
-    description: string;
+  options: Omit<DiscordEmbed, 'type'> & {
     ephemeral?: boolean;
-    fields?: DiscordEmbed['fields'];
     components?: MessageComponents;
+    isEdit?: boolean;
   }
 ): Promise<boolean> {
   return sendMessage({
@@ -90,12 +84,10 @@ export async function replyInfo(
 export async function replyWarning(
   bot: Bot,
   interaction: BotInteraction,
-  options: {
-    title?: string;
-    description: string;
+  options: Omit<DiscordEmbed, 'type'> & {
     ephemeral?: boolean;
-    fields?: DiscordEmbed['fields'];
     components?: MessageComponents;
+    isEdit?: boolean;
   }
 ): Promise<boolean> {
   return sendMessage({
@@ -134,15 +126,8 @@ export async function replyAutoError(
 /**
  * High-level options for channel notifications.
  */
-export interface NotifyOptions {
+export interface NotifyOptions extends Omit<DiscordEmbed, 'type'> {
   type: 'stream_live' | 'member_join' | 'member_leave' | 'announcement' | 'custom';
-  title: string;
-  description: string;
-  color?: number;
-  fields?: DiscordEmbed['fields'];
-  thumbnail?: string;
-  image?: string;
-  footer?: DiscordEmbed['footer'];
 }
 
 /**
@@ -151,7 +136,7 @@ export interface NotifyOptions {
 export async function notify(
   bot: Bot,
   channelId: bigint,
-  options: NotifyOptions
+  { type, ...embedOptions }: NotifyOptions // 直接在參數解構
 ): Promise<boolean> {
   const typeMap = {
     stream_live: MessageType.STREAM_LIVE_NOTIFICATION,
@@ -161,20 +146,10 @@ export async function notify(
     custom: MessageType.CUSTOM_NOTIFICATION,
   } as const;
 
-  const messageType = typeMap[options.type];
-
-  const notificationOptions: NotificationOptions = {
-    type: messageType,
+  return sendMessage({
+    type: typeMap[type],
     bot,
     channelId,
-    title: options.title,
-    description: options.description,
-    color: options.color,
-    fields: options.fields,
-    thumbnail: options.thumbnail,
-    image: options.image,
-    footer: options.footer,
-  };
-
-  return sendMessage(notificationOptions);
+    ...embedOptions,
+  });
 }

@@ -59,44 +59,47 @@ export class MessageFactory {
     if (this.isReplyType(options.type)) {
       const replyOptions = options as ReplyOptions;
       const config = MESSAGE_CONFIG[replyOptions.type];
+      const { type, bot, interaction, ephemeral, components, isEdit, ...embedProps } = replyOptions;
+
       return new ReplyStrategy({
-        bot: replyOptions.bot,
-        interaction: replyOptions.interaction,
-        title: replyOptions.title ?? config.defaultTitle,
-        description: replyOptions.description,
+        bot,
+        interaction,
+        ...embedProps,
+        title: embedProps.title ?? config.defaultTitle,
         color: config.color,
-        ephemeral: replyOptions.ephemeral ?? false,
+        ephemeral: ephemeral ?? false,
+        components,
+        isEdit: isEdit ?? false,
       });
     }
 
     if (this.isNotificationType(options.type)) {
       const notificationOptions = options as NotificationOptions;
+      const { type, bot, channelId, ...embedProps } = notificationOptions;
+
       const color =
-        notificationOptions.type === 'CUSTOM_NOTIFICATION'
-          ? (notificationOptions.color ?? Colors.INFO)
-          : MESSAGE_CONFIG[notificationOptions.type].color;
+        type === 'CUSTOM_NOTIFICATION'
+          ? (embedProps.color ?? Colors.INFO)
+          : MESSAGE_CONFIG[type].color;
 
       return new NotificationStrategy({
-        bot: notificationOptions.bot,
-        channelId: notificationOptions.channelId,
-        title: notificationOptions.title!,
-        description: notificationOptions.description,
+        bot,
+        channelId,
+        ...embedProps,
         color,
-        fields: notificationOptions.fields,
-        thumbnail: notificationOptions.thumbnail,
-        image: notificationOptions.image,
-        footer: notificationOptions.footer,
       });
     }
 
     throw new Error(`Unknown message type: ${(options as any).type}`);
   }
+
   /**
    * Narrow MessageType into reply-only types.
    */
   private static isReplyType(type: MessageType): type is ReplyOptions['type'] {
     return ['SUCCESS_REPLY', 'ERROR_REPLY', 'INFO_REPLY', 'WARNING_REPLY'].includes(type);
   }
+
   /**
    * Narrow MessageType into notification-only types.
    */

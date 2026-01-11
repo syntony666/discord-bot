@@ -29,21 +29,9 @@ export interface MessageStrategy {
 }
 
 /**
- * Common properties for embed-based messages.
- */
-interface BaseMessageOptions {
-  title?: string;
-  description: string;
-  fields?: DiscordEmbed['fields'];
-  thumbnail?: string;
-  image?: string;
-  footer?: DiscordEmbed['footer'];
-}
-
-/**
  * Options for interaction replies (slash commands, buttons, etc.).
  */
-export interface ReplyOptions extends BaseMessageOptions {
+export interface ReplyOptions extends Omit<DiscordEmbed, 'type'> {
   type:
     | MessageType.SUCCESS_REPLY
     | MessageType.ERROR_REPLY
@@ -52,8 +40,8 @@ export interface ReplyOptions extends BaseMessageOptions {
   bot: Bot;
   interaction: BotInteraction;
   ephemeral?: boolean;
-  fields?: DiscordEmbed['fields'];
   components?: MessageComponents;
+  isEdit?: boolean;
 }
 
 /**
@@ -75,7 +63,7 @@ export interface AutoErrorReplyOptions {
 /**
  * Options for channel notifications (non-interaction messages).
  */
-export interface NotificationOptions extends BaseMessageOptions {
+export interface NotificationOptions extends Omit<DiscordEmbed, 'type'> {
   type:
     | MessageType.STREAM_LIVE_NOTIFICATION
     | MessageType.MEMBER_JOIN_NOTIFICATION
@@ -84,7 +72,6 @@ export interface NotificationOptions extends BaseMessageOptions {
     | MessageType.CUSTOM_NOTIFICATION;
   bot: Bot;
   channelId: bigint;
-  color?: number;
 }
 
 /**
@@ -92,25 +79,17 @@ export interface NotificationOptions extends BaseMessageOptions {
  */
 export type MessageOptions = ReplyOptions | AutoErrorReplyOptions | NotificationOptions;
 
-export interface ReplyStrategyOptions {
+export interface ReplyStrategyOptions extends Omit<DiscordEmbed, 'type'> {
   bot: Bot;
   interaction: BotInteraction;
-  title?: string;
-  description: string;
   color: number;
   ephemeral?: boolean;
-  fields?: DiscordEmbed['fields'];
+  isEdit?: boolean;
   components?: MessageComponents;
 }
 
-export interface NotificationStrategyOptions {
+export interface NotificationStrategyOptions extends Omit<DiscordEmbed, 'type'> {
   bot: Bot;
   channelId: bigint;
-  title: string;
-  description: string;
   color: number;
-  fields?: DiscordEmbed['fields'];
-  thumbnail?: string;
-  image?: string;
-  footer?: DiscordEmbed['footer'];
 }

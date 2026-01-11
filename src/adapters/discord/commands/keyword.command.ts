@@ -7,12 +7,11 @@ import {
   replySuccess,
   replyError,
   replyAutoError,
+  replyWarning,
 } from '@adapters/discord/shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
 import { commandRegistry } from './command.registry';
 import { createLogger } from '@core/logger';
-import { BaseColors } from '@core/config/colors.config';
-import { appConfig } from '@core/config';
 import { createConfirmation } from '@adapters/discord/shared/confirmation/confirmation.helper';
 
 const log = createLogger('KeywordCommand');
@@ -181,73 +180,34 @@ async function handleDuplicateKeyword(
               })
             );
 
-            await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-              type: 7,
-              data: {
-                embeds: [
-                  {
-                    color: BaseColors.GREEN,
-                    title: '關鍵字已更新',
-                    description: `<@${data.editorId}> 已覆蓋更新關鍵字 \`${data.pattern}\``,
-                    fields: [
-                      {
-                        name: '新設定',
-                        value: `\`${data.matchType}\` **${data.pattern}** ⭢ ${data.response}`,
-                      },
-                    ],
-                    timestamp: new Date().toISOString(),
-                    footer: {
-                      text: interaction.user?.username || 'Unknown User',
-                      iconUrl: appConfig.footerIconUrl,
-                    },
-                  },
-                ],
-                components: [],
-              },
+            await replySuccess(bot, interaction, {
+              title: '關鍵字已更新',
+              description: `<@${data.editorId}> 已覆蓋更新關鍵字 \`${data.pattern}\``,
+              fields: [
+                {
+                  name: '新設定',
+                  value: `\`${data.matchType}\` **${data.pattern}** ⭢ ${data.response}`,
+                },
+              ],
+              isEdit: true,
             });
 
             log.info({ pattern: data.pattern, guildId: data.guildId }, 'Keyword overwritten');
           } catch (error) {
             log.error({ error, pattern: data.pattern }, 'Failed to overwrite keyword');
 
-            await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-              type: 7,
-              data: {
-                embeds: [
-                  {
-                    color: BaseColors.RED,
-                    title: '更新失敗',
-                    description: '更新關鍵字時發生錯誤,請稍後再試。',
-                    timestamp: new Date().toISOString(),
-                    footer: {
-                      text: interaction.user?.username || 'Unknown User',
-                      iconUrl: appConfig.footerIconUrl,
-                    },
-                  },
-                ],
-                components: [],
-              },
+            await replyError(bot, interaction, {
+              title: '更新失敗',
+              description: '更新關鍵字時發生錯誤,請稍後再試。',
+              isEdit: true,
             });
           }
         },
         onCancel: async (bot, interaction, data) => {
-          await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-            type: 7,
-            data: {
-              embeds: [
-                {
-                  color: BaseColors.GRAY,
-                  title: '已取消',
-                  description: `已取消覆蓋關鍵字 \`${data.pattern}\`。`,
-                  timestamp: new Date().toISOString(),
-                  footer: {
-                    text: interaction.user?.username || 'Unknown User',
-                    iconUrl: appConfig.footerIconUrl,
-                  },
-                },
-              ],
-              components: [],
-            },
+          await replyWarning(bot, interaction, {
+            title: '已取消',
+            description: `已取消覆蓋關鍵字 \`${data.pattern}\`。`,
+            isEdit: true,
           });
         },
       }
@@ -381,29 +341,16 @@ async function handleDeleteKeyword(
           try {
             await lastValueFrom(module.deleteRule$(data.guildId, data.pattern));
 
-            await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-              type: 7,
-              data: {
-                embeds: [
-                  {
-                    color: BaseColors.GRAY,
-                    title: '關鍵字已刪除',
-                    description: `<@${data.editorId}> 已刪除關鍵字 \`${data.pattern}\``,
-                    fields: [
-                      {
-                        name: '已刪除的設定',
-                        value: `\`${data.ruleToDelete.matchType}\` **${data.ruleToDelete.pattern}** ⭢ ${data.ruleToDelete.response}`,
-                      },
-                    ],
-                    timestamp: new Date().toISOString(),
-                    footer: {
-                      text: interaction.user?.username || 'Unknown User',
-                      iconUrl: appConfig.footerIconUrl,
-                    },
-                  },
-                ],
-                components: [],
-              },
+            await replyWarning(bot, interaction, {
+              title: '關鍵字已刪除',
+              description: `<@${data.editorId}> 已刪除關鍵字 \`${data.pattern}\``,
+              fields: [
+                {
+                  name: '已刪除的設定',
+                  value: `\`${data.ruleToDelete.matchType}\` **${data.ruleToDelete.pattern}** ⭢ ${data.ruleToDelete.response}`,
+                },
+              ],
+              isEdit: true,
             });
 
             log.info({ pattern: data.pattern, guildId: data.guildId }, 'Keyword deleted');
@@ -414,64 +361,25 @@ async function handleDeleteKeyword(
               error?.code === 'P2025' ||
               error?.message?.includes('Record to delete does not exist')
             ) {
-              await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-                type: 7,
-                data: {
-                  embeds: [
-                    {
-                      color: BaseColors.RED,
-                      title: '刪除失敗',
-                      description: `關鍵字 \`${data.pattern}\` 已不存在,可能已被其他人刪除。`,
-                      timestamp: new Date().toISOString(),
-                      footer: {
-                        text: interaction.user?.username || 'Unknown User',
-                        iconUrl: appConfig.footerIconUrl,
-                      },
-                    },
-                  ],
-                  components: [],
-                },
+              await replyError(bot, interaction, {
+                title: '刪除失敗',
+                description: `關鍵字 \`${data.pattern}\` 已不存在,可能已被其他人刪除。`,
+                isEdit: true,
               });
             } else {
-              await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-                type: 7,
-                data: {
-                  embeds: [
-                    {
-                      color: BaseColors.RED,
-                      title: '刪除失敗',
-                      description: '刪除關鍵字時發生錯誤,請稍後再試。',
-                      timestamp: new Date().toISOString(),
-                      footer: {
-                        text: interaction.user?.username || 'Unknown User',
-                        iconUrl: appConfig.footerIconUrl,
-                      },
-                    },
-                  ],
-                  components: [],
-                },
+              await replyError(bot, interaction, {
+                title: '刪除失敗',
+                description: '刪除關鍵字時發生錯誤,請稍後再試。',
+                isEdit: true,
               });
             }
           }
         },
         onCancel: async (bot, interaction, data) => {
-          await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-            type: 7,
-            data: {
-              embeds: [
-                {
-                  color: BaseColors.GRAY,
-                  title: '已取消',
-                  description: `已取消刪除關鍵字 \`${data.pattern}\`。`,
-                  timestamp: new Date().toISOString(),
-                  footer: {
-                    text: interaction.user?.username || 'Unknown User',
-                    iconUrl: appConfig.footerIconUrl,
-                  },
-                },
-              ],
-              components: [],
-            },
+          await replyWarning(bot, interaction, {
+            title: '已取消',
+            description: `已取消刪除關鍵字 \`${data.pattern}\`。`,
+            isEdit: true,
           });
         },
       }

@@ -4,6 +4,7 @@ import { createLogger } from '@core/logger';
 import { BaseColors } from '@core/config/colors.config';
 import { appConfig } from '@core/config';
 import { StoredConfirmation, ConfirmationConfig, ConfirmationHandler } from './confirmation.types';
+import { replyWarning, replyError } from '@adapters/discord/shared/message/message.helper';
 
 const log = createLogger('ConfirmationManager');
 
@@ -52,20 +53,8 @@ export class ConfirmationManager {
       ? `${config.embed.footerText}\n此確認訊息將在 ${Math.floor(expiresIn / 60000)} 分鐘後失效`
       : `此確認訊息將在 ${Math.floor(expiresIn / 60000)} 分鐘後失效`;
 
-    const embed = {
-      color: config.embed.color ?? BaseColors.ORANGE,
-      title: config.embed.title,
-      description: config.embed.description,
-      fields: config.embed.fields ?? [],
-      timestamp: new Date().toISOString(),
-      footer: {
-        text: footerText,
-        icon_url: appConfig.footerIconUrl,
-      },
-    };
-
     const buttons = config.buttons ?? {};
-    const components = [
+    const components: MessageComponents = [
       {
         type: 1,
         components: [
@@ -83,14 +72,17 @@ export class ConfirmationManager {
           },
         ],
       },
-    ] as MessageComponents;
+    ];
 
-    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-      type: 4,
-      data: {
-        embeds: [embed],
-        components,
+    // Use messageHelper with warning style for confirmations
+    await replyWarning(bot, interaction, {
+      ...config.embed,
+      color: config.embed.color ?? BaseColors.ORANGE,
+      footer: {
+        text: footerText,
+        icon_url: appConfig.footerIconUrl,
       },
+      components,
     });
 
     log.info(
@@ -213,67 +205,29 @@ export class ConfirmationManager {
         log.error({ error, confirmationType: stored.confirmationType }, 'Cancel handler failed');
       }
     } else {
-      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-        type: 7,
-        data: {
-          embeds: [
-            {
-              color: BaseColors.GRAY,
-              title: '已取消',
-              description: '操作已取消。',
-              timestamp: new Date().toISOString(),
-              footer: {
-                text: interaction.user?.username || 'Unknown User',
-                iconUrl: appConfig.footerIconUrl,
-              },
-            },
-          ],
-          components: [],
-        },
+      // Use replyInfo with isEdit: true for default cancel message
+      await replyWarning(bot, interaction, {
+        title: '已取消',
+        description: '操作已取消。',
+        components: [],
+        isEdit: true,
       });
     }
   }
 
   private async sendExpiredMessage(bot: Bot, interaction: BotInteraction): Promise<void> {
-    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-      type: 4,
-      data: {
-        embeds: [
-          {
-            color: BaseColors.RED,
-            title: '確認已過期',
-            description: '此確認請求已過期或已被處理,請重新執行指令。',
-            timestamp: new Date().toISOString(),
-            footer: {
-              text: interaction.user?.username || 'Unknown User',
-              iconUrl: appConfig.footerIconUrl,
-            },
-          },
-        ],
-        components: [],
-        flags: 64,
-      },
+    await replyError(bot, interaction, {
+      title: '確認已過期',
+      description: '此確認請求已過期或已被處理,請重新執行指令。',
+      ephemeral: true,
     });
   }
 
   private async sendUnauthorizedMessage(bot: Bot, interaction: BotInteraction): Promise<void> {
-    await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-      type: 4,
-      data: {
-        embeds: [
-          {
-            color: BaseColors.RED,
-            title: '權限不足',
-            description: '只有發起此操作的用戶可以確認或取消。',
-            timestamp: new Date().toISOString(),
-            footer: {
-              text: interaction.user?.username || 'Unknown User',
-              iconUrl: appConfig.footerIconUrl,
-            },
-          },
-        ],
-        flags: 64,
-      },
+    await replyError(bot, interaction, {
+      title: '權限不足',
+      description: '只有發起此操作的用戶可以確認或取消。',
+      ephemeral: true,
     });
   }
 }
