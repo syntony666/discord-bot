@@ -10,6 +10,7 @@ import { PaginatorButtonStrategy } from '@adapters/discord/shared/paginator/stra
 import { setupMemberNotifyFeature } from '@features/member-notify/member-notify.feature';
 import { setupReactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
 import { createStatusCommandHandler } from '@adapters/discord/commands/status.command';
+import { ConfirmationStrategy } from '@adapters/discord/shared/confirmation/confirmation.strategy';
 
 const log = createLogger('Bootstrap');
 
@@ -23,6 +24,7 @@ export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaCl
   await registerApplicationCommands(rest);
 
   const paginatorButtonStrategy = new PaginatorButtonStrategy();
+  const confirmationStrategy = new ConfirmationStrategy();
 
   commandRegistry.registerCustomIdHandler('pg:', async (interaction, bot) => {
     if (interaction.data?.customId?.endsWith(':jump')) {
@@ -31,6 +33,10 @@ export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaCl
       await paginatorButtonStrategy.handle(bot, interaction);
     }
   });
+
+  commandRegistry.registerCustomIdHandler('confirm:', async (interaction, bot) => {
+      await confirmationStrategy.handle(bot, interaction);
+    });
 
   setupKeywordFeature(prisma, bot);
   setupMemberNotifyFeature(prisma, bot);
