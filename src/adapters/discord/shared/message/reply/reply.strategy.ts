@@ -1,6 +1,6 @@
 import { createLogger } from '@core/logger';
 import type { MessageStrategy, ReplyStrategyOptions } from '../message.types';
-import type { DiscordEmbed } from '@discordeno/bot';
+import type { DiscordEmbed, MessageComponents } from '@discordeno/bot';
 import { appConfig } from '@core/config';
 
 const log = createLogger('ReplyStrategy');
@@ -12,13 +12,23 @@ export class ReplyStrategy implements MessageStrategy {
   constructor(private readonly options: ReplyStrategyOptions) {}
 
   async send(): Promise<boolean> {
-    const { bot, interaction, title, description, color, ephemeral = false } = this.options;
+    const {
+      bot,
+      interaction,
+      title,
+      description,
+      color,
+      ephemeral = false,
+      fields,
+      components,
+    } = this.options;
 
     try {
       const embed: DiscordEmbed = {
         title,
         description,
         color,
+        fields,
         timestamp: new Date().toISOString(),
         footer: {
           text: interaction.user.username,
@@ -30,6 +40,7 @@ export class ReplyStrategy implements MessageStrategy {
         type: 4,
         data: {
           embeds: [embed],
+          components,
           flags: ephemeral ? 64 : undefined,
         },
       });

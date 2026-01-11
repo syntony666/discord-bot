@@ -1,4 +1,4 @@
-import type { Bot, DiscordEmbed } from '@discordeno/bot';
+import type { Bot, DiscordEmbed, MessageComponents } from '@discordeno/bot';
 import type { BotInteraction } from '@core/rx/bus';
 
 /**
@@ -52,6 +52,8 @@ export interface ReplyOptions extends BaseMessageOptions {
   bot: Bot;
   interaction: BotInteraction;
   ephemeral?: boolean;
+  fields?: DiscordEmbed['fields'];
+  components?: MessageComponents;
 }
 
 /**
@@ -97,6 +99,8 @@ export interface ReplyStrategyOptions {
   description: string;
   color: number;
   ephemeral?: boolean;
+  fields?: DiscordEmbed['fields'];
+  components?: MessageComponents;
 }
 
 export interface NotificationStrategyOptions {

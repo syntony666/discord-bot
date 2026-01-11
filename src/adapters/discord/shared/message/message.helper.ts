@@ -1,7 +1,7 @@
 import { MessageFactory } from './message.factory';
 import { MessageType } from './message.types';
 import type { MessageOptions, NotificationOptions } from './message.types';
-import type { Bot, DiscordEmbed } from '@discordeno/bot';
+import type { Bot, DiscordEmbed, MessageComponents } from '@discordeno/bot';
 import type { BotInteraction } from '@core/rx/bus';
 
 export { MessageType } from './message.types';
@@ -24,7 +24,13 @@ export async function sendMessage(options: MessageOptions): Promise<boolean> {
 export async function replySuccess(
   bot: Bot,
   interaction: BotInteraction,
-  options: { title?: string; description: string; ephemeral?: boolean }
+  options: {
+    title?: string;
+    description: string;
+    ephemeral?: boolean;
+    fields?: DiscordEmbed['fields'];
+    components?: MessageComponents;
+  }
 ): Promise<boolean> {
   return sendMessage({
     type: MessageType.SUCCESS_REPLY,
@@ -40,7 +46,13 @@ export async function replySuccess(
 export async function replyError(
   bot: Bot,
   interaction: BotInteraction,
-  options: { title?: string; description: string; ephemeral?: boolean }
+  options: {
+    title?: string;
+    description: string;
+    ephemeral?: boolean;
+    fields?: DiscordEmbed['fields'];
+    components?: MessageComponents;
+  }
 ): Promise<boolean> {
   return sendMessage({
     type: MessageType.ERROR_REPLY,
@@ -56,7 +68,13 @@ export async function replyError(
 export async function replyInfo(
   bot: Bot,
   interaction: BotInteraction,
-  options: { title?: string; description: string; ephemeral?: boolean }
+  options: {
+    title?: string;
+    description: string;
+    ephemeral?: boolean;
+    fields?: DiscordEmbed['fields'];
+    components?: MessageComponents;
+  }
 ): Promise<boolean> {
   return sendMessage({
     type: MessageType.INFO_REPLY,
@@ -72,7 +90,13 @@ export async function replyInfo(
 export async function replyWarning(
   bot: Bot,
   interaction: BotInteraction,
-  options: { title?: string; description: string; ephemeral?: boolean }
+  options: {
+    title?: string;
+    description: string;
+    ephemeral?: boolean;
+    fields?: DiscordEmbed['fields'];
+    components?: MessageComponents;
+  }
 ): Promise<boolean> {
   return sendMessage({
     type: MessageType.WARNING_REPLY,
