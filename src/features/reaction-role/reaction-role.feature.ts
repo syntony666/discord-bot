@@ -3,9 +3,9 @@ import { Bot } from '@discordeno/bot';
 import { Subscription, mergeMap, lastValueFrom } from 'rxjs';
 import { createReactionRoleModule, ReactionRoleModule } from './reaction-role.module';
 import { createReactionRoleService, ReactionRoleService } from './reaction-role.service';
-import { createReactionRoleCommandHandler } from '@adapters/discord/commands/reaction-role.command';
 import { reactionAdd$, reactionRemove$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
+import { createReactionRoleCommandHandler } from '@adapters/discord/commands/reaction-role';
 
 const log = createLogger('ReactionRoleFeature');
 

@@ -11,6 +11,7 @@ import { setupMemberNotifyFeature } from '@features/member-notify/member-notify.
 import { setupReactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
 import { createStatusCommandHandler } from '@adapters/discord/commands/status.command';
 import { ConfirmationStrategy } from '@adapters/discord/shared/confirmation/confirmation.strategy';
+import { CustomIdPrefixes } from '@core/config/constants';
 
 const log = createLogger('Bootstrap');
 
@@ -26,17 +27,20 @@ export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaCl
   const paginatorButtonStrategy = new PaginatorButtonStrategy();
   const confirmationStrategy = new ConfirmationStrategy();
 
-  commandRegistry.registerCustomIdHandler('pg:', async (interaction, bot) => {
-    if (interaction.data?.customId?.endsWith(':jump')) {
-      await paginatorButtonStrategy.handleModalSubmit(bot, interaction);
-    } else {
-      await paginatorButtonStrategy.handle(bot, interaction);
+  commandRegistry.registerCustomIdHandler(
+    `${CustomIdPrefixes.PAGINATOR}:`,
+    async (interaction, bot) => {
+      if (interaction.data?.customId?.endsWith(':jump')) {
+        await paginatorButtonStrategy.handleModalSubmit(bot, interaction);
+      } else {
+        await paginatorButtonStrategy.handle(bot, interaction);
+      }
     }
-  });
+  );
 
   commandRegistry.registerCustomIdHandler('confirm:', async (interaction, bot) => {
-      await confirmationStrategy.handle(bot, interaction);
-    });
+    await confirmationStrategy.handle(bot, interaction);
+  });
 
   setupKeywordFeature(prisma, bot);
   setupMemberNotifyFeature(prisma, bot);

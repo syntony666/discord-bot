@@ -8,6 +8,7 @@ import {
 import { parsePaginatorAction } from '../core/paginator.actions';
 import { buildPaginatorResponse } from '../ui/paginator.ui';
 import { replyError } from '../../message/message.helper';
+import { Timeouts } from '@core/config/constants';
 import type { Bot } from '@discordeno/bot';
 import type { BotInteraction } from '@core/rx/bus';
 import { PageRenderResult } from '../paginator.types';
@@ -27,7 +28,7 @@ export class PaginatorButtonStrategy {
   private readonly repo = new PaginatorSessionRepository();
   private readonly ttlMs: number;
 
-  constructor(ttlMs: number = 30000) {
+  constructor(ttlMs: number = Timeouts.PAGINATOR_MS) {
     this.ttlMs = ttlMs;
   }
 

@@ -29,6 +29,7 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "exactOptionalPropertyTypes": false,
     "resolveJsonModule": true,
     "paths": {
       "@core/*": [

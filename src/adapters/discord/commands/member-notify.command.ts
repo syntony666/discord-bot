@@ -2,17 +2,13 @@ import { Bot, InteractionDataOption } from '@discordeno/bot';
 import { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import { MemberNotifyService } from '@features/member-notify/member-notify.service';
 import { lastValueFrom } from 'rxjs';
-import {
-  replySuccess,
-  replyError,
-  replyAutoError,
-  replyInfo,
-} from '@adapters/discord/shared/message/message.helper';
+import { replySuccess, replyInfo } from '@adapters/discord/shared/message/message.helper';
 import { BotGuild, BotInteraction } from '@core/rx/bus';
 import { commandRegistry } from './command.registry';
 import { createLogger } from '@core/logger';
-import { Colors } from '@core/config/colors.config';
 import { MemberNotifyConfig } from '@prisma-client/client';
+import { handleError } from '@adapters/discord/shared/error';
+import { channelMention, userMention } from '@adapters/discord/shared/utils/discord.utils';
 
 const log = createLogger('MemberNotifyCommand');
 
@@ -28,9 +24,7 @@ export function createMemberNotifyCommandHandler(
   const handler = async (interaction: BotInteraction) => {
     const guildId = interaction.guildId?.toString();
     if (!guildId) {
-      await replyError(bot, interaction, {
-        description: '此指令只能在伺服器中使用。',
-      });
+      await handleError(bot, interaction, new Error('Guild ID missing'), 'memberNotifySet');
       return;
     }
 
@@ -88,13 +82,11 @@ async function handleSetup(
 
     await replySuccess(bot, interaction, {
       title: '成員通知已設定',
-      description: `通知頻道已設定為 <#${channelId}>\n功能已自動開啟。`,
+      description: `通知頻道已設定為 ${channelMention(channelId)}\n功能已自動開啟。`,
     });
   } catch (error) {
     log.error({ error, guildId, channelId }, 'Failed to setup member notify');
-    await replyAutoError(bot, interaction, error, {
-      generic: '設定成員通知時發生錯誤，請稍後再試。',
-    });
+    await handleError(bot, interaction, error, 'memberNotifySet');
   }
 }
 
@@ -113,9 +105,7 @@ async function handleDisable(
     });
   } catch (error) {
     log.error({ error, guildId }, 'Failed to disable member notify');
-    await replyAutoError(bot, interaction, error, {
-      generic: '關閉成員通知時發生錯誤，請稍後再試。',
-    });
+    await handleError(bot, interaction, error, 'memberNotifyRemove');
   }
 }
 
@@ -142,7 +132,7 @@ async function handleStatus(
 
     const description = [
       `**總開關**: ${statusEmoji} ${config.enabled ? '已啟用' : '已停用'}`,
-      `**通知頻道**: ${config.channelId ? `<#${config.channelId}>` : '未設定'}`,
+      `**通知頻道**: ${config.channelId ? channelMention(config.channelId) : '未設定'}`,
       '',
       `**加入通知**: ${joinEmoji} ${config.joinEnabled ? '已啟用' : '已停用'}`,
       `訊息模板: \`${config.joinMessage}\``,
@@ -159,9 +149,7 @@ async function handleStatus(
     });
   } catch (error) {
     log.error({ error, guildId }, 'Failed to get status');
-    await replyError(bot, interaction, {
-      description: '查詢設定時發生錯誤。',
-    });
+    await handleError(bot, interaction, error, 'memberNotifyStatus');
   }
 }
 
@@ -180,7 +168,7 @@ async function handleTest(
     const template = type === 'join' ? config.joinMessage : config.leaveMessage;
 
     const testMessage = service.formatMessage(template, {
-      user: `<@${interaction.user?.id}>`,
+      user: userMention(interaction.user?.id || ''),
       username: interaction.user?.username || 'TestUser',
       server: guild.name,
       memberCount: guild.approximateMemberCount || 0,
@@ -192,9 +180,7 @@ async function handleTest(
     });
   } catch (error) {
     log.error({ error, guildId, type }, 'Failed to test message');
-    await replyError(bot, interaction, {
-      description: '測試訊息時發生錯誤。',
-    });
+    await handleError(bot, interaction, error, 'memberNotifyStatus');
   }
 }
 
@@ -218,9 +204,7 @@ async function handleMessage(
     });
   } catch (error) {
     log.error({ error, guildId, type }, 'Failed to update message');
-    await replyAutoError(bot, interaction, error, {
-      generic: '更新訊息模板時發生錯誤，請稍後再試。',
-    });
+    await handleError(bot, interaction, error, 'memberNotifySet');
   }
 }
 
@@ -248,8 +232,6 @@ async function handleToggle(
     });
   } catch (error) {
     log.error({ error, guildId, type, enabled }, 'Failed to toggle');
-    await replyAutoError(bot, interaction, error, {
-      generic: '更新設定時發生錯誤，請稍後再試。',
-    });
+    await handleError(bot, interaction, error, 'memberNotifySet');
   }
 }

@@ -3,16 +3,14 @@ import { KeywordModule } from '@features/keyword/keyword.module';
 import { KeywordMatchType, KeywordRule } from '@prisma-client/client';
 import { lastValueFrom } from 'rxjs';
 import { replyTextList } from '@adapters/discord/shared/paginator/paginator.helper';
-import {
-  replySuccess,
-  replyError,
-  replyAutoError,
-  replyWarning,
-} from '@adapters/discord/shared/message/message.helper';
+import { replySuccess, replyWarning } from '@adapters/discord/shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
 import { commandRegistry } from './command.registry';
 import { createLogger } from '@core/logger';
 import { createConfirmation } from '@adapters/discord/shared/confirmation/confirmation.helper';
+import { handleError } from '@adapters/discord/shared/error';
+import { ButtonStyles, CustomIdPrefixes, Timeouts } from '@core/config/constants';
+import { userMention } from '@adapters/discord/shared/utils/discord.utils';
 
 const log = createLogger('KeywordCommand');
 
@@ -43,9 +41,7 @@ export function createKeywordCommandHandler(bot: Bot, module: KeywordModule) {
 
     const guildId = interaction.guildId?.toString();
     if (!guildId) {
-      await replyError(bot, interaction, {
-        description: '此指令只能在伺服器中使用。',
-      });
+      await handleError(bot, interaction, new Error('Guild ID missing'), 'keywordAdd');
       return;
     }
 
@@ -107,9 +103,7 @@ async function handleAddKeyword(
       });
     } else {
       log.error({ error, pattern }, 'Failed to add keyword');
-      await replyAutoError(bot, interaction, error, {
-        generic: '新增關鍵字規則時發生錯誤,請稍後再試。',
-      });
+      await handleError(bot, interaction, error, 'keywordAdd');
     }
   }
 }
@@ -132,9 +126,7 @@ async function handleDuplicateKeyword(
     );
 
     if (!existingRule) {
-      await replyError(bot, interaction, {
-        description: `關鍵字 \`${input.pattern}\` 已存在,但無法取得詳細資訊。`,
-      });
+      await handleError(bot, interaction, { code: 'P2002' }, 'keywordAdd');
       return;
     }
 
@@ -142,29 +134,30 @@ async function handleDuplicateKeyword(
       bot,
       interaction,
       {
-        confirmationType: 'kw_overwrite',
+        confirmationType: CustomIdPrefixes.KEYWORD_OVERWRITE,
         userId: input.editorId,
         guildId: input.guildId,
         data: { ...input, existingRule },
+        expiresIn: Timeouts.CONFIRMATION_MS,
         embed: {
           title: '關鍵字已存在',
           description: `關鍵字 \`${input.pattern}\` 已經存在,是否要覆蓋更新?`,
           fields: [
             {
               name: '目前設定',
-              value: `\`${existingRule.matchType}\` <@${existingRule.editorId}>\n**${existingRule.pattern}** ⭢ ${existingRule.response}`,
+              value: `\`${existingRule.matchType}\` ${userMention(existingRule.editorId)}\n**${existingRule.pattern}** ⭢ ${existingRule.response}`,
             },
             {
               name: '新的設定',
-              value: `\`${input.matchType}\` <@${input.editorId}>\n**${input.pattern}** ⭢ ${input.response}`,
+              value: `\`${input.matchType}\` ${userMention(input.editorId)}\n**${input.pattern}** ⭢ ${input.response}`,
             },
           ],
         },
         buttons: {
           confirmLabel: '覆蓋更新',
-          confirmStyle: 3,
+          confirmStyle: ButtonStyles.SUCCESS,
           cancelLabel: '取消',
-          cancelStyle: 4,
+          cancelStyle: ButtonStyles.DANGER,
         },
       },
       {
@@ -182,7 +175,7 @@ async function handleDuplicateKeyword(
 
             await replySuccess(bot, interaction, {
               title: '關鍵字已更新',
-              description: `<@${data.editorId}> 已覆蓋更新關鍵字 \`${data.pattern}\``,
+              description: `${userMention(data.editorId)} 已覆蓋更新關鍵字 \`${data.pattern}\``,
               fields: [
                 {
                   name: '新設定',
@@ -195,12 +188,7 @@ async function handleDuplicateKeyword(
             log.info({ pattern: data.pattern, guildId: data.guildId }, 'Keyword overwritten');
           } catch (error) {
             log.error({ error, pattern: data.pattern }, 'Failed to overwrite keyword');
-
-            await replyError(bot, interaction, {
-              title: '更新失敗',
-              description: '更新關鍵字時發生錯誤,請稍後再試。',
-              isEdit: true,
-            });
+            await handleError(bot, interaction, error, 'keywordEdit');
           }
         },
         onCancel: async (bot, interaction, data) => {
@@ -214,10 +202,7 @@ async function handleDuplicateKeyword(
     );
   } catch (fetchError) {
     log.error({ error: fetchError, pattern: input.pattern }, 'Failed to fetch existing rule');
-    await replyAutoError(bot, interaction, fetchError, {
-      duplicate: `關鍵字 \`${input.pattern}\` 已經存在,請使用 \`/keyword edit\` 指令更新或先刪除原有規則。`,
-      generic: '新增關鍵字規則時發生錯誤,請稍後再試。',
-    });
+    await handleError(bot, interaction, fetchError, 'keywordAdd');
   }
 }
 
@@ -235,16 +220,15 @@ async function handleListKeywords(
       interaction,
       items: rules,
       title: () => `關鍵字規則列表`,
-      mapItem: (r) => `\`${r.matchType}\` <@${r.editorId}>\n**${r.pattern}** ⭢ ${r.response}\n`,
+      mapItem: (r) =>
+        `\`${r.matchType}\` ${userMention(r.editorId)}\n**${r.pattern}** ⭢ ${r.response}\n`,
       emptyText: '目前沒有任何關鍵字規則。',
       pageSize: 10,
       userId: interaction.user?.id?.toString(),
     });
   } catch (error) {
     log.error({ error }, 'Failed to list keywords');
-    await replyError(bot, interaction, {
-      description: '取得關鍵字規則時發生錯誤,請稍後再試。',
-    });
+    await handleError(bot, interaction, error, 'keywordList');
   }
 }
 
@@ -281,10 +265,7 @@ async function handleEditKeyword(
     });
   } catch (error) {
     log.error({ error, pattern }, 'Failed to edit keyword');
-    await replyAutoError(bot, interaction, error, {
-      notFound: `關鍵字 \`${pattern}\` 不存在。`,
-      generic: '更新關鍵字規則時發生錯誤,請稍後再試。',
-    });
+    await handleError(bot, interaction, error, 'keywordEdit');
   }
 }
 
@@ -302,12 +283,7 @@ async function handleDeleteKeyword(
     const ruleToDelete = await lastValueFrom(module.getRuleByPattern$(guildId, pattern));
 
     if (!ruleToDelete) {
-      await replyAutoError(
-        bot,
-        interaction,
-        { code: 'P2025' },
-        { notFound: `關鍵字 \`${pattern}\` 不存在。` }
-      );
+      await handleError(bot, interaction, { code: 'P2025' }, 'keywordDelete');
       return;
     }
 
@@ -315,25 +291,26 @@ async function handleDeleteKeyword(
       bot,
       interaction,
       {
-        confirmationType: 'kw_delete',
+        confirmationType: CustomIdPrefixes.KEYWORD_DELETE,
         userId: editorId,
         guildId,
         data: { guildId, pattern, editorId, ruleToDelete },
+        expiresIn: Timeouts.CONFIRMATION_MS,
         embed: {
           title: '確認刪除關鍵字',
           description: `即將刪除關鍵字 \`${pattern}\`,此操作無法復原。`,
           fields: [
             {
               name: '關鍵字設定',
-              value: `\`${ruleToDelete.matchType}\` <@${ruleToDelete.editorId}>\n**${ruleToDelete.pattern}** ⭢ ${ruleToDelete.response}`,
+              value: `\`${ruleToDelete.matchType}\` ${userMention(ruleToDelete.editorId)}\n**${ruleToDelete.pattern}** ⭢ ${ruleToDelete.response}`,
             },
           ],
         },
         buttons: {
           confirmLabel: '確認刪除',
-          confirmStyle: 4,
+          confirmStyle: ButtonStyles.DANGER,
           cancelLabel: '取消',
-          cancelStyle: 2,
+          cancelStyle: ButtonStyles.SECONDARY,
         },
       },
       {
@@ -343,7 +320,7 @@ async function handleDeleteKeyword(
 
             await replyWarning(bot, interaction, {
               title: '關鍵字已刪除',
-              description: `<@${data.editorId}> 已刪除關鍵字 \`${data.pattern}\``,
+              description: `${userMention(data.editorId)} 已刪除關鍵字 \`${data.pattern}\``,
               fields: [
                 {
                   name: '已刪除的設定',
@@ -356,23 +333,7 @@ async function handleDeleteKeyword(
             log.info({ pattern: data.pattern, guildId: data.guildId }, 'Keyword deleted');
           } catch (error: any) {
             log.error({ error, pattern: data.pattern }, 'Failed to delete keyword');
-
-            if (
-              error?.code === 'P2025' ||
-              error?.message?.includes('Record to delete does not exist')
-            ) {
-              await replyError(bot, interaction, {
-                title: '刪除失敗',
-                description: `關鍵字 \`${data.pattern}\` 已不存在,可能已被其他人刪除。`,
-                isEdit: true,
-              });
-            } else {
-              await replyError(bot, interaction, {
-                title: '刪除失敗',
-                description: '刪除關鍵字時發生錯誤,請稍後再試。',
-                isEdit: true,
-              });
-            }
+            await handleError(bot, interaction, error, 'keywordDelete');
           }
         },
         onCancel: async (bot, interaction, data) => {
@@ -388,8 +349,6 @@ async function handleDeleteKeyword(
     log.info({ pattern, guildId }, 'Delete confirmation requested');
   } catch (error) {
     log.error({ error, pattern }, 'Failed to prepare delete confirmation');
-    await replyError(bot, interaction, {
-      description: '準備刪除確認時發生錯誤,請稍後再試。',
-    });
+    await handleError(bot, interaction, error, 'keywordDelete');
   }
 }
