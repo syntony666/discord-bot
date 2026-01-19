@@ -3,6 +3,8 @@
 > Modular Discord bot built with TypeScript, Discordeno, RxJS, and Prisma  
 > Featuring reactive event streams, clean architecture, and strict type safety
 
+**Version:** 5.0.0-alpha.1
+
 ## 📋 Table of Contents
 
 - [Key Features](#-key-features)
@@ -23,6 +25,7 @@ This bot demonstrates a production-ready Discord bot architecture with:
 - **🔑 Keyword Auto-Reply** - Pattern-based message responses (exact/contains matching)
 - **🎭 Reaction Roles** - Role assignment via emoji reactions with multiple modes (Normal/Unique/Verify)
 - **👋 Member Notifications** - Customizable join/leave announcements with template variables
+- **📊 Status Commands** - Bot and guild information display
 - **📄 Generic Paginator** - Type-safe, reusable pagination system for any data type
 - **🔄 Hot-Reload** - Development mode with automatic restart on code changes
 - **📊 Structured Logging** - Production-ready logging with pino
@@ -35,11 +38,12 @@ This bot demonstrates a production-ready Discord bot architecture with:
 | Category | Technology | Purpose |
 |----------|-----------|---------|
 | **Runtime** | Node.js 18+ | JavaScript runtime |
-| **Language** | TypeScript 5.9+ | Type-safe development |
-| **Discord** | Discordeno v21 | Lightweight Discord API wrapper |
-| **Reactive** | RxJS 7.8+ | Event stream management |
-| **Database** | Prisma + PostgreSQL | Type-safe ORM |
-| **Logger** | pino | Structured logging |
+| **Language** | TypeScript 5.9.3 | Type-safe development |
+| **Discord** | Discordeno v21.0.0 | Lightweight Discord API wrapper |
+| **Reactive** | RxJS 7.8.2 | Event stream management |
+| **Database** | Prisma 7.2.0 + PostgreSQL | Type-safe ORM with PostgreSQL adapter |
+| **Logger** | pino 10.1.0 | Structured logging |
+| **Dev Tools** | ts-node-dev, tsconfig-paths | Hot reload & path aliases |
 
 
 ## 🏗️ Architecture
@@ -63,13 +67,20 @@ Discord Event → bot.events → RxJS Subject → Observable$ → Feature Subscr
 ## 📁 Project Structure
 
 ```
+/
+├── prisma.config.ts            # Prisma configuration (auto-generated)
+├── prisma/
+│   └── schema.prisma           # Database schema definition
+│
 src/
 ├── core/                       # Framework-agnostic utilities
 │   ├── bootstrap/              # App initialization & DI
 │   ├── config/                 # Environment configuration
 │   ├── rx/
 │   │   └── bus.ts              # RxJS event bus (all events)
-│   ├── signals/                # Lightweight state management
+│   ├── signals/
+│   │   └── signal.ts           # Simple state management (getter/setter)
+│   ├── bot-info.ts             # Version and uptime utilities
 │   └── logger.ts               # pino logger factory
 │
 ├── platforms/                  # External integrations
@@ -91,8 +102,16 @@ src/
 ├── adapters/                   # Discord-specific implementations
 │   └── discord/
 │       ├── commands/           # Slash command handlers
-│       │   ├── command.registry.ts  # Command router
-│       │   └── *.command.ts    # Individual handlers
+│       │   ├── command.registry.ts     # Command router
+│       │   ├── keyword.command.ts      # Keyword command handler
+│       │   ├── member-notify.command.ts # Member notify handler
+│       │   ├── status.command.ts       # Status command handler
+│       │   └── reaction-role/          # Reaction role command module
+│       │       ├── index.ts            # Main handler
+│       │       ├── panel/              # Panel management commands
+│       │       ├── role/               # Role management commands
+│       │       └── reaction-role.types.ts
+│       ├── commands.json       # Slash command definitions
 │       └── shared/             # Reusable UI components
 │           ├── message/        # Message factory (Strategy Pattern)
 │           └── paginator/      # Generic paginator
