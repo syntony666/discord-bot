@@ -148,7 +148,7 @@ async function handleDisable(
         },
         buttons: {
           confirmLabel: '確認關閉',
-          confirmStyle: ButtonStyles.PRIMARY,
+          confirmStyle: ButtonStyles.DANGER,
           cancelLabel: '取消',
           cancelStyle: ButtonStyles.SECONDARY,
         },
