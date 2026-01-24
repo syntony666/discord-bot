@@ -105,7 +105,7 @@ export function setupReactionRoleFeature(prisma: PrismaClient, bot: Bot): Reacti
           );
           log.debug({ userId: reaction.userId.toString() }, 'Removed reaction (VERIFY mode)');
         }
-      };),
+      }),
       handleDiscordError({
         operation: 'reactionRoleAdd',
       }),
