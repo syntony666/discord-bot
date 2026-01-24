@@ -5,6 +5,7 @@ import {
   replySuccess,
   replyError,
   replyInfo,
+  replyWarning,
 } from '@adapters/discord/shared/message/message.helper';
 import { BotInteraction, BotMessage } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
@@ -12,6 +13,10 @@ import { handleError } from '@adapters/discord/shared/error';
 import { channelMention, getMessageUrl } from '@adapters/discord/shared/utils/discord.utils';
 import { buildPanelEmbed, getModeText } from './panel.helper';
 import type { PanelMode } from '../reaction-role.types';
+import { CustomIdPrefixes } from '@core/config/constants';
+import { PanelDeleteData, PanelEditData } from './panel.types';
+import { deleteDiscordMessage, updatePanelMessage, sanitizeUpdates } from '../shared/operations';
+import { createStandardConfirmation } from '../shared/confirmations';
 
 const log = createLogger('ReactionRolePanel');
 
@@ -56,6 +61,7 @@ async function handlePanelCreate(
   const mode = (subCommand.options?.find((o) => o.name === 'mode')?.value as PanelMode) || 'NORMAL';
 
   try {
+    // Step 1: Send Discord message
     const message = (await bot.helpers.sendMessage(
       BigInt(channelId),
       buildPanelEmbed({
@@ -66,6 +72,7 @@ async function handlePanelCreate(
       })
     )) as BotMessage;
 
+    // Step 2: Update message with panel ID
     await bot.helpers.editMessage(
       BigInt(channelId),
       message.id,
@@ -78,6 +85,7 @@ async function handlePanelCreate(
       })
     );
 
+    // Step 3: Create database record
     await lastValueFrom(
       module.createPanel$({
         guildId,
@@ -163,6 +171,7 @@ async function handlePanelDelete(
   subCommand: InteractionDataOption
 ) {
   const panelId = subCommand.options?.find((o) => o.name === 'panel_id')?.value as string;
+  const userId = interaction.user?.id?.toString() || '';
 
   try {
     const panel = await lastValueFrom(module.getPanel$(guildId, panelId));
@@ -174,28 +183,78 @@ async function handlePanelDelete(
       return;
     }
 
-    try {
-      await bot.helpers.deleteMessage(BigInt(panel.channelId), BigInt(panelId));
-      log.debug({ guildId, panelId }, 'Discord message deleted');
-    } catch (error: any) {
-      if (error.code === 10008) {
-        log.warn({ guildId, panelId }, 'Message already deleted, continuing with database cleanup');
-      } else {
-        throw error;
+    const roles = await lastValueFrom(module.getReactionRolesByMessage$(guildId, panelId));
+    const messageUrl = getMessageUrl(guildId, panel.channelId, panelId);
+
+    await createStandardConfirmation<PanelDeleteData>(
+      bot,
+      CustomIdPrefixes.REACTION_ROLE_PANEL_DELETE,
+      {
+        interaction,
+        userId,
+        guildId,
+        data: { guildId, panelId, panel, rolesCount: roles.length },
+        buttonStyle: 'danger',
+        embed: {
+          title: '⚠️ 確認刪除 Panel',
+          description: `即將刪除 Panel 及其所有 Reaction Roles，此操作無法復原。`,
+          fields: [
+            {
+              name: 'Panel 資訊',
+              value: [
+                `**標題**: ${panel.title}`,
+                `**ID**: \`${panelId}\``,
+                `**頻道**: ${channelMention(panel.channelId)}`,
+                `**模式**: ${getModeText(panel.mode as PanelMode)}`,
+                `**身分組數量**: ${roles.length} 個`,
+                `[跳轉至訊息](${messageUrl})`,
+              ].join('\n'),
+            },
+          ],
+        },
+        onConfirm: async (bot, interaction, data) => {
+          try {
+            // Step 1: Delete Discord message
+            await deleteDiscordMessage(bot, data.panel.channelId, data.panelId, {
+              guildId: data.guildId,
+              panelId: data.panelId,
+            });
+
+            // Step 2: Delete database record
+            await lastValueFrom(module.deletePanel$(data.guildId, data.panelId));
+            log.debug({ guildId: data.guildId, panelId: data.panelId }, 'Database panel deleted');
+
+            await replyWarning(bot, interaction, {
+              title: 'Panel 已刪除',
+              description: `Panel \`${data.panelId}\` 及其 ${data.rolesCount} 個 Reaction Roles 已全部刪除。`,
+              isEdit: true,
+            });
+
+            log.info(
+              { guildId: data.guildId, panelId: data.panelId, rolesCount: data.rolesCount },
+              'Panel deleted successfully'
+            );
+          } catch (error) {
+            log.error(
+              { error, guildId: data.guildId, panelId: data.panelId },
+              'Failed to delete panel'
+            );
+            await handleError(bot, interaction, error, 'reactionRolePanelDelete');
+          }
+        },
+        onCancel: async (bot, interaction, data) => {
+          await replyInfo(bot, interaction, {
+            title: '已取消',
+            description: `已取消刪除 Panel \`${data.panelId}\`。`,
+            isEdit: true,
+          });
+        },
       }
-    }
+    );
 
-    await lastValueFrom(module.deletePanel$(guildId, panelId));
-    log.debug({ guildId, panelId }, 'Database panel deleted');
-
-    await replySuccess(bot, interaction, {
-      title: 'Panel 已刪除',
-      description: `Panel \`${panelId}\` 及其所有 Reaction Roles 已刪除。`,
-    });
-
-    log.info({ guildId, messageId: panelId }, 'Panel deleted successfully');
+    log.info({ guildId, panelId }, 'Panel delete confirmation requested');
   } catch (error) {
-    log.error({ error, guildId, messageId: panelId }, 'Failed to delete panel');
+    log.error({ error, guildId, panelId }, 'Failed to prepare panel delete confirmation');
     await handleError(bot, interaction, error, 'reactionRolePanelDelete');
   }
 }
@@ -212,10 +271,12 @@ async function handlePanelEdit(
 ) {
   const panelId = subCommand.options?.find((o) => o.name === 'panel_id')?.value as string;
   const title = (subCommand.options?.find((o) => o.name === 'title')?.value as string) || undefined;
-  const description =
-    (subCommand.options?.find((o) => o.name === 'description')?.value as string) || undefined;
+  const description = subCommand.options?.find((o) => o.name === 'description')?.value as
+    | string
+    | undefined;
   const mode =
     (subCommand.options?.find((o) => o.name === 'mode')?.value as PanelMode) || undefined;
+  const userId = interaction.user?.id?.toString() || '';
 
   try {
     const panel = await lastValueFrom(module.getPanel$(guildId, panelId));
@@ -232,32 +293,98 @@ async function handlePanelEdit(
     if (description !== undefined) updates.description = description;
     if (mode !== undefined) updates.mode = mode;
 
-    const roles = await lastValueFrom(module.getReactionRolesByMessage$(guildId, panelId));
+    const messageUrl = getMessageUrl(guildId, panel.channelId, panelId);
 
-    await bot.helpers.editMessage(
-      BigInt(panel.channelId),
-      BigInt(panelId),
-      buildPanelEmbed({
-        title: title !== undefined ? title : panel.title,
-        description: description !== undefined ? description : panel.description || undefined,
-        mode: mode !== undefined ? mode : (panel.mode as PanelMode),
-        roles,
-        messageId: panelId,
-      })
+    // Build comparison fields
+    const currentFields: string[] = [];
+    const newFields: string[] = [];
+
+    if (title !== undefined) {
+      currentFields.push(`**標題**: ${panel.title}`);
+      newFields.push(`**標題**: ${title}`);
+    }
+
+    if (description !== undefined) {
+      currentFields.push(`**說明**: ${panel.description || '*(無)*'}`);
+      newFields.push(`**說明**: ${description || '*(無)*'}`);
+    }
+
+    if (mode !== undefined) {
+      currentFields.push(`**模式**: ${getModeText(panel.mode as PanelMode)}`);
+      newFields.push(`**模式**: ${getModeText(mode)}`);
+    }
+
+    await createStandardConfirmation<PanelEditData>(
+      bot,
+      CustomIdPrefixes.REACTION_ROLE_PANEL_EDIT,
+      {
+        interaction,
+        userId,
+        guildId,
+        data: { guildId, panelId, panel, updates },
+        buttonStyle: 'primary',
+        confirmLabel: '確認更新',
+        embed: {
+          title: '📝 確認更新 Panel',
+          description: `即將更新 Panel 設定。\n[跳轉至訊息](${messageUrl})`,
+          fields: [
+            {
+              name: '目前設定',
+              value: currentFields.join('\n'),
+              inline: true,
+            },
+            {
+              name: '新的設定',
+              value: newFields.join('\n'),
+              inline: true,
+            },
+          ],
+        },
+        onConfirm: async (bot, interaction, data) => {
+          try {
+            const roles = await lastValueFrom(
+              module.getReactionRolesByMessage$(data.guildId, data.panelId)
+            );
+
+            // Step 1: Update Discord message
+            await updatePanelMessage(bot, data.panel, roles, data.updates);
+
+            // Step 2: Update database record (sanitize null to undefined)
+            const sanitizedUpdates = sanitizeUpdates(data.updates);
+            await lastValueFrom(module.updatePanel$(data.guildId, data.panelId, sanitizedUpdates));
+            log.debug({ guildId: data.guildId, panelId: data.panelId }, 'Database panel updated');
+
+            await replySuccess(bot, interaction, {
+              title: 'Panel 已更新',
+              description: `Panel \`${data.panelId}\` 已成功更新。`,
+              isEdit: true,
+            });
+
+            log.info(
+              { guildId: data.guildId, panelId: data.panelId, updates: data.updates },
+              'Panel edited successfully'
+            );
+          } catch (error) {
+            log.error(
+              { error, guildId: data.guildId, panelId: data.panelId },
+              'Failed to edit panel'
+            );
+            await handleError(bot, interaction, error, 'reactionRolePanelEdit');
+          }
+        },
+        onCancel: async (bot, interaction, data) => {
+          await replyInfo(bot, interaction, {
+            title: '已取消',
+            description: `已取消更新 Panel \`${data.panelId}\`。`,
+            isEdit: true,
+          });
+        },
+      }
     );
-    log.debug({ guildId, panelId, updates }, 'Discord message updated');
 
-    const updatedPanel = await lastValueFrom(module.updatePanel$(guildId, panelId, updates));
-    log.debug({ guildId, panelId }, 'Database panel updated');
-
-    await replySuccess(bot, interaction, {
-      title: 'Panel 已更新',
-      description: `Panel \`${panelId}\` 已成功更新。`,
-    });
-
-    log.info({ guildId, messageId: panelId, updates }, 'Panel edited successfully');
+    log.info({ guildId, panelId, updates }, 'Panel edit confirmation requested');
   } catch (error) {
-    log.error({ error, guildId, messageId: panelId }, 'Failed to edit panel');
+    log.error({ error, guildId, panelId }, 'Failed to prepare panel edit confirmation');
     await handleError(bot, interaction, error, 'reactionRolePanelEdit');
   }
 }

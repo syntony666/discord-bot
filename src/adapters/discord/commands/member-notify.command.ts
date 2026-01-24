@@ -2,15 +2,26 @@ import { Bot, InteractionDataOption } from '@discordeno/bot';
 import { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import { MemberNotifyService } from '@features/member-notify/member-notify.service';
 import { lastValueFrom } from 'rxjs';
-import { replySuccess, replyInfo } from '@adapters/discord/shared/message/message.helper';
+import {
+  replySuccess,
+  replyInfo,
+  replyWarning,
+} from '@adapters/discord/shared/message/message.helper';
 import { BotGuild, BotInteraction } from '@core/rx/bus';
 import { commandRegistry } from './command.registry';
 import { createLogger } from '@core/logger';
 import { MemberNotifyConfig } from '@prisma-client/client';
 import { handleError } from '@adapters/discord/shared/error';
 import { channelMention, userMention } from '@adapters/discord/shared/utils/discord.utils';
+import { createConfirmation } from '@adapters/discord/shared/confirmation/confirmation.helper';
+import { ButtonStyles, CustomIdPrefixes, Timeouts } from '@core/config/constants';
 
 const log = createLogger('MemberNotifyCommand');
+
+interface MemberNotifyDisableData {
+  guildId: string;
+  config: MemberNotifyConfig;
+}
 
 /**
  * Slash command handler for /member-notify.
@@ -54,7 +65,7 @@ export function createMemberNotifyCommandHandler(
 
     // Route to handlers with guaranteed config
     if (subGroupName === 'disable') {
-      await handleDisable(bot, interaction, module, guildId);
+      await handleDisable(bot, interaction, module, guildId, config);
     } else if (subGroupName === 'test') {
       await handleTest(bot, interaction, service, guildId, config, subGroup);
     } else if (subGroupName === 'message') {
@@ -90,21 +101,88 @@ async function handleSetup(
   }
 }
 
+/**
+ * Handle /member-notify disable
+ * 
+ * With confirmation to prevent accidental disable.
+ */
 async function handleDisable(
   bot: Bot,
   interaction: BotInteraction,
   module: MemberNotifyModule,
-  guildId: string
+  guildId: string,
+  config: MemberNotifyConfig
 ) {
-  try {
-    await lastValueFrom(module.toggleEnabled$(guildId, false));
+  const userId = interaction.user?.id?.toString() || '';
 
-    await replySuccess(bot, interaction, {
-      title: '成員通知已關閉',
-      description: '所有成員進出通知已停用。',
-    });
+  try {
+    const enabledNotifications: string[] = [];
+    if (config.joinEnabled) enabledNotifications.push('✅ 加入通知');
+    if (config.leaveEnabled) enabledNotifications.push('✅ 離開通知');
+
+    await createConfirmation<MemberNotifyDisableData>(
+      bot,
+      interaction,
+      {
+        confirmationType: CustomIdPrefixes.MEMBER_NOTIFY_DISABLE,
+        userId,
+        guildId,
+        data: { guildId, config },
+        expiresIn: Timeouts.CONFIRMATION_MS,
+        embed: {
+          title: '⚠️ 確認關閉成員通知',
+          description: '即將關閉所有成員進出通知功能。',
+          fields: [
+            {
+              name: '目前啟用的通知',
+              value:
+                enabledNotifications.length > 0
+                  ? enabledNotifications.join('\n')
+                  : '*(所有通知都已關閉)*',
+            },
+            {
+              name: '通知頻道',
+              value: channelMention(config.channelId as string),
+            },
+          ],
+        },
+        buttons: {
+          confirmLabel: '確認關閉',
+          confirmStyle: ButtonStyles.PRIMARY,
+          cancelLabel: '取消',
+          cancelStyle: ButtonStyles.SECONDARY,
+        },
+      },
+      {
+        onConfirm: async (bot, interaction, data) => {
+          try {
+            await lastValueFrom(module.toggleEnabled$(data.guildId, false));
+
+            await replySuccess(bot, interaction, {
+              title: '成員通知已關閉',
+              description: '所有成員進出通知已停用。\n使用 `/member-notify setup` 可重新啟用。',
+              isEdit: true,
+            });
+
+            log.info({ guildId: data.guildId }, 'Member notify disabled');
+          } catch (error) {
+            log.error({ error, guildId: data.guildId }, 'Failed to disable member notify');
+            await handleError(bot, interaction, error, 'memberNotifyRemove');
+          }
+        },
+        onCancel: async (bot, interaction, data) => {
+          await replyInfo(bot, interaction, {
+            title: '已取消',
+            description: '已取消關閉成員通知功能。',
+            isEdit: true,
+          });
+        },
+      }
+    );
+
+    log.info({ guildId }, 'Member notify disable confirmation requested');
   } catch (error) {
-    log.error({ error, guildId }, 'Failed to disable member notify');
+    log.error({ error, guildId }, 'Failed to prepare member notify disable confirmation');
     await handleError(bot, interaction, error, 'memberNotifyRemove');
   }
 }

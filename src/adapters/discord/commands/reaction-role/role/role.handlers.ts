@@ -18,12 +18,17 @@ import {
   normalizeEmojiForStorage,
 } from './role.helper';
 import type { PanelMode } from '../reaction-role.types';
+import { CustomIdPrefixes } from '@core/config/constants';
+import {
+  addDiscordReaction,
+  deleteDiscordReaction,
+  updatePanelMessage,
+} from '../shared/operations';
+import { createStandardConfirmation } from '../shared/confirmations';
+import { ReactionRoleRemoveData } from './role.types';
 
 const log = createLogger('ReactionRoleRole');
 
-/**
- * Handle /reaction-role add
- */
 export async function handleAdd(
   bot: Bot,
   interaction: BotInteraction,
@@ -50,10 +55,14 @@ export async function handleAdd(
       return;
     }
 
+    // Step 1: Add Discord reaction
     const reactionEmoji = formatEmojiForReaction(emoji);
-    await bot.helpers.addReaction(BigInt(panel.channelId), BigInt(panelId), reactionEmoji);
-    log.debug({ guildId, panelId, emoji }, 'Discord reaction added');
+    await addDiscordReaction(bot, panel.channelId, panelId, reactionEmoji, {
+      guildId,
+      panelId,
+    });
 
+    // Step 2: Update Discord message with new role
     const currentRoles = await lastValueFrom(module.getReactionRolesByMessage$(guildId, panelId));
     const rolesWithNew = [
       ...currentRoles,
@@ -73,6 +82,7 @@ export async function handleAdd(
     );
     log.debug({ guildId, panelId }, 'Discord message updated');
 
+    // Step 3: Create database record
     await lastValueFrom(
       module.createReactionRole$({
         guildId,
@@ -106,6 +116,7 @@ export async function handleRemove(
 ) {
   const panelId = subGroup.options?.find((o) => o.name === 'panel_id')?.value as string;
   const emojiInput = subGroup.options?.find((o) => o.name === 'emoji')?.value as string;
+  const userId = interaction.user?.id?.toString() || '';
 
   const emoji = normalizeEmojiForStorage(emojiInput);
 
@@ -128,49 +139,94 @@ export async function handleRemove(
       return;
     }
 
-    try {
-      const reactionEmoji = formatEmojiForReaction(emoji);
-      await bot.helpers.deleteOwnReaction(BigInt(panel.channelId), BigInt(panelId), reactionEmoji);
-      log.debug({ guildId, panelId, emoji }, 'Discord reaction deleted');
-    } catch (error: any) {
-      // 10008 = Unknown Message or reaction doesn't exist
-      if (error.code !== 10008) {
-        throw error;
-      }
-      log.warn({ guildId, panelId, emoji }, 'Reaction already removed, continuing');
-    }
-
-    const currentRoles = await lastValueFrom(module.getReactionRolesByMessage$(guildId, panelId));
-    const rolesAfterRemove = currentRoles.filter((r) => r.emoji !== emoji);
-
-    await bot.helpers.editMessage(
-      BigInt(panel.channelId),
-      BigInt(panelId),
-      buildPanelEmbed({
-        title: panel.title,
-        description: panel.description || undefined,
-        mode: panel.mode as PanelMode,
-        roles: rolesAfterRemove,
-        messageId: panelId,
-      })
-    );
-    log.debug({ guildId, panelId }, 'Discord message updated');
-
-    // Step 3: Delete database record (only if Discord operations succeeded)
-    await lastValueFrom(module.deleteReactionRole$(guildId, panelId, emoji));
-    log.debug({ guildId, panelId, emoji }, 'Database reaction role deleted');
-
     const displayEmoji = formatEmojiForDisplay(emoji);
-    await replySuccess(bot, interaction, {
-      title: 'Reaction Role 已移除',
-      description: `${displayEmoji} 的綁定已從 Panel 中移除。`,
-    });
 
-    log.info({ guildId, messageId: panelId, emoji }, 'Reaction role removed successfully');
+    await createStandardConfirmation<ReactionRoleRemoveData>(
+      bot,
+      CustomIdPrefixes.REACTION_ROLE_REMOVE,
+      {
+        interaction,
+        userId,
+        guildId,
+        data: { guildId, panelId, emoji, panel, reactionRole },
+        buttonStyle: 'primary',
+        confirmLabel: '確認移除',
+        embed: {
+          title: '⚠️ 確認移除 Reaction Role',
+          description: `即將從 Panel 中移除此 Reaction Role。`,
+          fields: [
+            {
+              name: 'Reaction Role 資訊',
+              value: [
+                `**Panel**: ${panel.title} (\`${panelId}\`)`,
+                `**Emoji**: ${displayEmoji}`,
+                `**身分組**: ${roleMention(reactionRole.roleId)}`,
+                reactionRole.description ? `**說明**: ${reactionRole.description}` : '',
+              ]
+                .filter(Boolean)
+                .join('\n'),
+            },
+          ],
+        },
+        onConfirm: async (bot, interaction, data) => {
+          try {
+            // Step 1: Delete Discord reaction
+            const reactionEmoji = formatEmojiForReaction(data.emoji);
+            await deleteDiscordReaction(bot, data.panel.channelId, data.panelId, reactionEmoji, {
+              guildId: data.guildId,
+              panelId: data.panelId,
+            });
+
+            // Step 2: Update Discord message
+            const currentRoles = await lastValueFrom(
+              module.getReactionRolesByMessage$(data.guildId, data.panelId)
+            );
+            const rolesAfterRemove = currentRoles.filter((r) => r.emoji !== data.emoji);
+
+            await updatePanelMessage(bot, data.panel, rolesAfterRemove);
+
+            // Step 3: Delete database record
+            await lastValueFrom(module.deleteReactionRole$(data.guildId, data.panelId, data.emoji));
+            log.debug(
+              { guildId: data.guildId, panelId: data.panelId, emoji: data.emoji },
+              'Database reaction role deleted'
+            );
+
+            const displayEmoji = formatEmojiForDisplay(data.emoji);
+            await replySuccess(bot, interaction, {
+              title: 'Reaction Role 已移除',
+              description: `${displayEmoji} 的綁定已從 Panel 中移除。`,
+              isEdit: true,
+            });
+
+            log.info(
+              { guildId: data.guildId, panelId: data.panelId, emoji: data.emoji },
+              'Reaction role removed successfully'
+            );
+          } catch (error) {
+            log.error(
+              { error, guildId: data.guildId, panelId: data.panelId, emoji: data.emoji },
+              'Failed to remove reaction role'
+            );
+            await handleError(bot, interaction, error, 'reactionRoleRoleRemove');
+          }
+        },
+        onCancel: async (bot, interaction, data) => {
+          const displayEmoji = formatEmojiForDisplay(data.emoji);
+          await replyInfo(bot, interaction, {
+            title: '已取消',
+            description: `已取消移除 ${displayEmoji} 的綁定。`,
+            isEdit: true,
+          });
+        },
+      }
+    );
+
+    log.info({ guildId, panelId, emoji }, 'Reaction role remove confirmation requested');
   } catch (error) {
     log.error(
       { error, guildId, messageId: panelId, emoji: emojiInput },
-      'Failed to remove reaction role'
+      'Failed to prepare reaction role remove confirmation'
     );
     await handleError(bot, interaction, error, 'reactionRoleRoleRemove');
   }
