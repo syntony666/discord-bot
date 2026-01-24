@@ -9,7 +9,7 @@ import {
 } from '@adapters/discord/shared/message/message.helper';
 import { BotInteraction, BotMessage } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
-import { handleError } from '@adapters/discord/shared/error';
+import { handleError, DiscordErrorHandler } from '@adapters/discord/shared/error';
 import { channelMention, getMessageUrl } from '@adapters/discord/shared/utils/discord.utils';
 import { buildPanelEmbed, getModeText } from './panel.helper';
 import type { PanelMode } from '../reaction-role.types';
@@ -104,8 +104,20 @@ async function handlePanelCreate(
 
     log.info({ guildId, channelId, messageId: message.id.toString() }, 'Panel created');
   } catch (error) {
-    log.error({ error, guildId, channelId }, 'Failed to create panel');
-    await handleError(bot, interaction, error, 'reactionRolePanelCreate');
+    const result = DiscordErrorHandler.handle(error, {
+      operation: 'reactionRolePanelCreate',
+      guildId,
+      channelId,
+    });
+
+    if (result.handled && result.userMessage) {
+      await replyError(bot, interaction, {
+        title: '建立 Panel 失敗',
+        description: result.userMessage,
+      });
+    } else {
+      await handleError(bot, interaction, error, 'reactionRolePanelCreate');
+    }
   }
 }
 
@@ -235,11 +247,21 @@ async function handlePanelDelete(
               'Panel deleted successfully'
             );
           } catch (error) {
-            log.error(
-              { error, guildId: data.guildId, panelId: data.panelId },
-              'Failed to delete panel'
-            );
-            await handleError(bot, interaction, error, 'reactionRolePanelDelete');
+            const result = DiscordErrorHandler.handle(error, {
+              operation: 'reactionRolePanelDelete',
+              guildId: data.guildId,
+              panelId: data.panelId,
+            });
+
+            if (result.handled && result.userMessage) {
+              await replyError(bot, interaction, {
+                title: '刪除 Panel 失敗',
+                description: result.userMessage,
+                isEdit: true,
+              });
+            } else {
+              await handleError(bot, interaction, error, 'reactionRolePanelDelete');
+            }
           }
         },
         onCancel: async (bot, interaction, data) => {
@@ -365,11 +387,21 @@ async function handlePanelEdit(
               'Panel edited successfully'
             );
           } catch (error) {
-            log.error(
-              { error, guildId: data.guildId, panelId: data.panelId },
-              'Failed to edit panel'
-            );
-            await handleError(bot, interaction, error, 'reactionRolePanelEdit');
+            const result = DiscordErrorHandler.handle(error, {
+              operation: 'reactionRolePanelEdit',
+              guildId: data.guildId,
+              panelId: data.panelId,
+            });
+
+            if (result.handled && result.userMessage) {
+              await replyError(bot, interaction, {
+                title: '更新 Panel 失敗',
+                description: result.userMessage,
+                isEdit: true,
+              });
+            } else {
+              await handleError(bot, interaction, error, 'reactionRolePanelEdit');
+            }
           }
         },
         onCancel: async (bot, interaction, data) => {
