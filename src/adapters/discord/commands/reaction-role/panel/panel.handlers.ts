@@ -174,20 +174,26 @@ async function handlePanelDelete(
       return;
     }
 
-    await lastValueFrom(module.deletePanel$(guildId, panelId));
-
     try {
       await bot.helpers.deleteMessage(BigInt(panel.channelId), BigInt(panelId));
+      log.debug({ guildId, panelId }, 'Discord message deleted');
     } catch (error: any) {
-      if (error.code !== 10008) throw error;
+      if (error.code === 10008) {
+        log.warn({ guildId, panelId }, 'Message already deleted, continuing with database cleanup');
+      } else {
+        throw error;
+      }
     }
+
+    await lastValueFrom(module.deletePanel$(guildId, panelId));
+    log.debug({ guildId, panelId }, 'Database panel deleted');
 
     await replySuccess(bot, interaction, {
       title: 'Panel 已刪除',
       description: `Panel \`${panelId}\` 及其所有 Reaction Roles 已刪除。`,
     });
 
-    log.info({ guildId, messageId: panelId }, 'Panel deleted');
+    log.info({ guildId, messageId: panelId }, 'Panel deleted successfully');
   } catch (error) {
     log.error({ error, guildId, messageId: panelId }, 'Failed to delete panel');
     await handleError(bot, interaction, error, 'reactionRolePanelDelete');
@@ -226,27 +232,30 @@ async function handlePanelEdit(
     if (description !== undefined) updates.description = description;
     if (mode !== undefined) updates.mode = mode;
 
-    const updatedPanel = await lastValueFrom(module.updatePanel$(guildId, panelId, updates));
     const roles = await lastValueFrom(module.getReactionRolesByMessage$(guildId, panelId));
 
     await bot.helpers.editMessage(
       BigInt(panel.channelId),
       BigInt(panelId),
       buildPanelEmbed({
-        title: updatedPanel.title,
-        description: updatedPanel.description || undefined,
-        mode: updatedPanel.mode as PanelMode,
+        title: title !== undefined ? title : panel.title,
+        description: description !== undefined ? description : panel.description || undefined,
+        mode: mode !== undefined ? mode : (panel.mode as PanelMode),
         roles,
         messageId: panelId,
       })
     );
+    log.debug({ guildId, panelId, updates }, 'Discord message updated');
+
+    const updatedPanel = await lastValueFrom(module.updatePanel$(guildId, panelId, updates));
+    log.debug({ guildId, panelId }, 'Database panel updated');
 
     await replySuccess(bot, interaction, {
       title: 'Panel 已更新',
       description: `Panel \`${panelId}\` 已成功更新。`,
     });
 
-    log.info({ guildId, messageId: panelId, updates }, 'Panel edited');
+    log.info({ guildId, messageId: panelId, updates }, 'Panel edited successfully');
   } catch (error) {
     log.error({ error, guildId, messageId: panelId }, 'Failed to edit panel');
     await handleError(bot, interaction, error, 'reactionRolePanelEdit');

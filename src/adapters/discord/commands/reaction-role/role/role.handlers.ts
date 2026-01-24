@@ -50,6 +50,29 @@ export async function handleAdd(
       return;
     }
 
+    const reactionEmoji = formatEmojiForReaction(emoji);
+    await bot.helpers.addReaction(BigInt(panel.channelId), BigInt(panelId), reactionEmoji);
+    log.debug({ guildId, panelId, emoji }, 'Discord reaction added');
+
+    const currentRoles = await lastValueFrom(module.getReactionRolesByMessage$(guildId, panelId));
+    const rolesWithNew = [
+      ...currentRoles,
+      { emoji, roleId, description: description || null, guildId, messageId: panelId },
+    ];
+
+    await bot.helpers.editMessage(
+      BigInt(panel.channelId),
+      BigInt(panelId),
+      buildPanelEmbed({
+        title: panel.title,
+        description: panel.description || undefined,
+        mode: panel.mode as PanelMode,
+        roles: rolesWithNew,
+        messageId: panelId,
+      })
+    );
+    log.debug({ guildId, panelId }, 'Discord message updated');
+
     await lastValueFrom(
       module.createReactionRole$({
         guildId,
@@ -59,23 +82,7 @@ export async function handleAdd(
         description,
       })
     );
-
-    const reactionEmoji = formatEmojiForReaction(emoji);
-    await bot.helpers.addReaction(BigInt(panel.channelId), BigInt(panelId), reactionEmoji);
-
-    const roles = await lastValueFrom(module.getReactionRolesByMessage$(guildId, panelId));
-
-    await bot.helpers.editMessage(
-      BigInt(panel.channelId),
-      BigInt(panelId),
-      buildPanelEmbed({
-        title: panel.title,
-        description: panel.description || undefined,
-        mode: panel.mode as PanelMode,
-        roles,
-        messageId: panelId,
-      })
-    );
+    log.debug({ guildId, panelId, emoji, roleId }, 'Database reaction role created');
 
     const displayEmoji = formatEmojiForDisplay(emoji);
     await replySuccess(bot, interaction, {
@@ -83,16 +90,13 @@ export async function handleAdd(
       description: `${displayEmoji} → ${roleMention(roleId)} 已添加到 Panel。`,
     });
 
-    log.info({ guildId, messageId: panelId, emoji, roleId }, 'Reaction role added');
+    log.info({ guildId, messageId: panelId, emoji, roleId }, 'Reaction role added successfully');
   } catch (error) {
     log.error({ error, guildId, messageId: panelId, emoji }, 'Failed to add reaction role');
     await handleError(bot, interaction, error, 'reactionRoleRoleAdd');
   }
 }
 
-/**
- * Handle /reaction-role remove
- */
 export async function handleRemove(
   bot: Bot,
   interaction: BotInteraction,
@@ -116,33 +120,45 @@ export async function handleRemove(
     }
 
     const panel = await lastValueFrom(module.getPanel$(guildId, panelId));
-
-    await lastValueFrom(module.deleteReactionRole$(guildId, panelId, emoji));
-
-    if (panel) {
-      try {
-        const reactionEmoji = formatEmojiForReaction(emoji);
-        await bot.helpers.deleteOwnReaction(
-          BigInt(panel.channelId),
-          BigInt(panelId),
-          reactionEmoji
-        );
-      } catch {}
-
-      const roles = await lastValueFrom(module.getReactionRolesByMessage$(guildId, panelId));
-
-      await bot.helpers.editMessage(
-        BigInt(panel.channelId),
-        BigInt(panelId),
-        buildPanelEmbed({
-          title: panel.title,
-          description: panel.description || undefined,
-          mode: panel.mode as PanelMode,
-          roles,
-          messageId: panelId,
-        })
-      );
+    if (!panel) {
+      await replyError(bot, interaction, {
+        title: 'Panel 不存在',
+        description: `找不到 ID 為 \`${panelId}\` 的 Panel。`,
+      });
+      return;
     }
+
+    try {
+      const reactionEmoji = formatEmojiForReaction(emoji);
+      await bot.helpers.deleteOwnReaction(BigInt(panel.channelId), BigInt(panelId), reactionEmoji);
+      log.debug({ guildId, panelId, emoji }, 'Discord reaction deleted');
+    } catch (error: any) {
+      // 10008 = Unknown Message or reaction doesn't exist
+      if (error.code !== 10008) {
+        throw error;
+      }
+      log.warn({ guildId, panelId, emoji }, 'Reaction already removed, continuing');
+    }
+
+    const currentRoles = await lastValueFrom(module.getReactionRolesByMessage$(guildId, panelId));
+    const rolesAfterRemove = currentRoles.filter((r) => r.emoji !== emoji);
+
+    await bot.helpers.editMessage(
+      BigInt(panel.channelId),
+      BigInt(panelId),
+      buildPanelEmbed({
+        title: panel.title,
+        description: panel.description || undefined,
+        mode: panel.mode as PanelMode,
+        roles: rolesAfterRemove,
+        messageId: panelId,
+      })
+    );
+    log.debug({ guildId, panelId }, 'Discord message updated');
+
+    // Step 3: Delete database record (only if Discord operations succeeded)
+    await lastValueFrom(module.deleteReactionRole$(guildId, panelId, emoji));
+    log.debug({ guildId, panelId, emoji }, 'Database reaction role deleted');
 
     const displayEmoji = formatEmojiForDisplay(emoji);
     await replySuccess(bot, interaction, {
@@ -150,7 +166,7 @@ export async function handleRemove(
       description: `${displayEmoji} 的綁定已從 Panel 中移除。`,
     });
 
-    log.info({ guildId, messageId: panelId, emoji }, 'Reaction role removed');
+    log.info({ guildId, messageId: panelId, emoji }, 'Reaction role removed successfully');
   } catch (error) {
     log.error(
       { error, guildId, messageId: panelId, emoji: emojiInput },
