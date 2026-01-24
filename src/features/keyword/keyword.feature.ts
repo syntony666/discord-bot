@@ -16,6 +16,10 @@ export interface KeywordFeature {
   cleanup: () => void;
 }
 
+/**
+ * Setup keyword feature.
+ * Uses mergeMap for parallel processing since keyword responses are independent.
+ */
 export function setupKeywordFeature(prisma: PrismaClient, bot: Bot): KeywordFeature {
   const module = createKeywordModule(prisma);
   const service = createKeywordService(module);
@@ -55,7 +59,6 @@ export function setupKeywordFeature(prisma: PrismaClient, bot: Bot): KeywordFeat
       handleDiscordError({
         operation: 'keywordTrigger',
       }),
-      // Outer-level catchError to ensure stream never terminates
       catchError((error) => {
         log.error({ error }, 'Critical error in keyword feature stream (outer catchError)');
         return EMPTY;

@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma-client/client';
 import { Bot, InteractionTypes } from '@discordeno/bot';
-import { Subscription, mergeMap, lastValueFrom, catchError, EMPTY } from 'rxjs';
+import { Subscription, concatMap, lastValueFrom, catchError, EMPTY } from 'rxjs';
 import { createReactionRoleModule, ReactionRoleModule } from './reaction-role.module';
 import { createReactionRoleService, ReactionRoleService } from './reaction-role.service';
 import { reactionAdd$, reactionRemove$ } from '@core/rx/bus';
@@ -19,6 +19,8 @@ export interface ReactionRoleFeature {
 /**
  * Setup reaction role feature.
  * Subscribes to reaction events and manages role assignments based on panel configuration.
+ * 
+ * Uses concatMap to prevent race conditions when users rapidly add/remove reactions.
  */
 export function setupReactionRoleFeature(prisma: PrismaClient, bot: Bot): ReactionRoleFeature {
   const module = createReactionRoleModule(prisma);
@@ -30,7 +32,7 @@ export function setupReactionRoleFeature(prisma: PrismaClient, bot: Bot): Reacti
 
   const addSub = reactionAdd$
     .pipe(
-      mergeMap(async (reaction) => {
+      concatMap(async (reaction) => {
         if (reaction.userId === bot.id) return;
         if (!reaction.guildId) return;
 
@@ -118,7 +120,7 @@ export function setupReactionRoleFeature(prisma: PrismaClient, bot: Bot): Reacti
 
   const removeSub = reactionRemove$
     .pipe(
-      mergeMap(async (reaction) => {
+      concatMap(async (reaction) => {
         if (reaction.userId === bot.id) return;
         if (!reaction.guildId) return;
 
