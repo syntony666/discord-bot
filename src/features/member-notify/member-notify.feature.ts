@@ -8,13 +8,13 @@ import { createLogger } from '@core/logger';
 import { createMemberNotifyCommandHandler } from '@adapters/discord/commands/member-notify.command';
 import { notify } from '@adapters/discord/shared/message/message.helper';
 import { handleDiscordError } from '@core/rx/operators/handle-discord-error';
+import { Feature } from '@core/bootstrap/feature.interface';
 
 const log = createLogger('MemberNotifyFeature');
 
-export interface MemberNotifyFeature {
+export interface MemberNotifyFeature extends Feature {
   module: MemberNotifyModule;
   service: MemberNotifyService;
-  cleanup: () => void;
 }
 
 /**
@@ -32,7 +32,7 @@ export function setupMemberNotifyFeature(prisma: PrismaClient, bot: Bot): Member
   // Handle member join events
   const joinSub = guildMemberAdd$
     .pipe(
-      (mergeMap(async ({ member, user }) => {
+      mergeMap(async ({ member, user }) => {
         const guildId = member.guildId.toString();
         const config = await lastValueFrom(module.getConfig$(guildId));
 
@@ -62,14 +62,14 @@ export function setupMemberNotifyFeature(prisma: PrismaClient, bot: Bot): Member
       catchError((error) => {
         log.error({ error }, 'Critical error in member-notify join stream (outer catchError)');
         return EMPTY;
-      }))
+      })
     )
     .subscribe();
 
   // Handle member leave events
   const leaveSub = guildMemberRemove$
     .pipe(
-      (mergeMap(async ({ user, guildId }) => {
+      mergeMap(async ({ user, guildId }) => {
         const guildIdStr = guildId.toString();
         const config = await lastValueFrom(module.getConfig$(guildIdStr));
 
@@ -99,7 +99,7 @@ export function setupMemberNotifyFeature(prisma: PrismaClient, bot: Bot): Member
       catchError((error) => {
         log.error({ error }, 'Critical error in member-notify leave stream (outer catchError)');
         return EMPTY;
-      }))
+      })
     )
     .subscribe();
 
@@ -108,6 +108,7 @@ export function setupMemberNotifyFeature(prisma: PrismaClient, bot: Bot): Member
   log.info('Member notify feature activated');
 
   return {
+    name: 'MemberNotify',
     module,
     service,
     cleanup: () => {

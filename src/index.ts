@@ -3,6 +3,7 @@ import { logger } from '@core/logger';
 import { prisma, connectPrisma, disconnectPrisma } from '@platforms/database/prisma.client';
 import { createBotClient } from '@platforms/discordeno/bot.client';
 import { bootstrapApp } from '@core/bootstrap/app.bootstrap';
+import { featureRegistry } from '@core/bootstrap/feature.registry';
 
 async function main() {
   logger.info({ env: appConfig.nodeEnv }, 'Starting bot');
@@ -24,17 +25,39 @@ async function main() {
   }
 }
 
-// 優雅關閉處理
-process.on('SIGINT', async () => {
-  logger.info('Received SIGINT, shutting down gracefully...');
-  await disconnectPrisma();
-  process.exit(0);
+/**
+ * Graceful shutdown handler
+ */
+async function gracefulShutdown(signal: string) {
+  logger.info({ signal }, 'Received shutdown signal, shutting down gracefully...');
+
+  try {
+    // Step 1: Cleanup all features
+    featureRegistry.cleanup();
+
+    // Step 2: Disconnect Prisma
+    await disconnectPrisma();
+
+    logger.info('Graceful shutdown completed');
+    process.exit(0);
+  } catch (error) {
+    logger.error({ error }, 'Error during graceful shutdown');
+    process.exit(1);
+  }
+}
+
+// Register shutdown handlers
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+
+// Handle uncaught errors
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error({ reason, promise }, 'Unhandled promise rejection');
 });
 
-process.on('SIGTERM', async () => {
-  logger.info('Received SIGTERM, shutting down gracefully...');
-  await disconnectPrisma();
-  process.exit(0);
+process.on('uncaughtException', (error) => {
+  logger.error({ error }, 'Uncaught exception');
+  gracefulShutdown('uncaughtException');
 });
 
 main().catch(async (error) => {

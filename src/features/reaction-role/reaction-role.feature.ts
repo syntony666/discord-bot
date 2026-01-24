@@ -7,13 +7,13 @@ import { reactionAdd$, reactionRemove$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { createReactionRoleCommandHandler } from '@adapters/discord/commands/reaction-role';
 import { handleDiscordError } from '@core/rx/operators/handle-discord-error';
+import { Feature } from '@core/bootstrap/feature.interface';
 
 const log = createLogger('ReactionRoleFeature');
 
-export interface ReactionRoleFeature {
+export interface ReactionRoleFeature extends Feature {
   module: ReactionRoleModule;
   service: ReactionRoleService;
-  cleanup: () => void;
 }
 
 /**
@@ -164,6 +164,7 @@ export function setupReactionRoleFeature(prisma: PrismaClient, bot: Bot): Reacti
   log.info('Reaction role feature activated');
 
   return {
+    name: 'ReactionRole',
     module,
     service,
     cleanup: () => {

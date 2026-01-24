@@ -7,13 +7,13 @@ import { createKeywordCommandHandler } from '@adapters/discord/commands/keyword.
 import { BotMessage, messageCreate$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleDiscordError } from '@core/rx/operators/handle-discord-error';
+import { Feature } from '@core/bootstrap/feature.interface';
 
 const log = createLogger('KeywordFeature');
 
-export interface KeywordFeature {
+export interface KeywordFeature extends Feature {
   module: KeywordModule;
   service: KeywordService;
-  cleanup: () => void;
 }
 
 /**
@@ -69,6 +69,7 @@ export function setupKeywordFeature(prisma: PrismaClient, bot: Bot): KeywordFeat
   log.info('Keyword feature activated');
 
   return {
+    name: 'Keyword',
     module,
     service,
     cleanup: () => {

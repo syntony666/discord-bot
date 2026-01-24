@@ -12,6 +12,7 @@ import { setupReactionRoleFeature } from '@features/reaction-role/reaction-role.
 import { createStatusCommandHandler } from '@adapters/discord/commands/status.command';
 import { ConfirmationStrategy } from '@adapters/discord/shared/confirmation/confirmation.strategy';
 import { CustomIdPrefixes } from '@core/config/constants';
+import { featureRegistry } from './feature.registry';
 
 const log = createLogger('Bootstrap');
 
@@ -24,6 +25,7 @@ export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaCl
 
   await registerApplicationCommands(rest);
 
+  // Register interaction strategies
   const paginatorButtonStrategy = new PaginatorButtonStrategy();
   const confirmationStrategy = new ConfirmationStrategy();
 
@@ -42,12 +44,18 @@ export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaCl
     await confirmationStrategy.handle(bot, interaction);
   });
 
-  setupKeywordFeature(prisma, bot);
-  setupMemberNotifyFeature(prisma, bot);
-  setupReactionRoleFeature(prisma, bot);
+  // Setup features and register them
+  featureRegistry.register(setupKeywordFeature(prisma, bot));
+
+  featureRegistry.register(setupMemberNotifyFeature(prisma, bot));
+
+  featureRegistry.register(setupReactionRoleFeature(prisma, bot));
+
+  // Register commands
   createStatusCommandHandler(bot);
 
+  // Activate command registry
   commandRegistry.activate(bot);
 
-  log.info('Application bootstrapped successfully');
+  log.info({ featureCount: featureRegistry.count() }, 'Application bootstrapped successfully');
 }
