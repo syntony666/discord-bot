@@ -13,6 +13,28 @@ datasource db {
   provider = "postgresql"
 }
 
+/**
+ * Guild - Root entity for all guild-related data
+ * Tracks guild membership and member count
+ */
+model Guild {
+  id                        String @id
+  name                      String
+  approximateMemberCount    Int    @default(0)
+  syncedAt                  DateTime @default(now()) @updatedAt
+  
+  keywordRules              KeywordRule[]
+  notificationChannels      NotificationChannel[]
+  memberNotifyMessages      MemberNotifyMessage[]
+  reactionRoles             ReactionRole[]
+  reactionRolePanels        ReactionRolePanel[]
+
+  @@index([id])
+}
+
+/**
+ * KeywordRule - Auto-response rules for specific patterns
+ */
 model KeywordRule {
   guildId   String
   pattern   String
@@ -23,7 +45,10 @@ model KeywordRule {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
   @@id([guildId, pattern])
+  @@index([guildId])
 }
 
 enum KeywordMatchType {
@@ -31,32 +56,63 @@ enum KeywordMatchType {
   CONTAINS
 }
 
-model MemberNotifyConfig {
-  guildId         String   @id
-  channelId       String?
-  enabled         Boolean  @default(false)
-  joinMessage     String   @default("📥 {user} 加入了 {server}！目前共 {memberCount} 位成員")
-  leaveMessage    String   @default("📤 {username} 離開了 {server}。目前剩餘 {memberCount} 位成員")
-  joinEnabled     Boolean  @default(true)
-  leaveEnabled    Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+/**
+ * NotificationChannel - Where to send member join/leave notifications
+ */
+model NotificationChannel {
+  guildId   String
+  type      NotificationType
+  channelId String
+  enabled   Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  guild     Guild            @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@id([guildId, type])
+  @@index([guildId])
 }
 
+enum NotificationType {
+  MEMBER_JOIN
+  MEMBER_LEAVE
+}
+
+/**
+ * MemberNotifyMessage - Message templates for member notifications
+ */
+model MemberNotifyMessage {
+  guildId     String   @id
+  joinMessage String   @default("📥 {user} 加入了 {server}！目前共 {memberCount} 位成員")
+  leaveMessage String  @default("📤 {username} 離開了 {server}。目前剩餘 {memberCount} 位成員")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@index([guildId])
+}
+
+/**
+ * ReactionRole - Maps emoji reactions to Discord roles
+ */
 model ReactionRole {
   guildId     String
   messageId   String
   emoji       String
   roleId      String
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  guild       Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   @@id([guildId, messageId, emoji])
   @@index([guildId])
   @@index([messageId])
 }
 
+/**
+ * ReactionRolePanel - Groups multiple reaction roles into a single message
+ */
 model ReactionRolePanel {
   guildId     String
   messageId   String
@@ -67,6 +123,8 @@ model ReactionRolePanel {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  guild       Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
   @@id([guildId, messageId])
   @@index([guildId])
 }
@@ -76,4 +134,3 @@ enum ReactionRoleMode {
   UNIQUE
   VERIFY
 }
-

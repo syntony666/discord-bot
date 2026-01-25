@@ -8,6 +8,8 @@ import {
   emitGuildMemberRemove,
   emitReactionAdd,
   emitReactionRemove,
+  emitGuildCreate,
+  emitGuildDelete,
 } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 
@@ -45,5 +47,13 @@ export const botEventHandlers: CreateBotOptions<
 
   reactionRemove(payload) {
     emitReactionRemove(payload);
+  },
+
+  guildCreate(guild) {
+    emitGuildCreate(guild);
+  },
+
+  guildDelete(id, shardId) {
+    emitGuildDelete(id, shardId);
   },
 };
