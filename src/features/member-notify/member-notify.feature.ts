@@ -1,4 +1,6 @@
-import { PrismaClient } from '@prisma-client/client';
+// src/features/member-notify/member-notify.feature.ts
+
+import { PrismaClient, NotificationType } from '@prisma-client/client';
 import { Bot } from '@discordeno/bot';
 import { Subscription, lastValueFrom, mergeMap, catchError, EMPTY } from 'rxjs';
 import { createMemberNotifyModule, MemberNotifyModule } from './member-notify.module';
@@ -9,6 +11,7 @@ import { createMemberNotifyCommandHandler } from '@adapters/discord/commands/mem
 import { notify } from '@adapters/discord/shared/message/message.helper';
 import { handleDiscordError } from '@core/rx/operators/handle-discord-error';
 import { Feature } from '@core/bootstrap/feature.interface';
+import { GuildModule } from '@features/guild/guild.module';
 
 const log = createLogger('MemberNotifyFeature');
 
@@ -19,42 +22,65 @@ export interface MemberNotifyFeature extends Feature {
 
 /**
  * Setup member join/leave notification feature.
- * Uses mergeMap for parallel processing since notifications are independent.
+ * Uses NotificationChannel + MemberNotifyMessage schema.
  */
-export function setupMemberNotifyFeature(prisma: PrismaClient, bot: Bot): MemberNotifyFeature {
+export function setupMemberNotifyFeature(
+  prisma: PrismaClient,
+  bot: Bot,
+  guildModule: GuildModule
+): MemberNotifyFeature {
   const module = createMemberNotifyModule(prisma);
   const service = createMemberNotifyService();
 
-  createMemberNotifyCommandHandler(bot, module, service);
+  createMemberNotifyCommandHandler(bot, module, service, guildModule);
 
   const subscriptions: Subscription[] = [];
 
-  // Handle member join events
+  // ========== Member Join Event ==========
   const joinSub = guildMemberAdd$
     .pipe(
       mergeMap(async ({ member, user }) => {
         const guildId = member.guildId.toString();
-        const config = await lastValueFrom(module.getConfig$(guildId));
 
-        if (!service.shouldSendJoin(config)) return;
+        try {
+          // Ensure guild exists
+          await lastValueFrom(guildModule.ensureGuild$(guildId));
 
-        const guild = (await bot.helpers.getGuild(member.guildId)) as BotGuild;
-        const memberCount = guild.approximateMemberCount || 0;
+          // Get join notification channel
+          const joinChannel = await lastValueFrom(
+            module.getNotificationChannel$(guildId, NotificationType.MEMBER_JOIN)
+          );
 
-        const message = service.formatMessage(config!.joinMessage, {
-          user: `<@${user.id}>`,
-          username: user.username || 'Unknown',
-          server: guild.name,
-          memberCount,
-        });
+          if (!service.shouldSendJoin(joinChannel)) return;
 
-        await notify(bot, BigInt(config!.channelId!), {
-          type: 'member_join',
-          title: '新成員加入',
-          description: message,
-        });
+          // Get message templates
+          const templates = await lastValueFrom(module.getMessageTemplates$(guildId));
+          const guild = (await bot.helpers.getGuild(member.guildId)) as BotGuild;
+          const memberCount = guild.approximateMemberCount || 0;
 
-        log.info({ guildId, userId: user.id.toString() }, 'Sent join notification');
+          const message = service.formatMessage(
+            templates?.joinMessage || '📥 {user} 加入了 {server}！目前共 {memberCount} 位成員',
+            {
+              user: `<@${user.id}>`,
+              username: user.username || 'Unknown',
+              server: guild.name,
+              memberCount,
+            }
+          );
+
+          await notify(bot, BigInt(joinChannel!.channelId), {
+            type: 'member_join',
+            title: '新成員加入',
+            description: message,
+          });
+
+          log.info({ guildId, userId: user.id.toString() }, 'Sent join notification');
+        } catch (error) {
+          log.error(
+            { error, guildId, userId: user.id.toString() },
+            'Failed to send join notification'
+          );
+        }
       }),
       handleDiscordError({
         operation: 'memberJoinNotify',
@@ -66,32 +92,49 @@ export function setupMemberNotifyFeature(prisma: PrismaClient, bot: Bot): Member
     )
     .subscribe();
 
-  // Handle member leave events
+  // ========== Member Leave Event ==========
   const leaveSub = guildMemberRemove$
     .pipe(
       mergeMap(async ({ user, guildId }) => {
         const guildIdStr = guildId.toString();
-        const config = await lastValueFrom(module.getConfig$(guildIdStr));
 
-        if (!service.shouldSendLeave(config)) return;
+        try {
+          // Get leave notification channel
+          const leaveChannel = await lastValueFrom(
+            module.getNotificationChannel$(guildIdStr, NotificationType.MEMBER_LEAVE)
+          );
 
-        const guild = (await bot.helpers.getGuild(guildId.toString())) as BotGuild;
-        const memberCount = guild.approximateMemberCount || 0;
+          if (!service.shouldSendLeave(leaveChannel)) return;
 
-        const message = service.formatMessage(config!.leaveMessage, {
-          user: `<@${user.id}>`,
-          username: user.username || 'Unknown',
-          server: guild.name,
-          memberCount,
-        });
+          // Get message templates
+          const templates = await lastValueFrom(module.getMessageTemplates$(guildIdStr));
+          const guild = (await bot.helpers.getGuild(guildIdStr)) as BotGuild;
+          const memberCount = guild.approximateMemberCount || 0;
 
-        await notify(bot, BigInt(config!.channelId!), {
-          type: 'member_leave',
-          title: '成員離開',
-          description: message,
-        });
+          const message = service.formatMessage(
+            templates?.leaveMessage ||
+              '📤 {username} 離開了 {server}。目前剩餘 {memberCount} 位成員',
+            {
+              user: `<@${user.id}>`,
+              username: user.username || 'Unknown',
+              server: guild.name,
+              memberCount,
+            }
+          );
 
-        log.info({ guildId: guildIdStr, userId: user.id.toString() }, 'Sent leave notification');
+          await notify(bot, BigInt(leaveChannel!.channelId), {
+            type: 'member_leave',
+            title: '成員離開',
+            description: message,
+          });
+
+          log.info({ guildId: guildIdStr, userId: user.id.toString() }, 'Sent leave notification');
+        } catch (error) {
+          log.error(
+            { error, guildId: guildIdStr, userId: user.id.toString() },
+            'Failed to send leave notification'
+          );
+        }
       }),
       handleDiscordError({
         operation: 'memberLeaveNotify',

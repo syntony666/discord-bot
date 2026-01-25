@@ -108,7 +108,7 @@ export function createReactionRoleModule(prisma: PrismaClient): ReactionRoleModu
       return from(
         prisma.reactionRole.findMany({
           where: { guildId, messageId },
-          orderBy: { createdAt: 'asc' },
+          orderBy: { emoji: 'asc' },
         })
       );
     },

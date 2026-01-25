@@ -21,7 +21,7 @@ export const memberNotifyRuntimeSelect = {
       enabled: true,
     },
   },
-  memberNotifyMessages: {
+  memberNotifyMessage: {
     select: {
       joinMessage: true,
       leaveMessage: true,

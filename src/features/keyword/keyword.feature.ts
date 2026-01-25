@@ -1,13 +1,17 @@
+// src/features/keyword/keyword.feature.ts
+
 import { PrismaClient } from '@prisma-client/client';
 import { Bot } from '@discordeno/bot';
-import { filter, mergeMap, lastValueFrom, catchError, EMPTY } from 'rxjs';
+import { lastValueFrom, Subscription, filter, mergeMap, catchError, EMPTY } from 'rxjs';
 import { createKeywordModule, KeywordModule } from './keyword.module';
 import { createKeywordService, KeywordService } from './keyword.service';
-import { createKeywordCommandHandler } from '@adapters/discord/commands/keyword.command';
-import { BotMessage, messageCreate$ } from '@core/rx/bus';
+import { messageCreate$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
+import { createKeywordCommandHandler } from '@adapters/discord/commands/keyword.command';
+import { notify } from '@adapters/discord/shared/message/message.helper';
 import { handleDiscordError } from '@core/rx/operators/handle-discord-error';
 import { Feature } from '@core/bootstrap/feature.interface';
+import { GuildModule } from '@features/guild/guild.module';
 
 const log = createLogger('KeywordFeature');
 
@@ -17,54 +21,54 @@ export interface KeywordFeature extends Feature {
 }
 
 /**
- * Setup keyword feature.
- * Uses mergeMap for parallel processing since keyword responses are independent.
+ * Setup keyword auto-reply feature.
+ * Uses filter to ignore bot messages, then mergeMap for parallel processing.
  */
-export function setupKeywordFeature(prisma: PrismaClient, bot: Bot): KeywordFeature {
+export function setupKeywordFeature(
+  prisma: PrismaClient,
+  bot: Bot,
+  guildModule: GuildModule // ← 加入參數
+): KeywordFeature {
   const module = createKeywordModule(prisma);
   const service = createKeywordService(module);
 
-  createKeywordCommandHandler(bot, module);
+  createKeywordCommandHandler(bot, module); // ← 目前不需要傳 guildModule（command 內沒用到 ensureGuild）
 
-  const subscription = messageCreate$
+  const subscriptions: Subscription[] = [];
+
+  const messageCreateSub = messageCreate$
     .pipe(
-      filter((message: BotMessage) => {
-        if (!message.guildId) return false;
-        if (message.author?.id && message.author.id === bot.id) return false;
-        const content = message.content ?? '';
-        if (!content.trim()) return false;
-        return true;
-      }),
-      mergeMap(async (message) => {
-        const guildId = message.guildId!.toString();
-        const channelId = message.channelId.toString();
-        const content = message.content!;
+      filter((msg) => msg.guildId !== null && !msg.author.bot), // Ignore DMs and bot messages
+      mergeMap(async (msg) => {
+        const guildId = msg.guildId!.toString();
+        const match = await lastValueFrom(service.findMatch$(guildId, msg.content));
 
-        const match = await lastValueFrom(service.findMatch$(guildId, content));
-        if (!match) return;
-
-        await bot.helpers.sendMessage(message.channelId, {
-          content: match.rule.response,
-        });
-
-        log.info(
-          {
-            guildId,
-            channelId,
-            pattern: match.rule.pattern,
-          },
-          'Sent keyword response'
-        );
+        if (match) {
+          try {
+            await bot.helpers.sendMessage(msg.channelId, {
+              content: match.rule.response,
+            });
+            log.info({ guildId, pattern: match.rule.pattern }, 'Keyword matched and replied');
+          } catch (error: any) {
+            if (error?.code === 50013) {
+              log.warn({ guildId, error: error.message }, 'Missing permissions to send message');
+            } else {
+              log.error({ error, guildId }, 'Failed to send keyword response');
+            }
+          }
+        }
       }),
       handleDiscordError({
-        operation: 'keywordTrigger',
+        operation: 'keywordMatch',
       }),
       catchError((error) => {
-        log.error({ error }, 'Critical error in keyword feature stream (outer catchError)');
+        log.error({ error }, 'Critical error in keyword stream (outer catchError)');
         return EMPTY;
       })
     )
     .subscribe();
+
+  subscriptions.push(messageCreateSub);
 
   log.info('Keyword feature activated');
 
@@ -73,7 +77,7 @@ export function setupKeywordFeature(prisma: PrismaClient, bot: Bot): KeywordFeat
     module,
     service,
     cleanup: () => {
-      subscription.unsubscribe();
+      subscriptions.forEach((sub) => sub.unsubscribe());
       log.info('Keyword feature cleaned up');
     },
   };

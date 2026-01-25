@@ -1,5 +1,8 @@
+// src/features/keyword/keyword.module.ts
+
 import { PrismaClient, KeywordMatchType, type KeywordRule } from '@prisma-client/client';
 import { Observable, from } from 'rxjs';
+import { keywordRuntimeSelect, KeywordRuntime } from './keyword.select';
 
 export interface CreateKeywordRuleInput {
   guildId: string;
@@ -19,7 +22,8 @@ export interface UpdateKeywordRuleInput {
 }
 
 export interface KeywordModule {
-  getRulesByGuild$(guildId: string): Observable<KeywordRule[]>;
+  getRulesByGuild$(guildId: string): Observable<KeywordRuntime[]>; // For service (high-frequency)
+  getRulesForList$(guildId: string): Observable<KeywordRule[]>; // For list command (low-frequency)
   getRuleByPattern$(guildId: string, pattern: string): Observable<KeywordRule | null>;
   createRule$(input: CreateKeywordRuleInput): Observable<KeywordRule>;
   updateRule$(input: UpdateKeywordRuleInput): Observable<KeywordRule>;
@@ -28,7 +32,25 @@ export interface KeywordModule {
 
 export function createKeywordModule(prisma: PrismaClient): KeywordModule {
   return {
-    getRulesByGuild$(guildId: string): Observable<KeywordRule[]> {
+    /**
+     * Get active rules for runtime matching (optimized, no timestamps/editorId).
+     * Used by: keyword.service (messageCreate event handler)
+     */
+    getRulesByGuild$(guildId: string): Observable<KeywordRuntime[]> {
+      return from(
+        prisma.keywordRule.findMany({
+          where: { guildId, enabled: true },
+          orderBy: { createdAt: 'desc' },
+          select: keywordRuntimeSelect,
+        })
+      );
+    },
+
+    /**
+     * Get rules for list display (full model with editorId).
+     * Used by: /keyword list command
+     */
+    getRulesForList$(guildId: string): Observable<KeywordRule[]> {
       return from(
         prisma.keywordRule.findMany({
           where: { guildId, enabled: true },

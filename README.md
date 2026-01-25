@@ -421,6 +421,19 @@ function createKeywordModule(prisma: PrismaClient): KeywordModule {
 }
 ```
 
+**Performance Impact:**
+
+| Feature | Without Select | With Select | Reduction |
+|---------|---------------|-------------|-----------|
+| Keyword | 6 fields | 5 fields | ~17% |
+| Reaction Role | 7 fields | 4 fields | ~43% |
+| Member Notify | 25 fields (3 tables joined) | 8 fields | ~68% |
+
+**Best Practice:**
+- Event handlers (message/reaction): Use runtime selectors
+- Command handlers (admin ops): Use full models
+- List operations: Use runtime selectors if displaying > 10 items
+
 ***
 
 ## 🎨 Design Patterns

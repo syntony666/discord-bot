@@ -25,7 +25,7 @@ model Guild {
   
   keywordRules              KeywordRule[]
   notificationChannels      NotificationChannel[]
-  memberNotifyMessages      MemberNotifyMessage[]
+  memberNotifyMessage       MemberNotifyMessage?  // ← 改為單數且可為 null
   reactionRoles             ReactionRole[]
   reactionRolePanels        ReactionRolePanel[]
 

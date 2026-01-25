@@ -1,3 +1,5 @@
+// src/features/reaction-role/reaction-role.feature.ts
+
 import { PrismaClient } from '@prisma-client/client';
 import { Bot, InteractionTypes } from '@discordeno/bot';
 import { Subscription, concatMap, lastValueFrom, catchError, EMPTY } from 'rxjs';
@@ -8,6 +10,7 @@ import { createLogger } from '@core/logger';
 import { createReactionRoleCommandHandler } from '@adapters/discord/commands/reaction-role';
 import { handleDiscordError } from '@core/rx/operators/handle-discord-error';
 import { Feature } from '@core/bootstrap/feature.interface';
+import { GuildModule } from '@features/guild/guild.module';
 
 const log = createLogger('ReactionRoleFeature');
 
@@ -19,10 +22,14 @@ export interface ReactionRoleFeature extends Feature {
 /**
  * Setup reaction role feature.
  * Subscribes to reaction events and manages role assignments based on panel configuration.
- * 
+ *
  * Uses concatMap to prevent race conditions when users rapidly add/remove reactions.
  */
-export function setupReactionRoleFeature(prisma: PrismaClient, bot: Bot): ReactionRoleFeature {
+export function setupReactionRoleFeature(
+  prisma: PrismaClient,
+  bot: Bot,
+  guildModule: GuildModule // ← 加入參數
+): ReactionRoleFeature {
   const module = createReactionRoleModule(prisma);
   const service = createReactionRoleService(module);
 

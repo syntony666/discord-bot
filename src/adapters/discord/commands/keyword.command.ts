@@ -213,7 +213,7 @@ async function handleListKeywords(
   guildId: string
 ) {
   try {
-    const rules = await lastValueFrom(module.getRulesByGuild$(guildId));
+    const rules = await lastValueFrom(module.getRulesForList$(guildId));
 
     await replyTextList({
       bot,

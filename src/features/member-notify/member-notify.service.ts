@@ -1,4 +1,6 @@
-import { MemberNotifyConfig } from '@prisma-client/client';
+// src/features/member-notify/member-notify.service.ts
+
+import { NotificationChannel } from './member-notify.select';
 
 export interface MessageVariables {
   user: string; // Discord mention format
@@ -12,8 +14,8 @@ export interface MessageVariables {
  */
 export interface MemberNotifyService {
   formatMessage(template: string, vars: MessageVariables): string;
-  shouldSendJoin(config: MemberNotifyConfig | null): boolean;
-  shouldSendLeave(config: MemberNotifyConfig | null): boolean;
+  shouldSendJoin(channel: NotificationChannel | null): boolean;
+  shouldSendLeave(channel: NotificationChannel | null): boolean;
 }
 
 export function createMemberNotifyService(): MemberNotifyService {
@@ -32,18 +34,18 @@ export function createMemberNotifyService(): MemberNotifyService {
 
     /**
      * Check if join notifications should be sent.
-     * Requires: config enabled, join enabled, and channel set.
+     * Requires: channel exists, enabled, and has channelId.
      */
-    shouldSendJoin(config: MemberNotifyConfig | null): boolean {
-      return Boolean(config?.enabled && config?.joinEnabled && config?.channelId);
+    shouldSendJoin(channel: NotificationChannel | null): boolean {
+      return Boolean(channel?.enabled && channel?.channelId);
     },
 
     /**
      * Check if leave notifications should be sent.
-     * Requires: config enabled, leave enabled, and channel set.
+     * Requires: channel exists, enabled, and has channelId.
      */
-    shouldSendLeave(config: MemberNotifyConfig | null): boolean {
-      return Boolean(config?.enabled && config?.leaveEnabled && config?.channelId);
+    shouldSendLeave(channel: NotificationChannel | null): boolean {
+      return Boolean(channel?.enabled && channel?.channelId);
     },
   };
 }

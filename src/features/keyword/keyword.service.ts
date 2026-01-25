@@ -1,10 +1,12 @@
-import type { KeywordRule } from '@prisma-client/client';
+// src/features/keyword/keyword.service.ts
+
+import type { KeywordRuntime } from './keyword.select'; // ← 改用 KeywordRuntime
 import type { KeywordModule } from './keyword.module';
-import { Observable, of, map, switchMap } from 'rxjs';
+import { Observable, of, map } from 'rxjs';
 import { createSignal } from '@core/signals/signal';
 
 export interface KeywordMatchResult {
-  rule: KeywordRule;
+  rule: KeywordRuntime; // ← 改用 KeywordRuntime
 }
 
 export interface KeywordService {
@@ -13,10 +15,11 @@ export interface KeywordService {
 
 type GuildId = string;
 
-// 簡單的 in-memory cache：guildId -> rules[]
-const [getCache, setCache] = createSignal<Map<GuildId, KeywordRule[]>>(new Map());
+// In-memory cache: guildId -> rules[]
+const [getCache, setCache] = createSignal<Map<GuildId, KeywordRuntime[]>>(new Map()); // ← 改用 KeywordRuntime[]
 
-function applyMatch(rule: KeywordRule, content: string): boolean {
+function applyMatch(rule: KeywordRuntime, content: string): boolean {
+  // ← 改用 KeywordRuntime
   const text = content.trim();
   const pattern = rule.pattern.trim();
 
@@ -32,7 +35,8 @@ function applyMatch(rule: KeywordRule, content: string): boolean {
 }
 
 export function createKeywordService(module: KeywordModule): KeywordService {
-  function loadRulesForGuild$(guildId: string): Observable<KeywordRule[]> {
+  function loadRulesForGuild$(guildId: string): Observable<KeywordRuntime[]> {
+    // ← 改用 KeywordRuntime[]
     const cache = getCache();
     const cached = cache.get(guildId);
     if (cached) {
