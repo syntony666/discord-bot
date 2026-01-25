@@ -349,6 +349,78 @@ messageCreate$
   .subscribe();
 ```
 
+### 9. Prisma Runtime Selectors
+
+**Purpose:** Optimize high-frequency database queries by selecting only necessary fields.
+
+**When to Use Selectors:**
+
+- ✅ High-frequency queries (per message/reaction event)
+- ✅ Queries returning multiple records
+- ✅ Cross-relation queries to avoid over-fetching
+
+**When to Use Full Models:**
+
+- ✅ Single record queries (findUnique)
+- ✅ CRUD operations (create, update, delete)
+- ✅ Admin/detail views
+- ✅ Low-frequency operations
+
+**Naming Convention:**
+
+| Pattern | Example | Usage |
+|---------|---------|-------|
+| Runtime selector | `keywordRuntimeSelect` | High-frequency queries |
+| Runtime type | `KeywordRuntime` | Derived from runtime selector |
+| Full model type | `KeywordRule` | Direct from `@prisma-client/client` |
+
+**Implementation Example:**
+
+```typescript
+// ✅ Define runtime selector (in feature.select.ts)
+export const keywordRuntimeSelect = {
+  guildId: true,
+  pattern: true,
+  matchType: true,
+  response: true,
+  enabled: true,
+} as const satisfies Prisma.KeywordRuleSelect;
+
+export type KeywordRuntime = Prisma.KeywordRuleGetPayload<{
+  select: typeof keywordRuntimeSelect;
+}>;
+
+// ✅ Use in module (high-frequency query)
+interface KeywordModule {
+  getActiveRules$(guildId: string): Observable<KeywordRuntime[]>;
+  getRuleDetail$(guildId: string, pattern: string): Observable<KeywordRule | null>;
+}
+
+function createKeywordModule(prisma: PrismaClient): KeywordModule {
+  return {
+    // High-frequency: use runtime selector
+    getActiveRules$(guildId: string) {
+      return from(
+        prisma.keywordRule.findMany({
+          where: { guildId, enabled: true },
+          select: keywordRuntimeSelect,  // ← Runtime selector
+        })
+      );
+    },
+    
+    // Low-frequency: use full model
+    getRuleDetail$(guildId: string, pattern: string) {
+      return from(
+        prisma.keywordRule.findUnique({
+          where: { guildId_pattern: { guildId, pattern } },
+          // No select → returns full KeywordRule
+        })
+      );
+    },
+  };
+}
+```
+
 ***
 
 ## 🎨 Design Patterns
