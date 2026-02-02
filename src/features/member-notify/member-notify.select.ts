@@ -13,7 +13,6 @@ import { Prisma, NotificationChannel, MemberNotifyMessage } from '@prisma-client
 export const memberNotifyRuntimeSelect = {
   id: true,
   name: true,
-  approximateMemberCount: true,
   notificationChannels: {
     select: {
       type: true,
