@@ -1,15 +1,8 @@
 /**
- * Type definitions for Guild feature
+ * Simplified Guild data type
  */
-
-export interface GuildFeatureContext {
-  ready: boolean;
-  guildCount: number;
-  lastSyncAt: Date;
-}
-
-export interface GuildSyncResult {
-  guildId: string;
-  synced: boolean;
-  message?: string;
+export interface GuildData {
+  id: string;
+  name: string;
+  createdAt: Date;
 }

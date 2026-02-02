@@ -18,14 +18,13 @@ datasource db {
  * Tracks guild membership and member count
  */
 model Guild {
-  id                        String @id
-  name                      String
-  approximateMemberCount    Int    @default(0)
-  syncedAt                  DateTime @default(now()) @updatedAt
+  id        String   @id
+  name      String
+  createdAt DateTime @default(now())
   
   keywordRules              KeywordRule[]
   notificationChannels      NotificationChannel[]
-  memberNotifyMessage       MemberNotifyMessage?  // ← 改為單數且可為 null
+  memberNotifyMessage       MemberNotifyMessage?
   reactionRoles             ReactionRole[]
   reactionRolePanels        ReactionRolePanel[]
 

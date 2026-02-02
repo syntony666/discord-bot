@@ -1,18 +1,11 @@
 import { PrismaClient } from '@prisma-client/client';
 import { Observable, from } from 'rxjs';
-
-export interface GuildData {
-  id: string;
-  name: string;
-  approximateMemberCount: number;
-  syncedAt: Date;
-}
+import { GuildData } from './guild.types';
 
 export interface GuildModule {
   /**
    * Ensure guild exists in database.
-   * Called before any other operation on a guild.
-   * Creates or updates guild record if needed.
+   * Creates guild record if not exists, returns existing record otherwise.
    */
   ensureGuild$(guildId: string, guildName?: string): Observable<GuildData>;
 
@@ -20,11 +13,6 @@ export interface GuildModule {
    * Get guild by ID.
    */
   getGuild$(guildId: string): Observable<GuildData | null>;
-
-  /**
-   * Update guild member count.
-   */
-  updateGuildMemberCount$(guildId: string, count: number): Observable<GuildData>;
 
   /**
    * Delete guild and cascade all related data.
@@ -48,12 +36,12 @@ export function createGuildModule(prisma: PrismaClient): GuildModule {
         prisma.guild.upsert({
           where: { id: guildId },
           update: {
-            syncedAt: new Date(),
+            // Only update name if provided and different
+            ...(guildName && { name: guildName }),
           },
           create: {
             id: guildId,
             name: guildName || `Guild ${guildId}`,
-            approximateMemberCount: 0,
           },
         })
       );
@@ -66,21 +54,6 @@ export function createGuildModule(prisma: PrismaClient): GuildModule {
       return from(
         prisma.guild.findUnique({
           where: { id: guildId },
-        })
-      );
-    },
-
-    /**
-     * Update guild member count.
-     */
-    updateGuildMemberCount$(guildId: string, count: number): Observable<GuildData> {
-      return from(
-        prisma.guild.update({
-          where: { id: guildId },
-          data: {
-            approximateMemberCount: count,
-            syncedAt: new Date(),
-          },
         })
       );
     },
@@ -99,12 +72,12 @@ export function createGuildModule(prisma: PrismaClient): GuildModule {
     },
 
     /**
-     * List all guilds.
+     * List all guilds ordered by creation time.
      */
     listGuilds$(): Observable<GuildData[]> {
       return from(
         prisma.guild.findMany({
-          orderBy: { syncedAt: 'desc' },
+          orderBy: { createdAt: 'desc' },
         })
       );
     },
