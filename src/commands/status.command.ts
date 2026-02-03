@@ -15,8 +15,8 @@ import { replyInfo } from 'shared/message/message.helper';
 import { handleError } from 'shared/error';
 import { userMention, timestampShort } from 'shared/utils/discord.utils';
 
-export function createStatusCommandHandler(bot: Bot) {
-  commandRegistry.registerCommand('status', async (interaction: BotInteraction, bot: Bot) => {
+export function setupStatusCommand() {
+  return async (interaction: BotInteraction, bot: Bot) => {
     const subcommand = interaction.data?.options?.[0];
     if (!subcommand) return;
 
@@ -25,7 +25,7 @@ export function createStatusCommandHandler(bot: Bot) {
     } else if (subcommand.name === 'guild') {
       await handleGuildStatus(interaction, bot);
     }
-  });
+  };
 }
 
 async function handleBotStatus(interaction: BotInteraction, bot: Bot) {

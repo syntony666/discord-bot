@@ -1,5 +1,3 @@
-// src/features/member-notify/member-notify.select.ts
-
 import { Prisma, NotificationChannel, MemberNotifyMessage } from '@prisma-client/client';
 
 /**

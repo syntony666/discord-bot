@@ -1,5 +1,3 @@
-// src/adapters/discord/commands/member-notify.command.ts
-
 import { Bot, InteractionDataOption } from '@discordeno/bot';
 import { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import { MemberNotifyService } from '@features/member-notify/member-notify.service';
@@ -23,16 +21,15 @@ interface MemberNotifyDisableData {
 }
 
 /**
- * Slash command handler for /member-notify.
+ * Setup member-notify command handler.
  * Supports subcommands: setup, disable, status, test, message, toggle.
  */
-export function createMemberNotifyCommandHandler(
-  bot: Bot,
+export function setupMemberNotifyCommand(
   module: MemberNotifyModule,
-  service: MemberNotifyService,
-  guildModule: GuildModule
+  guildModule: GuildModule,
+  service: MemberNotifyService
 ) {
-  const handler = async (interaction: BotInteraction) => {
+  return async (interaction: BotInteraction, bot: Bot) => {
     const guildId = interaction.guildId?.toString();
     if (!guildId) {
       await handleError(bot, interaction, new Error('Guild ID missing'), 'memberNotifySet');
@@ -57,9 +54,6 @@ export function createMemberNotifyCommandHandler(
       await handleToggle(bot, interaction, module, guildId, subGroup);
     }
   };
-
-  commandRegistry.registerCommand('member-notify', handler);
-  return handler;
 }
 
 /**

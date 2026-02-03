@@ -1,5 +1,3 @@
-// src/features/reaction-role/reaction-role.select.ts
-
 import { Prisma, ReactionRole, ReactionRolePanel } from '@prisma-client/client';
 
 /**

@@ -1,5 +1,3 @@
-// src/features/keyword/keyword.feature.ts
-
 import { PrismaClient } from '@prisma-client/client';
 import { Bot } from '@discordeno/bot';
 import { lastValueFrom, Subscription, filter, mergeMap, catchError, EMPTY } from 'rxjs';
@@ -7,7 +5,6 @@ import { createKeywordModule, KeywordModule } from './keyword.module';
 import { createKeywordService, KeywordService } from './keyword.service';
 import { messageCreate$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
-import { createKeywordCommandHandler } from '@commands/keyword.command';
 import { notify } from '@shared/message/message.helper';
 import { handleDiscordError } from '@core/rx/operators/handle-discord-error';
 import { Feature } from '@core/bootstrap/feature.interface';
@@ -31,8 +28,6 @@ export function setupKeywordFeature(
 ): KeywordFeature {
   const module = createKeywordModule(prisma);
   const service = createKeywordService(module);
-
-  createKeywordCommandHandler(bot, module); // ← 目前不需要傳 guildModule（command 內沒用到 ensureGuild）
 
   const subscriptions: Subscription[] = [];
 

@@ -31,11 +31,11 @@ interface DeleteData {
 }
 
 /**
- * Slash command handler for /keyword.
+ * Setup keyword command handler.
  * Supports subcommands: add, list, edit, delete.
  */
-export function createKeywordCommandHandler(bot: Bot, module: KeywordModule) {
-  const handler = async (interaction: BotInteraction) => {
+export function setupKeywordCommand(module: KeywordModule) {
+  return async (interaction: BotInteraction, bot: Bot) => {
     const sub = interaction.data?.options?.[0] as InteractionDataOption;
     const subName = sub?.name;
 
@@ -55,10 +55,6 @@ export function createKeywordCommandHandler(bot: Bot, module: KeywordModule) {
       await handleDeleteKeyword(bot, interaction, module, guildId, sub);
     }
   };
-
-  commandRegistry.registerCommand('keyword', handler);
-
-  return handler;
 }
 
 async function handleAddKeyword(

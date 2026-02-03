@@ -1,5 +1,3 @@
-// src/features/keyword/keyword.module.ts
-
 import { PrismaClient, KeywordMatchType, type KeywordRule } from '@prisma-client/client';
 import { Observable, from } from 'rxjs';
 import { keywordRuntimeSelect, KeywordRuntime } from './keyword.select';

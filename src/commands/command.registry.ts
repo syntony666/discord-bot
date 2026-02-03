@@ -17,7 +17,7 @@ class CommandRegistry {
   private customIdHandlers = new Map<string, CommandHandler>();
   private subscription?: Subscription;
 
-  registerCommand(commandName: string, handler: CommandHandler): void {
+  register(commandName: string, handler: CommandHandler): void {
     this.commands.set(commandName, handler);
     log.info({ commandName }, 'Command registered');
   }

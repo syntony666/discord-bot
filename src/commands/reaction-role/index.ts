@@ -12,15 +12,14 @@ import type { InteractionDataOption } from '@discordeno/bot';
 const log = createLogger('ReactionRoleCommand');
 
 /**
- * Main handler for /reaction-role command.
+ * Setup reaction-role command handler.
  * Routes to panel or role handlers based on subcommand.
  */
-export function createReactionRoleCommandHandler(
-  bot: Bot,
+export function setupReactionRoleCommand(
   module: ReactionRoleModule,
   service: ReactionRoleService
 ) {
-  const handler = async (interaction: BotInteraction) => {
+  return async (interaction: BotInteraction, bot: Bot) => {
     const guildId = interaction.guildId?.toString();
     if (!guildId) {
       await handleError(bot, interaction, new Error('Guild ID missing'), 'reactionRolePanelCreate');
@@ -45,7 +44,4 @@ export function createReactionRoleCommandHandler(
       await handleError(bot, interaction, error, 'reactionRolePanelCreate');
     }
   };
-
-  commandRegistry.registerCommand('reaction-role', handler);
-  return handler;
 }

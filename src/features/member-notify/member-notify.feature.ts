@@ -1,5 +1,3 @@
-// src/features/member-notify/member-notify.feature.ts
-
 import { PrismaClient, NotificationType } from '@prisma-client/client';
 import { Bot } from '@discordeno/bot';
 import { Subscription, lastValueFrom, mergeMap, catchError, EMPTY } from 'rxjs';
@@ -7,7 +5,6 @@ import { createMemberNotifyModule, MemberNotifyModule } from './member-notify.mo
 import { createMemberNotifyService, MemberNotifyService } from './member-notify.service';
 import { BotGuild, guildMemberAdd$, guildMemberRemove$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
-import { createMemberNotifyCommandHandler } from '@commands/member-notify.command';
 import { notify } from '@shared/message/message.helper';
 import { handleDiscordError } from '@core/rx/operators/handle-discord-error';
 import { Feature } from '@core/bootstrap/feature.interface';
@@ -31,8 +28,6 @@ export function setupMemberNotifyFeature(
 ): MemberNotifyFeature {
   const module = createMemberNotifyModule(prisma);
   const service = createMemberNotifyService();
-
-  createMemberNotifyCommandHandler(bot, module, service, guildModule);
 
   const subscriptions: Subscription[] = [];
 

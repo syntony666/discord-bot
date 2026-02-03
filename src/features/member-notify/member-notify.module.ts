@@ -1,5 +1,3 @@
-// src/features/member-notify/member-notify.module.ts
-
 import { PrismaClient, NotificationType } from '@prisma-client/client';
 import { from, Observable } from 'rxjs';
 import { NotificationChannel, MemberNotifyMessage } from './member-notify.select';

@@ -1,5 +1,3 @@
-// src/features/reaction-role/reaction-role.feature.ts
-
 import { PrismaClient } from '@prisma-client/client';
 import { Bot, InteractionTypes } from '@discordeno/bot';
 import { Subscription, concatMap, lastValueFrom, catchError, EMPTY } from 'rxjs';
@@ -7,7 +5,6 @@ import { createReactionRoleModule, ReactionRoleModule } from './reaction-role.mo
 import { createReactionRoleService, ReactionRoleService } from './reaction-role.service';
 import { reactionAdd$, reactionRemove$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
-import { createReactionRoleCommandHandler } from '@commands/reaction-role';
 import { handleDiscordError } from '@core/rx/operators/handle-discord-error';
 import { Feature } from '@core/bootstrap/feature.interface';
 import { GuildModule } from '@features/guild/guild.module';
@@ -32,8 +29,6 @@ export function setupReactionRoleFeature(
 ): ReactionRoleFeature {
   const module = createReactionRoleModule(prisma);
   const service = createReactionRoleService(module);
-
-  createReactionRoleCommandHandler(bot, module, service);
 
   const subscriptions: Subscription[] = [];
 

@@ -1,5 +1,3 @@
-// src/features/keyword/keyword.service.ts
-
 import type { KeywordRuntime } from './keyword.select'; // ← 改用 KeywordRuntime
 import type { KeywordModule } from './keyword.module';
 import { Observable, of, map } from 'rxjs';

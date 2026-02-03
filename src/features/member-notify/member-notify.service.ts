@@ -1,5 +1,3 @@
-// src/features/member-notify/member-notify.service.ts
-
 import { NotificationChannel } from './member-notify.select';
 
 export interface MessageVariables {

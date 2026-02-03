@@ -1,5 +1,3 @@
-// src/features/keyword/keyword.select.ts
-
 import { Prisma, KeywordRule } from '@prisma-client/client';
 
 /**
