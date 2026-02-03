@@ -4,7 +4,6 @@ import { createLogger } from '@core/logger';
 import { Subscription } from 'rxjs';
 import type { BotInteraction } from '@core/rx/bus';
 import { replyError } from '@shared/message/message.helper';
-import { PaginatorButtonStrategy } from '@shared/paginator/strategy/paginator-button.strategy';
 
 const log = createLogger('CommandRegistry');
 

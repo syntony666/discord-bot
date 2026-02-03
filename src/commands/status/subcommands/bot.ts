@@ -1,34 +1,21 @@
 import { getBotVersion, getUptime } from '@core/bot-info';
 import { logger } from '@core/logger';
-import { BotGuild, BotInteraction, BotUser } from '@core/rx/bus';
+import { BotInteraction, BotUser } from '@core/rx/bus';
 import {
   avatarUrl,
   Bot,
   ButtonStyles,
-  guildIconUrl,
   MessageComponents,
   MessageComponentTypes,
 } from '@discordeno/bot';
-import { commandRegistry } from './command.registry';
 import { appConfig } from '@core/config';
 import { replyInfo } from 'shared/message/message.helper';
 import { handleError } from 'shared/error';
-import { userMention, timestampShort } from 'shared/utils/discord.utils';
 
-export function setupStatusCommand() {
-  return async (interaction: BotInteraction, bot: Bot) => {
-    const subcommand = interaction.data?.options?.[0];
-    if (!subcommand) return;
-
-    if (subcommand.name === 'bot') {
-      await handleBotStatus(interaction, bot);
-    } else if (subcommand.name === 'guild') {
-      await handleGuildStatus(interaction, bot);
-    }
-  };
-}
-
-async function handleBotStatus(interaction: BotInteraction, bot: Bot) {
+/**
+ * Handle /status bot
+ */
+export async function handleBotStatus(interaction: BotInteraction, bot: Bot) {
   try {
     const version = getBotVersion();
     const uptime = getUptime();
@@ -97,58 +84,6 @@ async function handleBotStatus(interaction: BotInteraction, bot: Bot) {
     );
   } catch (error) {
     logger.error({ error }, 'Failed to display bot status');
-    await handleError(bot, interaction, error, 'status');
-  }
-}
-
-async function handleGuildStatus(interaction: BotInteraction, bot: Bot) {
-  const guildId = interaction.guildId;
-
-  if (!guildId) {
-    await handleError(bot, interaction, new Error('Guild ID missing'), 'status');
-    return;
-  }
-
-  try {
-    const guild = (await bot.helpers.getGuild(guildId)) as BotGuild;
-    const owner = (await bot.helpers.getUser(guild.ownerId)) as BotUser;
-    const createdAt = new Date(Number((guild.id >> 22n) + 1420070400000n));
-    const guildIcon = guildIconUrl(guild.id, guild.icon, { size: 256 });
-
-    await replyInfo(bot, interaction, {
-      title: guild.name,
-      thumbnail: guildIcon ? { url: guildIcon } : undefined,
-      fields: [
-        {
-          name: '創立時間',
-          value: timestampShort(createdAt),
-          inline: false,
-        },
-        {
-          name: '成員',
-          value: `${guild.approximateMemberCount || 0} 人`,
-          inline: true,
-        },
-        {
-          name: '在線',
-          value: `${guild.approximatePresenceCount || 0} 人`,
-          inline: true,
-        },
-        {
-          name: '擁有者',
-          value: userMention(owner.id),
-          inline: false,
-        },
-      ],
-      footer: {
-        text: `${guild.id}`,
-        icon_url: appConfig.footerIconUrl,
-      },
-    });
-
-    logger.info({ guildId: guildId.toString() }, 'Guild status displayed');
-  } catch (error) {
-    logger.error({ error, guildId: guildId?.toString() }, 'Failed to display guild status');
     await handleError(bot, interaction, error, 'status');
   }
 }

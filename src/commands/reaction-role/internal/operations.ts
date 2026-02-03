@@ -1,7 +1,7 @@
 import { Bot } from '@discordeno/bot';
 import { ReactionRolePanel, ReactionRole } from '@prisma-client/client';
 import { createLogger } from '@core/logger';
-import { buildPanelEmbed } from '../panel/panel.helper';
+import { buildPanelEmbed } from '../reaction-role.helpers';
 import type { PanelMode } from '../reaction-role.types';
 
 const log = createLogger('ReactionRoleOperations');

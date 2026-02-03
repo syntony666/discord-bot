@@ -436,6 +436,106 @@ function createKeywordModule(prisma: PrismaClient): KeywordModule {
 
 ***
 
+## 📋 Command Module Template
+
+### Standard Structure
+
+All Discord commands should follow this standardized structure for consistency and maintainability:
+
+```
+[command-name]/
+├── [command-name].command.ts     (Main entry point, routing)
+├── [command-name].types.ts       (Type definitions)
+├── [command-name].helpers.ts     (Utility functions)
+├── internal/
+│   ├── confirmations.ts         (Confirmation dialog logic)
+│   └── operations.ts           (Discord API operations)
+└── subcommands/
+    ├── [subcommand-name].ts
+    ├── [subcommand-name].ts
+    └── ...
+```
+
+### File Responsibilities
+
+#### Core Files
+- **`[command-name].command.ts`**
+  - Main entry point and routing
+  - Import all subcommand handlers
+  - Unified error handling
+
+#### Type Files
+- **`[command-name].types.ts`**
+  - All type definitions
+  - Interface definitions
+  - Confirmation data structures
+  - Option enums
+
+#### Helper Files
+- **`[command-name].helpers.ts`**
+  - Common utility functions
+  - Formatting functions
+  - Builder functions
+  - Validation functions
+
+#### Internal Tools
+- **`internal/confirmations.ts`**
+  - Confirmation dialog logic
+  - Button handling
+  - User interaction logic
+
+- **`internal/operations.ts`**
+  - Discord API operations
+  - Message updates
+  - Reaction add/remove
+  - Error handling
+
+#### Subcommands
+- **`subcommands/[subcommand-name].ts`**
+  - Single subcommand handler
+  - Business logic
+  - Parameter extraction
+  - Result replies
+
+### Naming Conventions
+
+- **Main files**: `[command-name].command.ts`, `[command-name].types.ts`, `[command-name].helpers.ts`
+- **Subcommands**: `[subcommand-name].ts` or `[group]-[action].ts`
+- **Internal tools**: `internal/confirmations.ts`, `internal/operations.ts`
+- **Types**: Concentrated in main types file
+
+### Template Benefits
+
+✅ **Consistency** - All commands use the same structure  
+✅ **Extensibility** - Easy to add new features  
+✅ **Maintainability** - Clear separation of concerns  
+✅ **Reusability** - Direct copy structure to use  
+✅ **Clarity** - Unified naming conventions  
+
+### Example: Reaction Role
+
+```
+reaction-role/
+├── reaction-role.command.ts     (2.8KB) - Main entry point
+├── reaction-role.types.ts       (1.3KB) - Type definitions
+├── reaction-role.helpers.ts     (2.7KB) - Utility functions
+├── internal/
+│   ├── confirmations.ts         (2.3KB) - Confirmation dialogs
+│   └── operations.ts           (3.7KB) - Discord API operations
+└── subcommands/
+    ├── panel-create.ts          (2.8KB) - Create panel
+    ├── panel-edit.ts            (5.8KB) - Edit panel
+    ├── panel-delete.ts          (4.8KB) - Delete panel
+    ├── panel-list.ts            (2.1KB) - List panels
+    ├── role-add.ts              (3.5KB) - Add role
+    ├── role-remove.ts           (5.3KB) - Remove role
+    └── role-list.ts             (2.3KB) - List roles
+```
+
+This template applies to all Discord commands!
+
+***
+
 ## 🎨 Design Patterns
 
 ### 1. Observable-Based Module Pattern
