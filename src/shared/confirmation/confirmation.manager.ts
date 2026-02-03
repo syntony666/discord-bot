@@ -4,16 +4,20 @@ import { createLogger } from '@core/logger';
 import { BaseColors } from '@core/config/colors.config';
 import { appConfig } from '@core/config';
 import { StoredConfirmation, ConfirmationConfig, ConfirmationHandler } from './confirmation.types';
-import { replyWarning, replyError } from 'shared/message/message.helper';
+import { replyWarning } from 'shared/message/message.helper';
+import { PendingState } from './states/pending.state';
+import { ExpiredState } from './states/expired.state';
+import { CompletedState } from './states/completed.state';
 
 const log = createLogger('ConfirmationManager');
 
 /**
- * Manages confirmation workflows with button interactions.
+ * Manages confirmation workflows with button interactions using State Pattern.
  * Handles storage, expiration, and user authorization checks.
  */
 export class ConfirmationManager {
   private confirmations = new Map<string, StoredConfirmation>();
+  private states = new Map<string, any>(); // Store current state for each confirmation
   private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor() {
@@ -40,14 +44,17 @@ export class ConfirmationManager {
     const expiresIn = config.expiresIn ?? 2 * 60 * 1000;
     const expiresAt = Date.now() + expiresIn;
 
-    this.confirmations.set(confirmationId, {
+    const stored: StoredConfirmation = {
       confirmationType: config.confirmationType,
       userId: config.userId,
       guildId: config.guildId,
       data: config.data,
       expiresAt,
       handler,
-    });
+    };
+
+    this.confirmations.set(confirmationId, stored);
+    this.states.set(confirmationId, new PendingState()); // Set initial state
 
     const footerText = config.embed.footerText
       ? `${config.embed.footerText}\n此確認訊息將在 ${Math.floor(expiresIn / 60000)} 分鐘後失效`
@@ -94,8 +101,8 @@ export class ConfirmationManager {
   }
 
   /**
-   * Handle button interaction for confirmations.
-   * Validates expiration and user authorization before executing handlers.
+   * Handle button interaction for confirmations using State Pattern.
+   * Validates expiration and user authorization before delegating to state.
    */
   async handle(bot: Bot, interaction: BotInteraction): Promise<void> {
     const customId = interaction.data?.customId || '';
@@ -112,30 +119,43 @@ export class ConfirmationManager {
     const stored = this.confirmations.get(confirmationId);
 
     if (!stored) {
-      await this.sendExpiredMessage(bot, interaction);
+      // Use expired state for missing confirmations
+      const expiredState = new ExpiredState();
+      await expiredState.unauthorized(stored!, bot, interaction);
       return;
     }
 
+    // Check expiration
     if (Date.now() > stored.expiresAt) {
+      this.transitionToState(confirmationId, new ExpiredState());
+      const state = this.states.get(confirmationId);
+      await state.expire(stored);
       this.confirmations.delete(confirmationId);
-      await this.sendExpiredMessage(bot, interaction);
+      this.states.delete(confirmationId);
       return;
     }
 
-    // Only the user who initiated the confirmation can interact with it
+    // Check user authorization
     const currentUserId = interaction.user?.id?.toString() || '';
     if (currentUserId !== stored.userId) {
-      await this.sendUnauthorizedMessage(bot, interaction);
+      const state = this.states.get(confirmationId);
+      await state.unauthorized(stored, bot, interaction);
       return;
     }
 
+    // Handle action based on current state
+    const state = this.states.get(confirmationId);
+
     if (action === 'cancel') {
-      await this.handleCancel(bot, interaction, stored);
+      await state.cancel(stored, bot, interaction);
     } else if (action === 'confirm') {
-      await this.handleConfirm(bot, interaction, stored);
+      await state.confirm(stored, bot, interaction);
     }
 
+    // Transition to completed state
+    this.transitionToState(confirmationId, new CompletedState());
     this.confirmations.delete(confirmationId);
+    this.states.delete(confirmationId);
   }
 
   /**
@@ -148,10 +168,11 @@ export class ConfirmationManager {
 
     for (const [id, stored] of this.confirmations.entries()) {
       if (now > stored.expiresAt) {
-        if (stored.handler.onExpire) {
-          stored.handler.onExpire(id, stored.data);
-        }
+        this.transitionToState(id, new ExpiredState());
+        const state = this.states.get(id);
+        state.expire(stored);
         this.confirmations.delete(id);
+        this.states.delete(id);
         cleanedCount++;
       }
     }
@@ -178,56 +199,11 @@ export class ConfirmationManager {
     }, 30 * 1000);
   }
 
-  private async handleConfirm(
-    bot: Bot,
-    interaction: BotInteraction,
-    stored: StoredConfirmation
-  ): Promise<void> {
-    try {
-      await stored.handler.onConfirm(bot, interaction, stored.data);
-    } catch (error) {
-      log.error(
-        { error, confirmationType: stored.confirmationType },
-        'Confirmation handler failed'
-      );
+  private transitionToState(confirmationId: string, newState: any): void {
+    const oldState = this.states.get(confirmationId);
+    if (oldState) {
+      // Could add transition logging here if needed
     }
-  }
-
-  private async handleCancel(
-    bot: Bot,
-    interaction: BotInteraction,
-    stored: StoredConfirmation
-  ): Promise<void> {
-    if (stored.handler.onCancel) {
-      try {
-        await stored.handler.onCancel(bot, interaction, stored.data);
-      } catch (error) {
-        log.error({ error, confirmationType: stored.confirmationType }, 'Cancel handler failed');
-      }
-    } else {
-      // Use replyInfo with isEdit: true for default cancel message
-      await replyWarning(bot, interaction, {
-        title: '已取消',
-        description: '操作已取消。',
-        components: [],
-        isEdit: true,
-      });
-    }
-  }
-
-  private async sendExpiredMessage(bot: Bot, interaction: BotInteraction): Promise<void> {
-    await replyError(bot, interaction, {
-      title: '確認已過期',
-      description: '此確認請求已過期或已被處理,請重新執行指令。',
-      ephemeral: true,
-    });
-  }
-
-  private async sendUnauthorizedMessage(bot: Bot, interaction: BotInteraction): Promise<void> {
-    await replyError(bot, interaction, {
-      title: '權限不足',
-      description: '只有發起此操作的用戶可以確認或取消。',
-      ephemeral: true,
-    });
+    this.states.set(confirmationId, newState);
   }
 }

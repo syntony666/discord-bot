@@ -1,7 +1,7 @@
 import { ReplyStrategy } from './reply/reply.strategy';
 import { AutoErrorReplyStrategy } from './reply/auto-error-reply.strategy';
 import { NotificationStrategy } from './notification/notification.strategy';
-import { Colors } from '@core/config';
+import { Colors } from '@core/config/colors.config';
 import type {
   MessageStrategy,
   MessageOptions,
@@ -30,36 +30,47 @@ const MESSAGE_CONFIG = {
     defaultTitle: '⚠️ 警告',
     color: Colors.WARNING,
   },
+  AUTO_ERROR_REPLY: {
+    defaultTitle: '❌ 錯誤',
+    color: Colors.ERROR,
+  },
   STREAM_LIVE_NOTIFICATION: {
+    defaultTitle: '🔴 直播開始',
     color: Colors.STREAM_LIVE,
   },
   MEMBER_JOIN_NOTIFICATION: {
+    defaultTitle: '👋 成員加入',
     color: Colors.MEMBER_JOIN,
   },
   MEMBER_LEAVE_NOTIFICATION: {
+    defaultTitle: '👋 成員離開',
     color: Colors.MEMBER_LEAVE,
   },
   ANNOUNCEMENT_NOTIFICATION: {
+    defaultTitle: '📢 公告',
+    color: Colors.ANNOUNCEMENT,
+  },
+  CUSTOM_NOTIFICATION: {
+    defaultTitle: '📢 通知',
     color: Colors.ANNOUNCEMENT,
   },
 } as const;
 
 /**
- * Factory that selects the appropriate strategy based on message type.
+ * Message Factory - creates appropriate strategy based on message type
  */
 export class MessageFactory {
   /**
-   * Create a strategy instance from a discriminated MessageOptions union.
+   * Create strategy for the given message options
    */
   static createStrategy(options: MessageOptions): MessageStrategy {
-    if (options.type === 'AUTO_ERROR_REPLY') {
-      return new AutoErrorReplyStrategy(options);
-    }
+    const type = options.type as MessageType;
 
-    if (this.isReplyType(options.type)) {
-      const replyOptions = options as ReplyOptions;
-      const config = MESSAGE_CONFIG[replyOptions.type];
-      const { type, bot, interaction, ephemeral, components, isEdit, ...embedProps } = replyOptions;
+    // Handle reply types
+    if (this.isReplyType(type)) {
+      const replyOptions = options as any;
+      const config = MESSAGE_CONFIG[type];
+      const { type: _, bot, interaction, ephemeral, components, isEdit, ...embedProps } = replyOptions;
 
       return new ReplyStrategy({
         bot,
@@ -73,14 +84,14 @@ export class MessageFactory {
       });
     }
 
-    if (this.isNotificationType(options.type)) {
-      const notificationOptions = options as NotificationOptions;
-      const { type, bot, channelId, ...embedProps } = notificationOptions;
+    // Handle notification types
+    if (this.isNotificationType(type)) {
+      const notificationOptions = options as any;
+      const { type: _, bot, channelId, ...embedProps } = notificationOptions;
 
-      const color =
-        type === 'CUSTOM_NOTIFICATION'
-          ? (embedProps.color ?? Colors.INFO)
-          : MESSAGE_CONFIG[type].color;
+      const color = type === 'CUSTOM_NOTIFICATION'
+        ? (embedProps.color ?? Colors.INFO)
+        : MESSAGE_CONFIG[type].color;
 
       return new NotificationStrategy({
         bot,
@@ -90,20 +101,37 @@ export class MessageFactory {
       });
     }
 
-    throw new Error(`Unknown message type: ${(options as any).type}`);
+    // Handle auto error reply
+    if (type === 'AUTO_ERROR_REPLY') {
+      const autoErrorOptions = options as any;
+      const config = MESSAGE_CONFIG.AUTO_ERROR_REPLY;
+      const { type: _, bot, interaction, error, customMessages, ...embedProps } = autoErrorOptions;
+
+      return new AutoErrorReplyStrategy({
+        bot,
+        interaction,
+        error,
+        customMessages,
+        ...embedProps,
+        title: embedProps.title ?? config.defaultTitle,
+        color: config.color,
+      });
+    }
+
+    throw new Error(`Unknown message type: ${type}`);
   }
 
   /**
    * Narrow MessageType into reply-only types.
    */
-  private static isReplyType(type: MessageType): type is ReplyOptions['type'] {
+  private static isReplyType(type: MessageType): boolean {
     return ['SUCCESS_REPLY', 'ERROR_REPLY', 'INFO_REPLY', 'WARNING_REPLY'].includes(type);
   }
 
   /**
    * Narrow MessageType into notification-only types.
    */
-  private static isNotificationType(type: MessageType): type is NotificationOptions['type'] {
+  private static isNotificationType(type: MessageType): boolean {
     return [
       'STREAM_LIVE_NOTIFICATION',
       'MEMBER_JOIN_NOTIFICATION',

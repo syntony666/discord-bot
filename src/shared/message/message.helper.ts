@@ -1,6 +1,6 @@
 import { MessageFactory } from './message.factory';
 import { MessageType } from './message.types';
-import type { MessageOptions, NotificationOptions } from './message.types';
+import type { MessageOptions } from './message.types';
 import type { Bot, DiscordEmbed, MessageComponents } from '@discordeno/bot';
 import type { BotInteraction } from '@core/rx/bus';
 
@@ -136,7 +136,7 @@ export interface NotifyOptions extends Omit<DiscordEmbed, 'type'> {
 export async function notify(
   bot: Bot,
   channelId: bigint,
-  { type, ...embedOptions }: NotifyOptions // 直接在參數解構
+  { type, ...embedOptions }: NotifyOptions
 ): Promise<boolean> {
   const typeMap = {
     stream_live: MessageType.STREAM_LIVE_NOTIFICATION,
