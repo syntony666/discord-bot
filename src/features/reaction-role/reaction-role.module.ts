@@ -1,6 +1,18 @@
 import { PrismaClient, ReactionRole, ReactionRolePanel } from '@prisma-client/client';
 import { from, Observable } from 'rxjs';
-import { CreateReactionRoleInput } from './reaction-role.types';
+
+export interface CreateReactionRoleInput {
+  guildId: string;
+  messageId: string;
+  emoji: string;
+  roleId: string;
+  description?: string;
+}
+
+export interface ReactionRoleMatch {
+  roleId: string;
+  mode: 'NORMAL' | 'UNIQUE' | 'VERIFY';
+}
 
 /**
  * Data access layer for reaction role configuration.

@@ -1,8 +1,7 @@
-import { ReactionRoleModule } from './reaction-role.module';
+import { ReactionRoleModule, ReactionRoleMatch } from './reaction-role.module';
 import { Observable, of } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
-import { ReactionRoleMatch } from './reaction-role.types';
-import { normalizeEmojiFromReaction } from './emoji.helper';
+import { normalizeEmojiFromReaction } from './internal/emoji.helper';
 
 export interface ReactionRoleService {
   findMatch$(

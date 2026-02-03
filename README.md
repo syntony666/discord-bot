@@ -900,4 +900,129 @@ MIT License - See [LICENSE](./LICENSE)
 
 ***
 
+## Feature Structure Guidelines
+
+### Standard Directory Structure
+
+```
+features/[feature-name]/
+├── [feature-name].feature.ts     # Feature entry point and event handling
+├── [feature-name].module.ts      # Data access layer (Prisma operations)
+├── [feature-name].service.ts     # Business logic layer (optional)
+├── [feature-name].select.ts      # Prisma Runtime Selectors (optional)
+├── [feature-name].types.ts       # Type definitions (minimal)
+└── internal/                      # Internal utilities (minimal)
+    └── helpers.ts               # Helper functions (only if needed)
+```
+
+### File Responsibilities
+
+#### 1. `[feature-name].feature.ts`
+- **Purpose**: Feature entry point, event listening, lifecycle management
+- **Exports**: `setup[FeatureName]Feature` function
+- **Dependencies**: PrismaClient, Bot, other Feature Modules
+- **Pattern**: Create Module and Service, set up event listeners, return Feature object
+
+```typescript
+export function setupExampleFeature(
+  prisma: PrismaClient,
+  bot: Bot
+): ExampleFeature {
+  const module = createExampleModule(prisma);
+  const service = createExampleService(module);
+  
+  // Set up event listeners
+  
+  return {
+    name: 'example',
+    module,
+    service, // optional
+    cleanup: () => {
+      subscriptions.forEach((sub) => sub.unsubscribe());
+      log.info('Example feature cleaned up');
+    },
+  };
+}
+```
+
+#### 2. `[feature-name].module.ts`
+- **Purpose**: Data access layer, Observable wrapping, CRUD operations
+- **Exports**: `create[FeatureName]Module` function and Module interface
+- **Dependencies**: PrismaClient, Runtime Selectors
+- **Pattern**: Wrap Prisma operations as Observables
+
+```typescript
+export function createExampleModule(prisma: PrismaClient): ExampleModule {
+  return {
+    getExamplesByGuild$(guildId: string): Observable<ExampleRuntime[]> {
+      return from(prisma.example.findMany({ where: { guildId } }));
+    },
+    // ... other CRUD operations
+  };
+}
+```
+
+#### 3. `[feature-name].service.ts`
+- **Purpose**: Business logic processing, complex calculations, cross-module coordination
+- **Exports**: `create[FeatureName]Service` function and Service interface
+- **Dependencies**: Module, other Services
+- **Pattern**: Use lastValueFrom to handle Observables, implement business logic
+
+#### 4. `[feature-name].select.ts`
+- **Purpose**: Prisma Runtime Selectors, performance optimization
+- **Exports**: Runtime Selector constants and Runtime types
+- **Dependencies**: Prisma Client Types
+- **Pattern**: Define query field selectors
+
+#### 5. `internal/helpers.ts`
+- **Purpose**: Helper functions, utility functions
+- **Exports**: Various helper functions
+- **Dependencies**: Basic utility libraries
+- **Usage**: Only when absolutely necessary
+
+### Design Principles
+
+#### 1. Layered Architecture
+- **Feature Layer**: Event handling and lifecycle management
+- **Service Layer**: Business logic and cross-module coordination
+- **Module Layer**: Data access and persistence
+
+#### 2. Observable Pattern
+- All Module methods return Observable
+- Service layer uses lastValueFrom to convert to Promise
+- Feature layer uses RxJS operators to handle event streams
+
+#### 3. Dependency Injection
+- Feature receives PrismaClient and Bot
+- Service receives Module
+- Module receives PrismaClient
+
+#### 4. Consistency Standards
+- **Naming**: Use `cleanup` method for cleanup (following Feature interface)
+- **Interface**: All features extend `Feature` interface
+- **Structure**: Minimal files, avoid unnecessary complexity
+- **Types**: Keep type definitions minimal and focused
+
+#### 5. Error Handling
+- Module layer throws raw errors
+- Service layer adds business context
+- Feature layer handles and logs errors
+
+### Best Practices
+
+1. **Keep it Simple**: Don't add files unless absolutely necessary
+2. **Maintain Consistency**: Follow the same patterns across all features
+3. **Type Safety**: Use TypeScript strict mode and proper typing
+4. **Observable First**: Leverage RxJS for async operations
+5. **Test-Friendly**: Design interfaces and dependencies for easy testing
+
+### Feature Examples
+
+- **Guild**: Simple structure, no service layer
+- **Keyword**: Standard structure with service
+- **Member-Notify**: Standard structure with service
+- **Reaction-Role**: Standard structure with internal helpers
+
+***
+
 **Happy Coding! 🎉**
