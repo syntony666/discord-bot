@@ -12,15 +12,16 @@
 - [Architecture](#-architecture)
 - [Project Structure](#-project-structure)
 - [Quick Start](#-quick-start)
+- [Development Workflow](#-development-workflow)
 - [Code Conventions](#-code-conventions)
 - [Design Patterns](#-design-patterns)
-- [Development Workflow](#-development-workflow)
+- [Testing & Debugging](#-testing--debugging)
+- [Deployment](#-deployment)
+- [Resources](#-resources)
 
 ***
 
 ## ✨ Key Features
-
-This bot demonstrates a production-ready Discord bot architecture with:
 
 - **🔑 Keyword Auto-Reply** - Pattern-based message responses (exact/contains matching)
 - **🎭 Reaction Roles** - Role assignment via emoji reactions with multiple modes (Normal/Unique/Verify)
@@ -52,7 +53,7 @@ This bot demonstrates a production-ready Discord bot architecture with:
 
 1. **Reactive Programming**: All Discord events flow through RxJS Observables
 2. **Dependency Inversion**: Features depend on Observable interfaces, not concrete implementations
-3. **Modular Design**: Clear separation between layers (Core → Platforms → Features → Adapters)
+3. **Modular Design**: Clear separation between layers (Core → Platforms → Features → Commands → Shared)
 4. **Type Safety**: Strict TypeScript with full type inference
 
 ### Event Flow
@@ -62,71 +63,99 @@ Discord Event → bot.events → RxJS Subject → Observable$ → Feature Subscr
 → Service Layer → Module Layer (Prisma) → Database → Response
 ```
 
+### Layer Responsibilities
+
+| Layer | Purpose | Dependencies |
+|-------|---------|--------------|
+| **Core** | Framework-agnostic utilities | None |
+| **Platforms** | External service adapters | Core |
+| **Features** | Business logic & event handling | Core, Platforms |
+| **Commands** | Discord command handlers | Core, Features, Shared |
+| **Shared** | Reusable UI/UX components | Core, Platforms |
+
 ***
 
 ## 📁 Project Structure
 
 ```
 /
-├── prisma.config.ts            # Prisma configuration (auto-generated)
+├── prisma.config.ts            # Prisma configuration
 ├── prisma/
 │   └── schema.prisma           # Database schema definition
 │
 src/
 ├── core/                       # Framework-agnostic utilities
 │   ├── bootstrap/              # App initialization & DI
+│   │   ├── app.bootstrap.ts
+│   │   ├── command.registry.ts
+│   │   ├── feature.interface.ts
+│   │   └── feature.registry.ts
 │   ├── config/                 # Environment configuration
+│   ├── errors/                 # Custom error definitions
+│   ├── logger/                 # Logger configuration
 │   ├── rx/
-│   │   └── bus.ts              # RxJS event bus (all events)
+│   │   └── bus.ts              # RxJS event bus
 │   ├── signals/
-│   │   └── signal.ts           # Simple state management (getter/setter)
-│   ├── bot-info.ts             # Version and uptime utilities
-│   └── logger.ts               # pino logger factory
+│   │   └── signal.ts           # Simple state management
+│   ├── bot-info.ts
+│   └── logger.ts
 │
 ├── platforms/                  # External integrations
 │   ├── discordeno/
 │   │   ├── bot.client.ts       # Bot creation + events → Observables
-│   │   └── commands-loader.ts  # Auto-register commands from JSON
+│   │   ├── bot.config.ts
+│   │   ├── bot.events.ts
+│   │   ├── commands-loader.ts  # Auto-register commands from JSON
+│   │   └── commands.json       # Slash command definitions
 │   └── database/
 │       └── prisma.client.ts    # PrismaClient singleton
 │
 ├── features/                   # Business domains
-│   ├── keyword/                # Auto-reply feature
-│   │   ├── keyword.feature.ts  # Setup + event subscriptions
-│   │   ├── keyword.module.ts   # Data access (Prisma → Observable)
-│   │   ├── keyword.service.ts  # Business logic
-│   │   └── keyword.types.ts    # Type definitions
-│   ├── reaction-role/          # Role management via reactions
-│   └── member-notify/          # Join/leave notifications
+│   ├── guild/
+│   │   ├── guild.feature.ts
+│   │   ├── guild.module.ts
+│   │   └── guild.types.ts
+│   ├── keyword/
+│   │   ├── keyword.feature.ts
+│   │   ├── keyword.module.ts
+│   │   ├── keyword.service.ts
+│   │   └── keyword.select.ts
+│   ├── reaction-role/
+│   │   ├── reaction-role.feature.ts
+│   │   ├── reaction-role.module.ts
+│   │   ├── reaction-role.service.ts
+│   │   └── reaction-role.select.ts
+│   └── member-notify/
+│       ├── member-notify.feature.ts
+│       ├── member-notify.module.ts
+│       ├── member-notify.service.ts
+│       └── member-notify.select.ts
 │
-├── adapters/                   # Discord-specific implementations
-│   └── discord/
-│       ├── commands/           # Slash command handlers
-│       │   ├── command.registry.ts     # Command router
-│       │   ├── keyword.command.ts      # Keyword command handler
-│       │   ├── member-notify.command.ts # Member notify handler
-│       │   ├── status.command.ts       # Status command handler
-│       │   └── reaction-role/          # Reaction role command module
-│       │       ├── index.ts            # Main handler
-│       │       ├── panel/              # Panel management commands
-│       │       ├── role/               # Role management commands
-│       │       └── reaction-role.types.ts
-│       ├── commands.json       # Slash command definitions
-│       └── shared/             # Reusable UI components
-│           ├── message/        # Message factory (Strategy Pattern)
-│           └── paginator/      # Generic paginator
+├── commands/                   # Discord command handlers
+│   ├── keyword/
+│   │   ├── keyword.command.ts
+│   │   ├── keyword.types.ts
+│   │   ├── keyword.helpers.ts
+│   │   ├── internal/
+│   │   └── subcommands/
+│   ├── reaction-role/
+│   │   ├── reaction-role.command.ts
+│   │   ├── reaction-role.types.ts
+│   │   ├── reaction-role.helpers.ts
+│   │   ├── internal/
+│   │   └── subcommands/
+│   ├── member-notify/
+│   └── status/
+│
+├── shared/                     # Reusable components
+│   ├── confirmation/           # Confirmation dialogs
+│   ├── error/                  # Error handling
+│   ├── message/                # Message factory
+│   ├── paginator/              # Generic paginator
+│   └── utils/                  # Common utilities
 │
 └── index.ts                    # Application entry point
 ```
-
-### Layer Responsibilities
-
-| Layer | Purpose | Dependencies |
-|-------|---------|-------------|
-| **Core** | Framework-agnostic utilities | None |
-| **Platforms** | External service adapters | Core |
-| **Features** | Business logic | Core, Platforms |
-| **Adapters** | Discord-specific UI/UX | Core, Features |
 
 ***
 
@@ -163,7 +192,7 @@ npm run prisma:init
 npm run prisma:migrate
 ```
 
-### 4. Run Development Server
+### 4. Run
 
 ```bash
 npm run dev        # Dev mode with hot reload
@@ -173,9 +202,156 @@ npm start          # Run production
 
 ***
 
+## 🔄 Development Workflow
+
+### Adding a New Feature
+
+#### 1. Define Prisma Schema
+
+```prisma
+// prisma/schema.prisma
+model MyFeature {
+  id        String   @id @default(cuid())
+  guildId   String
+  data      String
+  createdAt DateTime @default(now())
+
+  @@index([guildId])
+}
+```
+
+Run migration:
+```bash
+npm run prisma:migrate
+```
+
+#### 2. Create Feature Structure
+
+```
+src/features/my-feature/
+├── my-feature.feature.ts
+├── my-feature.module.ts
+├── my-feature.service.ts      # Optional
+├── my-feature.select.ts       # Optional
+└── my-feature.types.ts
+```
+
+#### 3. Implement Module (Data Access)
+
+```typescript
+// my-feature.module.ts
+export interface MyFeatureModule {
+  getByGuild$(guildId: string): Observable<MyFeature[]>;
+  create$(input: CreateInput): Observable<MyFeature>;
+}
+
+export function createMyFeatureModule(prisma: PrismaClient): MyFeatureModule {
+  return {
+    getByGuild$(guildId: string) {
+      return from(prisma.myFeature.findMany({ where: { guildId } }));
+    },
+    create$(input: CreateInput) {
+      return from(prisma.myFeature.create({ data: input }));
+    },
+  };
+}
+```
+
+#### 4. Implement Feature Setup
+
+```typescript
+// my-feature.feature.ts
+export function setupMyFeature(prisma: PrismaClient, bot: Bot): MyFeature {
+  const module = createMyFeatureModule(prisma);
+  const service = createMyFeatureService(module);
+
+  const subscription = messageCreate$
+    .pipe(
+      filter(msg => msg.guildId !== null),
+      mergeMap(async (msg) => {
+        // Handle event
+      })
+    )
+    .subscribe();
+
+  return {
+    name: 'myfeature',
+    module,
+    service,
+    cleanup: () => subscription.unsubscribe(),
+  };
+}
+```
+
+#### 5. Create Command Structure
+
+```
+src/commands/my-feature/
+├── my-feature.command.ts      # Main entry point
+├── my-feature.types.ts        # Type definitions
+├── my-feature.helpers.ts      # Utility functions
+├── internal/                  # Internal utilities
+└── subcommands/               # Subcommand handlers
+```
+
+#### 6. Define Command in JSON
+
+```json
+// platforms/discordeno/commands.json
+{
+  "name": "myfeature",
+  "description": "My feature management",
+  "options": [
+    {
+      "type": 1,
+      "name": "create",
+      "description": "Create new item",
+      "options": [
+        {
+          "type": 3,
+          "name": "data",
+          "description": "Data content",
+          "required": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### 7. Register in Bootstrap
+
+```typescript
+// core/bootstrap/app.bootstrap.ts
+export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaClient) {
+  await registerApplicationCommands(rest);
+  
+  // Setup features
+  const myFeature = setupMyFeature(prisma, bot);
+  featureRegistry.register(myFeature);
+  
+  // Setup commands
+  createMyFeatureCommandHandler(bot, myFeature.module);
+  
+  commandRegistry.activate(bot);
+}
+```
+
+### Development Checklist
+
+- [ ] Prisma schema defined and migrated
+- [ ] Module methods return `Observable<T>` using `from()`
+- [ ] Feature provides `cleanup()` function
+- [ ] Command handler registered
+- [ ] `commands.json` updated
+- [ ] Error handling implemented
+- [ ] Logger created with `createLogger()`
+
+***
+
 ## 📝 Code Conventions
 
-### 1. File Naming
+### File Naming
 
 | Type | Convention | Example |
 |------|-----------|---------|
@@ -184,52 +360,20 @@ npm start          # Run production
 | Service | `*.service.ts` | `keyword.service.ts` |
 | Command | `*.command.ts` | `keyword.command.ts` |
 | Types | `*.types.ts` | `keyword.types.ts` |
+| Selectors | `*.select.ts` | `keyword.select.ts` |
 
-### 2. Observable Naming
-
-- **MUST** use `$` suffix for Observables
-- Use camelCase naming
+### Observable Naming
 
 ```typescript
-// ✅ Correct
+// ✅ Use $ suffix for Observables
 export const messageCreate$: Observable<BotMessage>;
 const userList$ = from(prisma.user.findMany());
 
-// ❌ Wrong
-export const messageCreate: Observable<BotMessage>;  // Missing $
+// ❌ Missing $ suffix
+export const messageCreate: Observable<BotMessage>;
 ```
 
-### 3. Observable Methods
-
-```typescript
-// ✅ Observable-returning methods use $ suffix
-interface KeywordModule {
-  getRulesByGuild$(guildId: string): Observable<KeywordRule[]>;
-  createRule$(input: CreateInput): Observable<KeywordRule>;
-  deleteRule$(guildId: string, pattern: string): Observable<void>;
-}
-```
-
-### 4. TypeScript Best Practices
-
-```typescript
-// ❌ Avoid any
-function handleError(error: any) { }
-
-// ✅ Use unknown or explicit types
-function handleError(error: unknown) {
-  if (error instanceof Error) {
-    log.error({ message: error.message });
-  }
-}
-
-// ✅ Use discriminated unions
-type ReplyType = 
-  | { type: 'success'; description: string }
-  | { type: 'error'; description: string };
-```
-
-### 5. Logging Standards
+### Logging Standards
 
 ```typescript
 import { createLogger } from '@core/logger';
@@ -238,14 +382,11 @@ const log = createLogger('ModuleName');
 // ✅ Structured logging (object first, message second)
 log.info({ guildId, userId, roleId }, 'Granted role via reaction');
 
-// ✅ Error logging with full context
-log.error({ error, guildId, messageId }, 'Failed to grant role');
-
 // ❌ Don't use string interpolation
 log.info(`Granted role ${roleId} to user ${userId}`);
 ```
 
-### 6. Error Handling
+### Error Handling
 
 ```typescript
 // ✅ Handle errors in mergeMap
@@ -256,7 +397,6 @@ reactionAdd$
         await bot.helpers.addRole(...);
         log.info({ guildId, userId }, 'Role granted');
       } catch (error: any) {
-        // Handle Discord API error codes
         if (error.code === 50013) {
           log.warn({ guildId, error: error.message }, 'Missing permissions');
         } else {
@@ -270,25 +410,76 @@ reactionAdd$
 
 **Common Discord API Error Codes:**
 
-| Code | Description | Meaning |
-|------|------------|---------|
-| 50001 | Missing Access | Channel not accessible |
-| 50013 | Missing Permissions | Bot lacks required permissions |
-| 10003 | Unknown Channel | Channel deleted |
-| 10008 | Unknown Message | Message deleted |
-| 10011 | Unknown Role | Role deleted |
+| Code | Description |
+|------|------------|
+| 50001 | Missing Access |
+| 50013 | Missing Permissions |
+| 10003 | Unknown Channel |
+| 10008 | Unknown Message |
+| 10011 | Unknown Role |
 
-### 7. Comments & Documentation
+### RxJS Usage
+
+```typescript
+// ✅ Use from() to wrap Promises
+return from(prisma.keywordRule.findMany({ where: { guildId } }));
+
+// ✅ Use lastValueFrom instead of .toPromise()
+const match = await lastValueFrom(service.findMatch$(guildId, messageId, emoji));
+```
+
+### Prisma Runtime Selectors
+
+**Purpose:** Optimize high-frequency queries by selecting only necessary fields.
+
+**When to Use:**
+- ✅ High-frequency queries (per message/reaction event)
+- ✅ Queries returning multiple records
+- ✅ Cross-relation queries
+
+**Implementation:**
+
+```typescript
+// Define runtime selector (in *.select.ts)
+export const keywordRuntimeSelect = {
+  guildId: true,
+  pattern: true,
+  matchType: true,
+  response: true,
+  enabled: true,
+} as const satisfies Prisma.KeywordRuleSelect;
+
+export type KeywordRuntime = Prisma.KeywordRuleGetPayload<{
+  select: typeof keywordRuntimeSelect;
+}>;
+
+// Use in module
+function createKeywordModule(prisma: PrismaClient): KeywordModule {
+  return {
+    getActiveRules$(guildId: string) {
+      return from(
+        prisma.keywordRule.findMany({
+          where: { guildId, enabled: true },
+          select: keywordRuntimeSelect,
+        })
+      );
+    },
+  };
+}
+```
+
+### Comments & Documentation
 
 **When to Comment:**
 - ✅ Public APIs (interfaces, exported functions)
 - ✅ Complex business logic
-- ✅ Constraints and side effects
+- ✅ Non-obvious constraints
 
 **When NOT to Comment:**
 - ❌ Self-explanatory code
-- ❌ Implementation details (let code speak)
-- ❌ Obvious patterns
+- ❌ Implementation details
+
+**Inline Comments:**
 
 ```typescript
 // ✅ Explain WHY
@@ -322,234 +513,18 @@ export interface PageRenderer<T> {
 }
 ```
 
-### 8. RxJS Usage
-
-```typescript
-// ✅ Use from() to wrap Promises
-return from(prisma.keywordRule.findMany({ where: { guildId } }));
-
-// ✅ Use lastValueFrom instead of .toPromise()
-const match = await lastValueFrom(service.findMatch$(guildId, messageId, emoji));
-
-// ❌ Don't use deprecated .toPromise()
-const match = await service.findMatch$(guildId, messageId, emoji).toPromise();
-
-// ✅ Handle errors inside mergeMap
-messageCreate$
-  .pipe(
-    filter(msg => msg.guildId !== null),
-    mergeMap(async (msg) => {
-      try {
-        // Logic here
-      } catch (error) {
-        log.error({ error }, 'Failed');
-      }
-    })
-  )
-  .subscribe();
-```
-
-### 9. Prisma Runtime Selectors
-
-**Purpose:** Optimize high-frequency database queries by selecting only necessary fields.
-
-**When to Use Selectors:**
-
-- ✅ High-frequency queries (per message/reaction event)
-- ✅ Queries returning multiple records
-- ✅ Cross-relation queries to avoid over-fetching
-
-**When to Use Full Models:**
-
-- ✅ Single record queries (findUnique)
-- ✅ CRUD operations (create, update, delete)
-- ✅ Admin/detail views
-- ✅ Low-frequency operations
-
-**Naming Convention:**
-
-| Pattern | Example | Usage |
-|---------|---------|-------|
-| Runtime selector | `keywordRuntimeSelect` | High-frequency queries |
-| Runtime type | `KeywordRuntime` | Derived from runtime selector |
-| Full model type | `KeywordRule` | Direct from `@prisma-client/client` |
-
-**Implementation Example:**
-
-```typescript
-// ✅ Define runtime selector (in feature.select.ts)
-export const keywordRuntimeSelect = {
-  guildId: true,
-  pattern: true,
-  matchType: true,
-  response: true,
-  enabled: true,
-} as const satisfies Prisma.KeywordRuleSelect;
-
-export type KeywordRuntime = Prisma.KeywordRuleGetPayload<{
-  select: typeof keywordRuntimeSelect;
-}>;
-
-// ✅ Use in module (high-frequency query)
-interface KeywordModule {
-  getActiveRules$(guildId: string): Observable<KeywordRuntime[]>;
-  getRuleDetail$(guildId: string, pattern: string): Observable<KeywordRule | null>;
-}
-
-function createKeywordModule(prisma: PrismaClient): KeywordModule {
-  return {
-    // High-frequency: use runtime selector
-    getActiveRules$(guildId: string) {
-      return from(
-        prisma.keywordRule.findMany({
-          where: { guildId, enabled: true },
-          select: keywordRuntimeSelect,  // ← Runtime selector
-        })
-      );
-    },
-    
-    // Low-frequency: use full model
-    getRuleDetail$(guildId: string, pattern: string) {
-      return from(
-        prisma.keywordRule.findUnique({
-          where: { guildId_pattern: { guildId, pattern } },
-          // No select → returns full KeywordRule
-        })
-      );
-    },
-  };
-}
-```
-
-**Performance Impact:**
-
-| Feature | Without Select | With Select | Reduction |
-|---------|---------------|-------------|-----------|
-| Keyword | 6 fields | 5 fields | ~17% |
-| Reaction Role | 7 fields | 4 fields | ~43% |
-| Member Notify | 25 fields (3 tables joined) | 8 fields | ~68% |
-
-**Best Practice:**
-- Event handlers (message/reaction): Use runtime selectors
-- Command handlers (admin ops): Use full models
-- List operations: Use runtime selectors if displaying > 10 items
-
-***
-
-## 📋 Command Module Template
-
-### Standard Structure
-
-All Discord commands should follow this standardized structure for consistency and maintainability:
-
-```
-[command-name]/
-├── [command-name].command.ts     (Main entry point, routing)
-├── [command-name].types.ts       (Type definitions)
-├── [command-name].helpers.ts     (Utility functions)
-├── internal/
-│   ├── confirmations.ts         (Confirmation dialog logic)
-│   └── operations.ts           (Discord API operations)
-└── subcommands/
-    ├── [subcommand-name].ts
-    ├── [subcommand-name].ts
-    └── ...
-```
-
-### File Responsibilities
-
-#### Core Files
-- **`[command-name].command.ts`**
-  - Main entry point and routing
-  - Import all subcommand handlers
-  - Unified error handling
-
-#### Type Files
-- **`[command-name].types.ts`**
-  - All type definitions
-  - Interface definitions
-  - Confirmation data structures
-  - Option enums
-
-#### Helper Files
-- **`[command-name].helpers.ts`**
-  - Common utility functions
-  - Formatting functions
-  - Builder functions
-  - Validation functions
-
-#### Internal Tools
-- **`internal/confirmations.ts`**
-  - Confirmation dialog logic
-  - Button handling
-  - User interaction logic
-
-- **`internal/operations.ts`**
-  - Discord API operations
-  - Message updates
-  - Reaction add/remove
-  - Error handling
-
-#### Subcommands
-- **`subcommands/[subcommand-name].ts`**
-  - Single subcommand handler
-  - Business logic
-  - Parameter extraction
-  - Result replies
-
-### Naming Conventions
-
-- **Main files**: `[command-name].command.ts`, `[command-name].types.ts`, `[command-name].helpers.ts`
-- **Subcommands**: `[subcommand-name].ts` or `[group]-[action].ts`
-- **Internal tools**: `internal/confirmations.ts`, `internal/operations.ts`
-- **Types**: Concentrated in main types file
-
-### Template Benefits
-
-✅ **Consistency** - All commands use the same structure  
-✅ **Extensibility** - Easy to add new features  
-✅ **Maintainability** - Clear separation of concerns  
-✅ **Reusability** - Direct copy structure to use  
-✅ **Clarity** - Unified naming conventions  
-
-### Example: Reaction Role
-
-```
-reaction-role/
-├── reaction-role.command.ts     (2.8KB) - Main entry point
-├── reaction-role.types.ts       (1.3KB) - Type definitions
-├── reaction-role.helpers.ts     (2.7KB) - Utility functions
-├── internal/
-│   ├── confirmations.ts         (2.3KB) - Confirmation dialogs
-│   └── operations.ts           (3.7KB) - Discord API operations
-└── subcommands/
-    ├── panel-create.ts          (2.8KB) - Create panel
-    ├── panel-edit.ts            (5.8KB) - Edit panel
-    ├── panel-delete.ts          (4.8KB) - Delete panel
-    ├── panel-list.ts            (2.1KB) - List panels
-    ├── role-add.ts              (3.5KB) - Add role
-    ├── role-remove.ts           (5.3KB) - Remove role
-    └── role-list.ts             (2.3KB) - List roles
-```
-
-This template applies to all Discord commands!
-
 ***
 
 ## 🎨 Design Patterns
 
 ### 1. Observable-Based Module Pattern
 
-**Purpose:** Wrap data access (Prisma) as Observable API for dependency inversion.
-
 ```typescript
-// Module interface
 export interface KeywordModule {
   getRulesByGuild$(guildId: string): Observable<KeywordRule[]>;
   createRule$(input: CreateInput): Observable<KeywordRule>;
 }
 
-// Implementation
 export function createKeywordModule(prisma: PrismaClient): KeywordModule {
   return {
     getRulesByGuild$(guildId: string) {
@@ -564,15 +539,7 @@ export function createKeywordModule(prisma: PrismaClient): KeywordModule {
 
 ### 2. Feature Setup Pattern
 
-**Purpose:** Unified initialization, subscription, and cleanup.
-
 ```typescript
-export interface KeywordFeature {
-  module: KeywordModule;
-  service: KeywordService;
-  cleanup: () => void;
-}
-
 export function setupKeywordFeature(prisma: PrismaClient, bot: Bot): KeywordFeature {
   const module = createKeywordModule(prisma);
   const service = createKeywordService(module);
@@ -585,19 +552,18 @@ export function setupKeywordFeature(prisma: PrismaClient, bot: Bot): KeywordFeat
     .subscribe();
 
   return {
+    name: 'keyword',
     module,
     service,
     cleanup: () => {
       subscription.unsubscribe();
-      log.info('Feature cleaned up');
+      log.info('Keyword feature cleaned up');
     },
   };
 }
 ```
 
 ### 3. Command Registry Pattern
-
-**Purpose:** Centralized command routing.
 
 ```typescript
 // Register handlers
@@ -608,9 +574,7 @@ commandRegistry.registerCustomIdHandler('pg:', paginatorHandler);
 commandRegistry.activate(bot);
 ```
 
-### 4. Message Factory (Strategy Pattern)
-
-**Purpose:** Unified message styling with auto error translation.
+### 4. Message Factory
 
 ```typescript
 // Success/Error replies
@@ -626,8 +590,6 @@ await replyAutoError(bot, interaction, error, {
 
 ### 5. Generic Paginator
 
-**Purpose:** Type-safe reusable paginator.
-
 ```typescript
 await replyTextList({
   bot,
@@ -638,174 +600,6 @@ await replyTextList({
   pageSize: 10,
 });
 ```
-
-***
-
-## 🔄 Development Workflow
-
-### Adding a New Feature
-
-#### 1. Define Prisma Schema
-
-```prisma
-// prisma/schema.prisma
-model MyFeature {
-  id        String   @id @default(cuid())
-  guildId   String
-  data      String
-  createdAt DateTime @default(now())
-
-  @@index([guildId])
-}
-```
-
-Run migration:
-```bash
-npm run prisma:migrate
-```
-
-#### 2. Create Module Structure
-
-```
-src/features/my-feature/
-├── my-feature.feature.ts
-├── my-feature.module.ts
-├── my-feature.service.ts
-└── my-feature.types.ts
-```
-
-#### 3. Implement Module (Data Access)
-
-```typescript
-// my-feature.module.ts
-export interface MyFeatureModule {
-  getByGuild$(guildId: string): Observable<MyFeature[]>;
-  create$(input: CreateInput): Observable<MyFeature>;
-}
-
-export function createMyFeatureModule(prisma: PrismaClient): MyFeatureModule {
-  return {
-    getByGuild$(guildId: string) {
-      return from(prisma.myFeature.findMany({ where: { guildId } }));
-    },
-    create$(input: CreateInput) {
-      return from(prisma.myFeature.create({ data: input }));
-    },
-  };
-}
-```
-
-#### 4. Implement Service (Business Logic)
-
-```typescript
-// my-feature.service.ts
-export function createMyFeatureService(module: MyFeatureModule) {
-  return {
-    processData$(guildId: string) {
-      return module.getByGuild$(guildId).pipe(
-        map(items => { /* business logic */ })
-      );
-    },
-  };
-}
-```
-
-#### 5. Implement Feature Setup
-
-```typescript
-// my-feature.feature.ts
-export function setupMyFeature(prisma: PrismaClient, bot: Bot): MyFeatureFeature {
-  const module = createMyFeatureModule(prisma);
-  const service = createMyFeatureService(module);
-
-  const subscription = messageCreate$
-    .pipe(
-      mergeMap(async (msg) => {
-        const result = await lastValueFrom(service.processData$(msg.guildId));
-        // Handle result
-      })
-    )
-    .subscribe();
-
-  return {
-    module,
-    service,
-    cleanup: () => subscription.unsubscribe(),
-  };
-}
-```
-
-#### 6. Create Command Handler
-
-```typescript
-// adapters/discord/commands/my-feature.command.ts
-export function createMyFeatureCommandHandler(bot: Bot, module: MyFeatureModule) {
-  commandRegistry.registerCommand('myfeature', async (interaction, bot) => {
-    try {
-      await lastValueFrom(module.create$(input));
-      await replySuccess(bot, interaction, { description: 'Created!' });
-    } catch (error) {
-      await replyAutoError(bot, interaction, error, {
-        duplicate: 'Already exists',
-      });
-    }
-  });
-}
-```
-
-#### 7. Define Command in JSON
-
-```json
-// adapters/discord/commands.json
-[
-  {
-    "name": "myfeature",
-    "description": "My feature management",
-    "options": [
-      {
-        "type": 1,
-        "name": "create",
-        "description": "Create new item",
-        "options": [
-          {
-            "type": 3,
-            "name": "data",
-            "description": "Data content",
-            "required": true
-          }
-        ]
-      }
-    ]
-  }
-]
-```
-
-#### 8. Register in Bootstrap
-
-```typescript
-// core/bootstrap/app.bootstrap.ts
-export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaClient) {
-  await registerApplicationCommands(rest);
-  
-  // Setup features
-  setupMyFeature(prisma, bot);
-  
-  commandRegistry.activate(bot);
-}
-```
-
-### Development Checklist
-
-- [ ] Prisma schema defined and migrated
-- [ ] Module methods return `Observable<T>` using `from()`
-- [ ] Service implements business logic
-- [ ] Feature provides `cleanup()` function
-- [ ] Command handler uses `replyAutoError`
-- [ ] `commands.json` defines slash command structure
-- [ ] Logger created with `createLogger()`
-- [ ] Error handling covers common Discord API codes
-- [ ] All public APIs have explicit types
-- [ ] Complex logic has appropriate comments
 
 ***
 
@@ -833,12 +627,12 @@ npx prisma studio  # Opens GUI at http://localhost:5555
 
 ### Common Issues
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Commands not appearing | Not registered or missing intents | Check `commands.json` + Bot Intents |
-| Message content empty | MESSAGE CONTENT INTENT disabled | Enable in Discord Developer Portal |
-| Database connection fails | Wrong DATABASE_URL | Check `.env` configuration |
-| TypeScript paths not resolving | tsconfig-paths not loaded | Verify dev script uses `-r tsconfig-paths/register` |
+| Issue | Solution |
+|-------|----------|
+| Commands not appearing | Check `commands.json` + Bot Intents |
+| Message content empty | Enable MESSAGE CONTENT INTENT in Discord Portal |
+| Database connection fails | Check `.env` DATABASE_URL |
+| TypeScript paths not resolving | Verify `-r tsconfig-paths/register` in dev script |
 
 ***
 
@@ -897,131 +691,6 @@ volumes:
 ## 📜 License
 
 MIT License - See [LICENSE](./LICENSE)
-
-***
-
-## Feature Structure Guidelines
-
-### Standard Directory Structure
-
-```
-features/[feature-name]/
-├── [feature-name].feature.ts     # Feature entry point and event handling
-├── [feature-name].module.ts      # Data access layer (Prisma operations)
-├── [feature-name].service.ts     # Business logic layer (optional)
-├── [feature-name].select.ts      # Prisma Runtime Selectors (optional)
-├── [feature-name].types.ts       # Type definitions (minimal)
-└── internal/                      # Internal utilities (minimal)
-    └── helpers.ts               # Helper functions (only if needed)
-```
-
-### File Responsibilities
-
-#### 1. `[feature-name].feature.ts`
-- **Purpose**: Feature entry point, event listening, lifecycle management
-- **Exports**: `setup[FeatureName]Feature` function
-- **Dependencies**: PrismaClient, Bot, other Feature Modules
-- **Pattern**: Create Module and Service, set up event listeners, return Feature object
-
-```typescript
-export function setupExampleFeature(
-  prisma: PrismaClient,
-  bot: Bot
-): ExampleFeature {
-  const module = createExampleModule(prisma);
-  const service = createExampleService(module);
-  
-  // Set up event listeners
-  
-  return {
-    name: 'example',
-    module,
-    service, // optional
-    cleanup: () => {
-      subscriptions.forEach((sub) => sub.unsubscribe());
-      log.info('Example feature cleaned up');
-    },
-  };
-}
-```
-
-#### 2. `[feature-name].module.ts`
-- **Purpose**: Data access layer, Observable wrapping, CRUD operations
-- **Exports**: `create[FeatureName]Module` function and Module interface
-- **Dependencies**: PrismaClient, Runtime Selectors
-- **Pattern**: Wrap Prisma operations as Observables
-
-```typescript
-export function createExampleModule(prisma: PrismaClient): ExampleModule {
-  return {
-    getExamplesByGuild$(guildId: string): Observable<ExampleRuntime[]> {
-      return from(prisma.example.findMany({ where: { guildId } }));
-    },
-    // ... other CRUD operations
-  };
-}
-```
-
-#### 3. `[feature-name].service.ts`
-- **Purpose**: Business logic processing, complex calculations, cross-module coordination
-- **Exports**: `create[FeatureName]Service` function and Service interface
-- **Dependencies**: Module, other Services
-- **Pattern**: Use lastValueFrom to handle Observables, implement business logic
-
-#### 4. `[feature-name].select.ts`
-- **Purpose**: Prisma Runtime Selectors, performance optimization
-- **Exports**: Runtime Selector constants and Runtime types
-- **Dependencies**: Prisma Client Types
-- **Pattern**: Define query field selectors
-
-#### 5. `internal/helpers.ts`
-- **Purpose**: Helper functions, utility functions
-- **Exports**: Various helper functions
-- **Dependencies**: Basic utility libraries
-- **Usage**: Only when absolutely necessary
-
-### Design Principles
-
-#### 1. Layered Architecture
-- **Feature Layer**: Event handling and lifecycle management
-- **Service Layer**: Business logic and cross-module coordination
-- **Module Layer**: Data access and persistence
-
-#### 2. Observable Pattern
-- All Module methods return Observable
-- Service layer uses lastValueFrom to convert to Promise
-- Feature layer uses RxJS operators to handle event streams
-
-#### 3. Dependency Injection
-- Feature receives PrismaClient and Bot
-- Service receives Module
-- Module receives PrismaClient
-
-#### 4. Consistency Standards
-- **Naming**: Use `cleanup` method for cleanup (following Feature interface)
-- **Interface**: All features extend `Feature` interface
-- **Structure**: Minimal files, avoid unnecessary complexity
-- **Types**: Keep type definitions minimal and focused
-
-#### 5. Error Handling
-- Module layer throws raw errors
-- Service layer adds business context
-- Feature layer handles and logs errors
-
-### Best Practices
-
-1. **Keep it Simple**: Don't add files unless absolutely necessary
-2. **Maintain Consistency**: Follow the same patterns across all features
-3. **Type Safety**: Use TypeScript strict mode and proper typing
-4. **Observable First**: Leverage RxJS for async operations
-5. **Test-Friendly**: Design interfaces and dependencies for easy testing
-
-### Feature Examples
-
-- **Guild**: Simple structure, no service layer
-- **Keyword**: Standard structure with service
-- **Member-Notify**: Standard structure with service
-- **Reaction-Role**: Standard structure with internal helpers
 
 ***
 
