@@ -1,6 +1,6 @@
 import { Bot } from '@discordeno/bot';
 import { BotInteraction } from '@core/rx/bus';
-import { replyAutoError, replyError } from '@adapters/discord/shared/message/message.helper';
+import { replyAutoError, replyError } from 'shared/message/message.helper';
 import { ErrorContexts, ErrorContextKey } from './error-contexts';
 import { createLogger } from '@core/logger';
 import { DiscordErrorCodes, DiscordErrorMessages } from './discord-errors';

@@ -5,18 +5,14 @@ import { MemberNotifyModule } from '@features/member-notify/member-notify.module
 import { MemberNotifyService } from '@features/member-notify/member-notify.service';
 import { GuildModule } from '@features/guild/guild.module';
 import { lastValueFrom } from 'rxjs';
-import {
-  replySuccess,
-  replyInfo,
-  replyWarning,
-} from '@adapters/discord/shared/message/message.helper';
+import { replySuccess, replyInfo, replyWarning } from 'shared/message/message.helper';
 import { BotGuild, BotInteraction } from '@core/rx/bus';
 import { commandRegistry } from './command.registry';
 import { createLogger } from '@core/logger';
 import { NotificationChannel, NotificationType } from '@prisma-client/client';
-import { handleError } from '@adapters/discord/shared/error';
-import { channelMention, userMention } from '@adapters/discord/shared/utils/discord.utils';
-import { createConfirmation } from '@adapters/discord/shared/confirmation/confirmation.helper';
+import { handleError } from 'shared/error';
+import { channelMention, userMention } from 'shared/utils/discord.utils';
+import { createConfirmation } from 'shared/confirmation/confirmation.helper';
 import { ButtonStyles, CustomIdPrefixes, Timeouts } from '@core/config/constants';
 
 const log = createLogger('MemberNotifyCommand');

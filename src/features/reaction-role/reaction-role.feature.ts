@@ -7,7 +7,7 @@ import { createReactionRoleModule, ReactionRoleModule } from './reaction-role.mo
 import { createReactionRoleService, ReactionRoleService } from './reaction-role.service';
 import { reactionAdd$, reactionRemove$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
-import { createReactionRoleCommandHandler } from '@adapters/discord/commands/reaction-role';
+import { createReactionRoleCommandHandler } from '@commands/reaction-role';
 import { handleDiscordError } from '@core/rx/operators/handle-discord-error';
 import { Feature } from '@core/bootstrap/feature.interface';
 import { GuildModule } from '@features/guild/guild.module';

@@ -1,16 +1,11 @@
 import { Bot, InteractionDataOption } from '@discordeno/bot';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { lastValueFrom } from 'rxjs';
-import {
-  replySuccess,
-  replyError,
-  replyInfo,
-  replyWarning,
-} from '@adapters/discord/shared/message/message.helper';
+import { replySuccess, replyError, replyInfo, replyWarning } from 'shared/message/message.helper';
 import { BotInteraction, BotMessage } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
-import { handleError, DiscordErrorHandler } from '@adapters/discord/shared/error';
-import { channelMention, getMessageUrl } from '@adapters/discord/shared/utils/discord.utils';
+import { handleError, DiscordErrorHandler } from 'shared/error';
+import { channelMention, getMessageUrl } from 'shared/utils/discord.utils';
 import { buildPanelEmbed, getModeText } from './panel.helper';
 import type { PanelMode } from '../reaction-role.types';
 import { CustomIdPrefixes } from '@core/config/constants';

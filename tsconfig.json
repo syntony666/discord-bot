@@ -41,8 +41,11 @@
       "@platforms/*": [
         "platforms/*"
       ],
-      "@adapters/*": [
-        "adapters/*"
+      "@commands/*": [
+        "commands/*"
+      ],
+      "@shared/*": [
+        "shared/*"
       ],
       "@prisma-client/*": [
         ".prisma/*"

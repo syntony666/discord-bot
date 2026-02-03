@@ -7,8 +7,8 @@ import { createMemberNotifyModule, MemberNotifyModule } from './member-notify.mo
 import { createMemberNotifyService, MemberNotifyService } from './member-notify.service';
 import { BotGuild, guildMemberAdd$, guildMemberRemove$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
-import { createMemberNotifyCommandHandler } from '@adapters/discord/commands/member-notify.command';
-import { notify } from '@adapters/discord/shared/message/message.helper';
+import { createMemberNotifyCommandHandler } from '@commands/member-notify.command';
+import { notify } from '@shared/message/message.helper';
 import { handleDiscordError } from '@core/rx/operators/handle-discord-error';
 import { Feature } from '@core/bootstrap/feature.interface';
 import { GuildModule } from '@features/guild/guild.module';

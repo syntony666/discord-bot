@@ -6,14 +6,14 @@ import { PrismaClient } from '@prisma-client/client';
 import { setupKeywordFeature } from '@features/keyword/keyword.feature';
 import { setupGuildFeature } from '@features/guild/guild.feature';
 import { registerApplicationCommands } from '@platforms/discordeno/commands-loader';
-import { commandRegistry } from '@adapters/discord/commands/command.registry';
+import { commandRegistry } from '@commands/command.registry';
 import { ready$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
-import { PaginatorButtonStrategy } from '@adapters/discord/shared/paginator/strategy/paginator-button.strategy';
+import { PaginatorButtonStrategy } from '@shared/paginator/strategy/paginator-button.strategy';
 import { setupMemberNotifyFeature } from '@features/member-notify/member-notify.feature';
 import { setupReactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
-import { createStatusCommandHandler } from '@adapters/discord/commands/status.command';
-import { ConfirmationStrategy } from '@adapters/discord/shared/confirmation/confirmation.strategy';
+import { createStatusCommandHandler } from '@commands/status.command';
+import { ConfirmationStrategy } from '@shared/confirmation/confirmation.strategy';
 import { CustomIdPrefixes } from '@core/config/constants';
 import { featureRegistry } from './feature.registry';
 

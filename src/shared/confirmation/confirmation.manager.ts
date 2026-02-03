@@ -4,7 +4,7 @@ import { createLogger } from '@core/logger';
 import { BaseColors } from '@core/config/colors.config';
 import { appConfig } from '@core/config';
 import { StoredConfirmation, ConfirmationConfig, ConfirmationHandler } from './confirmation.types';
-import { replyWarning, replyError } from '@adapters/discord/shared/message/message.helper';
+import { replyWarning, replyError } from 'shared/message/message.helper';
 
 const log = createLogger('ConfirmationManager');
 

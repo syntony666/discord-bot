@@ -4,7 +4,7 @@ import { ReactionRoleService } from '@features/reaction-role/reaction-role.servi
 import { BotInteraction } from '@core/rx/bus';
 import { commandRegistry } from '../command.registry';
 import { createLogger } from '@core/logger';
-import { handleError } from '@adapters/discord/shared/error';
+import { handleError } from 'shared/error';
 import { handlePanelCommands } from './panel/panel.handlers';
 import { handleAdd, handleRemove, handleList } from './role/role.handlers';
 import type { InteractionDataOption } from '@discordeno/bot';

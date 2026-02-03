@@ -2,15 +2,15 @@ import { Bot, InteractionDataOption } from '@discordeno/bot';
 import { KeywordModule } from '@features/keyword/keyword.module';
 import { KeywordMatchType, KeywordRule } from '@prisma-client/client';
 import { lastValueFrom } from 'rxjs';
-import { replyTextList } from '@adapters/discord/shared/paginator/paginator.helper';
-import { replySuccess, replyWarning } from '@adapters/discord/shared/message/message.helper';
+import { replyTextList } from 'shared/paginator/paginator.helper';
+import { replySuccess, replyWarning } from 'shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
 import { commandRegistry } from './command.registry';
 import { createLogger } from '@core/logger';
-import { createConfirmation } from '@adapters/discord/shared/confirmation/confirmation.helper';
-import { handleError } from '@adapters/discord/shared/error';
+import { createConfirmation } from 'shared/confirmation/confirmation.helper';
+import { handleError } from 'shared/error';
 import { ButtonStyles, CustomIdPrefixes, Timeouts } from '@core/config/constants';
-import { userMention } from '@adapters/discord/shared/utils/discord.utils';
+import { userMention } from 'shared/utils/discord.utils';
 
 const log = createLogger('KeywordCommand');
 

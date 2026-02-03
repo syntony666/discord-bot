@@ -1,8 +1,8 @@
 import { Bot } from '@discordeno/bot';
 import { BotInteraction } from '@core/rx/bus';
-import { createConfirmation } from '@adapters/discord/shared/confirmation/confirmation.helper';
+import { createConfirmation } from 'shared/confirmation/confirmation.helper';
 import { ButtonStyles, Timeouts } from '@core/config/constants';
-import { replyInfo } from '@adapters/discord/shared/message/message.helper';
+import { replyInfo } from 'shared/message/message.helper';
 
 export interface ConfirmationEmbedData {
   title: string;

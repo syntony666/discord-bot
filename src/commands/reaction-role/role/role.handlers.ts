@@ -2,15 +2,11 @@ import { Bot, InteractionDataOption } from '@discordeno/bot';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { ReactionRoleService } from '@features/reaction-role/reaction-role.service';
 import { lastValueFrom } from 'rxjs';
-import {
-  replySuccess,
-  replyError,
-  replyInfo,
-} from '@adapters/discord/shared/message/message.helper';
+import { replySuccess, replyError, replyInfo } from 'shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
-import { handleError } from '@adapters/discord/shared/error';
-import { roleMention } from '@adapters/discord/shared/utils/discord.utils';
+import { handleError } from 'shared/error';
+import { roleMention } from 'shared/utils/discord.utils';
 import { buildPanelEmbed } from '../panel/panel.helper';
 import {
   formatEmojiForDisplay,

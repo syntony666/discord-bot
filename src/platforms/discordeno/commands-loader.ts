@@ -7,7 +7,7 @@ import { appConfig } from '@core/config';
 const log = createLogger('CommandsLoader');
 
 export async function registerApplicationCommands(rest: RestManager) {
-  const filePath = resolve(__dirname, '../../adapters/discord/commands.json');
+  const filePath = resolve(__dirname, './commands.json');
   const raw = readFileSync(filePath, 'utf-8');
   const commands = JSON.parse(raw);
 

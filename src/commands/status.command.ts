@@ -11,9 +11,9 @@ import {
 } from '@discordeno/bot';
 import { commandRegistry } from './command.registry';
 import { appConfig } from '@core/config';
-import { replyInfo } from '@adapters/discord/shared/message/message.helper';
-import { handleError } from '@adapters/discord/shared/error';
-import { userMention, timestampShort } from '@adapters/discord/shared/utils/discord.utils';
+import { replyInfo } from 'shared/message/message.helper';
+import { handleError } from 'shared/error';
+import { userMention, timestampShort } from 'shared/utils/discord.utils';
 
 export function createStatusCommandHandler(bot: Bot) {
   commandRegistry.registerCommand('status', async (interaction: BotInteraction, bot: Bot) => {
