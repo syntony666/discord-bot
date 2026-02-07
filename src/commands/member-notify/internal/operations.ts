@@ -1,9 +1,10 @@
 import { Bot, InteractionDataOption } from '@discordeno/bot';
 import { createLogger } from '@core/logger';
-import { NotificationType } from '@prisma-client/client';
+import { MemberNotifyMessage, NotificationType } from '@prisma-client/client';
 import { channelMention, userMention } from 'shared/utils/discord.utils';
 import type { BotGuild, BotInteraction } from '@core/rx/bus';
 import { formatMessageTemplate, getDefaultTemplates } from '../member-notify.helpers';
+import { lastValueFrom } from 'rxjs';
 
 const log = createLogger('MemberNotifyOperations');
 
@@ -19,20 +20,24 @@ export async function setupMemberNotifications(
 ): Promise<void> {
   try {
     // Ensure guild exists
-    await guildModule.ensureGuild$(guildId);
+    await lastValueFrom(guildModule.ensureGuild$(guildId));
 
     // Setup both notification channels
     await Promise.all([
-      module.setNotificationChannel$({
-        guildId,
-        type: NotificationType.MEMBER_JOIN,
-        channelId,
-      }),
-      module.setNotificationChannel$({
-        guildId,
-        type: NotificationType.MEMBER_LEAVE,
-        channelId,
-      }),
+      lastValueFrom(
+        module.setNotificationChannel$({
+          guildId,
+          type: NotificationType.MEMBER_JOIN,
+          channelId,
+        })
+      ),
+      lastValueFrom(
+        module.setNotificationChannel$({
+          guildId,
+          type: NotificationType.MEMBER_LEAVE,
+          channelId,
+        })
+      ),
     ]);
 
     log.debug({ guildId, channelId }, 'Member notify setup completed');
@@ -53,7 +58,9 @@ export async function disableMemberNotifications(
 ): Promise<void> {
   try {
     // Disable all notification channels
-    await Promise.all(channels.map((ch) => module.toggleChannelEnabled$(guildId, ch.type, false)));
+    await Promise.all(
+      channels.map((ch) => lastValueFrom(module.toggleChannelEnabled$(guildId, ch.type, false)))
+    );
 
     log.debug({ guildId }, 'All member notifications disabled');
   } catch (error) {
@@ -72,9 +79,9 @@ export async function getMemberNotificationStatus(
 ): Promise<any> {
   try {
     const [joinChannel, leaveChannel, templates] = await Promise.all([
-      module.getNotificationChannel$(guildId, NotificationType.MEMBER_JOIN),
-      module.getNotificationChannel$(guildId, NotificationType.MEMBER_LEAVE),
-      module.getMessageTemplates$(guildId),
+      lastValueFrom(module.getNotificationChannel$(guildId, NotificationType.MEMBER_JOIN)),
+      lastValueFrom(module.getNotificationChannel$(guildId, NotificationType.MEMBER_LEAVE)),
+      lastValueFrom(module.getMessageTemplates$(guildId)),
     ]);
 
     return { joinChannel, leaveChannel, templates };
@@ -96,7 +103,9 @@ export async function testMessageTemplate(
   interaction: BotInteraction
 ): Promise<string> {
   try {
-    const templates = await module.getMessageTemplates$(guildId);
+    const templates: MemberNotifyMessage = await lastValueFrom(
+      module.getMessageTemplates$(guildId)
+    );
     const guild = (await bot.helpers.getGuild(interaction.guildId!)) as BotGuild;
 
     const defaultTemplates = getDefaultTemplates();
@@ -131,7 +140,7 @@ export async function updateMessageTemplate(
   template: string
 ): Promise<void> {
   try {
-    await module.updateMessage$({ guildId, type, message: template });
+    await lastValueFrom(module.updateMessage$({ guildId, type, message: template }));
     log.debug({ guildId, type }, 'Message template updated');
   } catch (error) {
     log.error({ error, guildId, type }, 'Failed to update message template');
@@ -153,7 +162,7 @@ export async function toggleNotificationType(
     const notifyType =
       type === 'join' ? NotificationType.MEMBER_JOIN : NotificationType.MEMBER_LEAVE;
 
-    await module.toggleChannelEnabled$(guildId, notifyType, enabled);
+    await lastValueFrom(module.toggleChannelEnabled$(guildId, notifyType, enabled));
     log.debug({ guildId, type, enabled }, 'Notification toggled');
   } catch (error) {
     log.error({ error, guildId, type, enabled }, 'Failed to toggle notification');

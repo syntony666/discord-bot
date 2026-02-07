@@ -1,38 +1,6 @@
 import { Colors } from '@core/config/colors.config';
 import type { BuildPanelEmbedOptions, PanelMode } from './reaction-role.types';
-
-/**
- * Format emoji for display in embed
- */
-export function formatEmojiForDisplay(emoji: string): string {
-  // Discord emoji format: <:name:id> or unicode emoji
-  if (emoji.startsWith('<:')) {
-    return emoji; // Custom emoji, keep as is
-  }
-  return emoji; // Unicode emoji, keep as is
-}
-
-/**
- * Format emoji for Discord reaction
- */
-export function formatEmojiForReaction(emoji: string): string {
-  // Discord emoji format: <:name:id> or unicode emoji
-  if (emoji.startsWith('<:')) {
-    return emoji; // Custom emoji, keep as is
-  }
-  return emoji; // Unicode emoji, keep as is
-}
-
-/**
- * Normalize emoji for storage in database
- */
-export function normalizeEmojiForStorage(emoji: string): string {
-  // Discord emoji format: <:name:id> or unicode emoji
-  if (emoji.startsWith('<:')) {
-    return emoji; // Custom emoji, keep as is
-  }
-  return emoji; // Unicode emoji, keep as is
-}
+import { formatEmojiForDisplay } from '@features/reaction-role/internal/emoji.helper';
 
 /**
  * Build panel embed message for reaction role panel.

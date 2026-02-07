@@ -90,8 +90,8 @@
     "options": [
       {
         "type": 1,
-        "name": "setup",
-        "description": "設定通知頻道（同時開啟功能）",
+        "name": "enable",
+        "description": "啟用成員進出通知",
         "options": [
           {
             "type": 7,
@@ -358,7 +358,7 @@
       },
       {
         "type": 1,
-        "name": "list",
+        "name": "role-list",
         "description": "列出 Panel 的所有 Reaction Roles",
         "options": [
           {
@@ -368,6 +368,98 @@
             "required": true
           }
         ]
+      }
+    ]
+  },
+  {
+    "name": "stream-notify",
+    "description": "管理直播通知功能",
+    "default_member_permissions": "32",
+    "type": 1,
+    "options": [
+      {
+        "type": 1,
+        "name": "enable",
+        "description": "啟用直播通知",
+        "options": [
+          {
+            "type": 7,
+            "name": "channel",
+            "description": "選擇通知頻道",
+            "required": true,
+            "channel_types": [0]
+          },
+          {
+            "type": 3,
+            "name": "message",
+            "description": "自訂通知訊息範本",
+            "required": false,
+            "max_length": 1000
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "disable",
+        "description": "停用直播通知"
+      },
+      {
+        "type": 1,
+        "name": "watch",
+        "description": "新增監控頻道",
+        "options": [
+          {
+            "type": 3,
+            "name": "platform",
+            "description": "選擇平台",
+            "required": true,
+            "choices": [
+              { "name": "Twitch", "value": "twitch" },
+              { "name": "YouTube", "value": "youtube" }
+            ]
+          },
+          {
+            "type": 3,
+            "name": "id",
+            "description": "頻道 ID",
+            "required": true
+          },
+          {
+            "type": 3,
+            "name": "name",
+            "description": "顯示名稱（選填）",
+            "required": false,
+            "max_length": 100
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "unwatch",
+        "description": "移除監控頻道",
+        "options": [
+          {
+            "type": 3,
+            "name": "platform",
+            "description": "選擇平台",
+            "required": true,
+            "choices": [
+              { "name": "Twitch", "value": "twitch" },
+              { "name": "YouTube", "value": "youtube" }
+            ]
+          },
+          {
+            "type": 3,
+            "name": "id",
+            "description": "頻道 ID",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "list",
+        "description": "列出所有監控頻道和設定"
       }
     ]
   },
@@ -384,6 +476,11 @@
         "type": 1,
         "name": "guild",
         "description": "顯示伺服器資訊"
+      },
+      {
+        "type": 1,
+        "name": "notify",
+        "description": "顯示所有通知功能設定"
       }
     ]
   }

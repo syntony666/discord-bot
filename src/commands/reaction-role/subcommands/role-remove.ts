@@ -6,15 +6,15 @@ import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError } from 'shared/error';
 import { roleMention } from 'shared/utils/discord.utils';
-import {
-  formatEmojiForDisplay,
-  formatEmojiForReaction,
-  normalizeEmojiForStorage,
-} from '../reaction-role.helpers';
 import { createStandardConfirmation } from '../internal/confirmations';
 import { CustomIdPrefixes } from '@core/config/constants';
 import { deleteDiscordReaction, updatePanelMessage } from '../internal/operations';
 import type { ReactionRoleRemoveData } from '../reaction-role.types';
+import {
+  normalizeEmojiForStorage,
+  formatEmojiForDisplay,
+  formatEmojiForReaction,
+} from '@features/reaction-role/internal/emoji.helper';
 
 const log = createLogger('ReactionRoleRole');
 

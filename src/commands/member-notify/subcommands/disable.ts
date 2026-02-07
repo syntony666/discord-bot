@@ -44,7 +44,7 @@ export async function handleDisable(
 
           await replySuccess(bot, interaction, {
             title: '成員通知已關閉',
-            description: '所有成員進出通知已停用。\n使用 `/member-notify setup` 可重新啟用。',
+            description: '所有成員進出通知已停用。\n使用 `/member-notify enable` 可重新啟用。',
             isEdit: true,
           });
 

@@ -6,7 +6,7 @@ import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError } from 'shared/error';
 import { roleMention } from 'shared/utils/discord.utils';
-import { formatEmojiForDisplay } from '../reaction-role.helpers';
+import { formatEmojiForDisplay } from '@features/reaction-role/internal/emoji.helper';
 
 const log = createLogger('ReactionRoleRole');
 

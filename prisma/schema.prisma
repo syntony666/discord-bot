@@ -27,6 +27,8 @@ model Guild {
   memberNotifyMessage       MemberNotifyMessage?
   reactionRoles             ReactionRole[]
   reactionRolePanels        ReactionRolePanel[]
+  streamNotifyConfig         StreamNotifyConfig?
+  streamWatchers            StreamWatcher[]
 
   @@index([id])
 }
@@ -132,4 +134,45 @@ enum ReactionRoleMode {
   NORMAL
   UNIQUE
   VERIFY
+}
+
+/**
+ * StreamNotifyConfig - Configuration for stream notifications
+ */
+model StreamNotifyConfig {
+  guildId   String   @id
+  channelId String
+  enabled   Boolean  @default(true)
+  message   String   @default("🔴 {user} 開始直播了！\n{title}\n{url}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@index([guildId])
+}
+
+/**
+ * StreamWatcher - Tracks stream channels to monitor
+ */
+model StreamWatcher {
+  id          String           @id @default(cuid())
+  guildId     String
+  platformId  String
+  platform    StreamPlatform
+  displayName String
+  isLive      Boolean          @default(false)
+  lastChecked DateTime         @default(now())
+  createdAt   DateTime         @default(now())
+
+  guild       Guild            @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@unique([guildId, platform, platformId])
+  @@index([guildId])
+  @@index([isLive])
+}
+
+enum StreamPlatform {
+  TWITCH
+  YOUTUBE
 }

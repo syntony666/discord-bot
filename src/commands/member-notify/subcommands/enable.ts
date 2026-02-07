@@ -11,9 +11,9 @@ import { setupMemberNotifications } from '../internal/operations';
 const log = createLogger('MemberNotifyCommand');
 
 /**
- * Handle /member-notify setup
+ * Handle /member-notify enable
  */
-export async function handleSetup(
+export async function handleEnable(
   bot: Bot,
   interaction: BotInteraction,
   module: MemberNotifyModule,
@@ -27,13 +27,13 @@ export async function handleSetup(
     await setupMemberNotifications(bot, module, guildModule, guildId, channelId);
 
     await replySuccess(bot, interaction, {
-      title: '成員通知已設定',
+      title: '成員通知已啟用',
       description: `通知頻道已設定為 ${channelMention(channelId)}\n加入與離開通知已自動開啟。`,
     });
 
-    log.info({ guildId, channelId }, 'Member notify setup completed');
+    log.info({ guildId, channelId }, 'Member notify enabled completed');
   } catch (error) {
-    log.error({ error, guildId, channelId }, 'Failed to setup member notify');
-    await handleError(bot, interaction, error, 'memberNotifySet');
+    log.error({ error, guildId, channelId }, 'Failed to enable member notify');
+    await handleError(bot, interaction, error, 'memberNotifyEnable');
   }
 }

@@ -8,13 +8,13 @@ import { createLogger } from '@core/logger';
 import { handleError } from 'shared/error';
 import { roleMention } from 'shared/utils/discord.utils';
 import { buildPanelEmbed } from '../reaction-role.helpers';
+import type { PanelMode } from '../reaction-role.types';
+import { addDiscordReaction } from '../internal/operations';
 import {
   formatEmojiForDisplay,
   formatEmojiForReaction,
   normalizeEmojiForStorage,
-} from '../reaction-role.helpers';
-import type { PanelMode } from '../reaction-role.types';
-import { addDiscordReaction, updatePanelMessage } from '../internal/operations';
+} from '@features/reaction-role/internal/emoji.helper';
 
 const log = createLogger('ReactionRoleRole');
 
@@ -76,7 +76,7 @@ export async function handleAdd(
       module.createReactionRole$({
         guildId,
         messageId: panelId,
-        emoji,
+        emoji: normalizeEmojiForStorage(emoji),
         roleId,
         description,
       })

@@ -5,7 +5,7 @@ import { MemberNotifyService } from '@features/member-notify/member-notify.servi
 import { BotInteraction } from '@core/rx/bus';
 
 // Import subcommand handlers
-import { handleSetup } from './subcommands/setup';
+import { handleEnable } from './subcommands/enable';
 import { handleStatus } from './subcommands/status';
 import { handleDisable } from './subcommands/disable';
 import { handleTest } from './subcommands/test';
@@ -13,8 +13,8 @@ import { handleMessage } from './subcommands/message';
 import { handleToggle } from './subcommands/toggle';
 
 /**
- * Setup member-notify command handler.
- * Supports subcommands: setup, disable, status, test, message, toggle.
+ * Enable member-notify command handler.
+ * Supports subcommands: enable, disable, status, test, message, toggle.
  */
 export function setupMemberNotifyCommand(
   module: MemberNotifyModule,
@@ -28,8 +28,8 @@ export function setupMemberNotifyCommand(
     const subGroup = interaction.data?.options?.[0] as InteractionDataOption;
     const subGroupName = subGroup?.name;
 
-    if (subGroupName === 'setup') {
-      await handleSetup(bot, interaction, module, guildModule, guildId, subGroup);
+    if (subGroupName === 'enable') {
+      await handleEnable(bot, interaction, module, guildModule, guildId, subGroup);
     } else if (subGroupName === 'status') {
       await handleStatus(bot, interaction, module, guildId);
     } else if (subGroupName === 'disable') {

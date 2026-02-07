@@ -44,7 +44,7 @@ export function setupReactionRoleCommand(module: ReactionRoleModule, service: Re
       await handleAdd(bot, interaction, module, service, guildId, subGroup);
     } else if (subGroupName === 'remove') {
       await handleRemove(bot, interaction, module, guildId, subGroup);
-    } else if (subGroupName === 'list') {
+    } else if (subGroupName === 'role-list') {
       await handleList(bot, interaction, module, guildId, subGroup);
     }
   };

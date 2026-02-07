@@ -25,13 +25,15 @@ export async function handleStatus(
     if (!joinChannel && !leaveChannel) {
       await replyInfo(bot, interaction, {
         title: '成員通知狀態',
-        description: '尚未設定成員通知功能。\n使用 `/member-notify setup` 開始設定。',
+        description: '尚未設定成員通知功能。\n使用 `/member-notify enable` 開始設定。',
       });
       return;
     }
 
     const joinEmoji = getNotificationTypeEmoji(joinChannel?.enabled || false);
     const leaveEmoji = getNotificationTypeEmoji(leaveChannel?.enabled || false);
+
+    console.log(joinChannel, leaveChannel, templates);
 
     const description = [
       `**${getNotificationTypeName('join')}:** ${joinEmoji} ${joinChannel?.enabled ? '已啟用' : '已停用'}`,

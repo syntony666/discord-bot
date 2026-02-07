@@ -42,6 +42,8 @@ export function setupReactionRoleFeature(
         const messageId = reaction.messageId.toString();
         const emoji = service.normalizeEmoji(reaction.emoji);
 
+        console.log({ guildId, messageId, emoji });
+
         const match = await lastValueFrom(service.findMatch$(guildId, messageId, emoji));
         if (!match) return;
 

@@ -4,12 +4,26 @@ import { BotInteraction } from '@core/rx/bus';
 // Import subcommand handlers
 import { handleBotStatus } from './subcommands/bot';
 import { handleGuildStatus } from './subcommands/guild';
+import { handleNotifyStatus } from './subcommands/notify';
+
+// Import feature modules
+import { MemberNotifyModule } from '@features/member-notify/member-notify.module';
+import { StreamNotifyModule } from '@features/stream-notify/stream-notify.module';
+import { KeywordModule } from '@features/keyword/keyword.module';
+import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
+
+interface StatusCommandModules {
+  memberNotify: MemberNotifyModule;
+  streamNotify: StreamNotifyModule;
+  keyword: KeywordModule;
+  reactionRole: ReactionRoleModule;
+}
 
 /**
  * Setup status command handler.
- * Supports subcommands: bot, guild.
+ * Supports subcommands: bot, guild, notify.
  */
-export function setupStatusCommand() {
+export function setupStatusCommand(modules: StatusCommandModules) {
   return async (interaction: BotInteraction, bot: Bot) => {
     const subcommand = interaction.data?.options?.[0] as InteractionDataOption;
     if (!subcommand) return;
@@ -18,6 +32,8 @@ export function setupStatusCommand() {
       await handleBotStatus(interaction, bot);
     } else if (subcommand.name === 'guild') {
       await handleGuildStatus(interaction, bot);
+    } else if (subcommand.name === 'notify') {
+      await handleNotifyStatus(interaction, bot, modules);
     }
   };
 }

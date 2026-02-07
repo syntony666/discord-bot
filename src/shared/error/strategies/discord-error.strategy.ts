@@ -13,17 +13,17 @@ export class DiscordErrorStrategy extends BaseErrorStrategy {
       error != null &&
       typeof error === 'object' &&
       'code' in error &&
-      typeof (error as any).code === 'number'
+      typeof error.code === 'number'
     );
   }
 
   async handle(
     bot: Bot,
     interaction: BotInteraction,
-    error: unknown,
+    error: any,
     context: ErrorContext
   ): Promise<void> {
-    const errorCode = (error as any).code;
+    const errorCode = error.code;
 
     // Handle specific Discord errors with context messages
     if (errorCode === DiscordErrorCodes.MISSING_PERMISSIONS) {
