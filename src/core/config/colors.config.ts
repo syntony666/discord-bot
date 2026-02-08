@@ -1,7 +1,3 @@
-/**
- * Base color palette shared across the bot.
- * These are low-level colors without semantic meaning.
- */
 export const BaseColors = {
   LIGHT_BLUE: 0x8bb7ff,
   DISCORD_BLUE: 0x5865f2,
@@ -17,9 +13,6 @@ export const BaseColors = {
   GRAY_BLUE: 0x99aab5,
 } as const;
 
-/**
- * Semantic colors for command responses (interactions).
- */
 export const CommandColors = {
   SUCCESS: BaseColors.LIGHT_BLUE,
   ERROR: BaseColors.RED,
@@ -27,9 +20,6 @@ export const CommandColors = {
   WARNING: BaseColors.YELLOW,
 } as const;
 
-/**
- * Semantic colors for notifications (message sends).
- */
 export const NotificationColors = {
   STREAM_LIVE: BaseColors.TWITCH_PURPLE,
   MEMBER_JOIN: BaseColors.GREEN,
@@ -37,9 +27,6 @@ export const NotificationColors = {
   ANNOUNCEMENT: BaseColors.DISCORD_BLUE,
 } as const;
 
-/**
- * Combined semantic colors for convenient imports.
- */
 export const Colors = {
   ...CommandColors,
   ...NotificationColors,

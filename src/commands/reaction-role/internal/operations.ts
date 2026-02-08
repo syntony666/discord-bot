@@ -6,9 +6,6 @@ import type { PanelMode } from '../reaction-role.types';
 
 const log = createLogger('ReactionRoleOperations');
 
-/**
- * Delete Discord message with standardized error handling
- */
 export async function deleteDiscordMessage(
   bot: Bot,
   channelId: string,
@@ -28,9 +25,6 @@ export async function deleteDiscordMessage(
   }
 }
 
-/**
- * Update panel Discord message with new content
- */
 export async function updatePanelMessage(
   bot: Bot,
   panel: ReactionRolePanel,
@@ -72,9 +66,6 @@ export async function updatePanelMessage(
   );
 }
 
-/**
- * Delete bot's reaction from Discord message
- */
 export async function deleteDiscordReaction(
   bot: Bot,
   channelId: string,
@@ -94,9 +85,6 @@ export async function deleteDiscordReaction(
   }
 }
 
-/**
- * Add bot's reaction to Discord message
- */
 export async function addDiscordReaction(
   bot: Bot,
   channelId: string,
@@ -108,9 +96,6 @@ export async function addDiscordReaction(
   log.debug({ ...context, emoji }, 'Discord reaction added');
 }
 
-/**
- * Sanitize updates object to convert null to undefined for database operations
- */
 export function sanitizeUpdates<T extends Record<string, any>>(updates: T): T {
   const sanitized: any = {};
 

@@ -67,9 +67,6 @@ export async function deleteKeywordRule(
   }
 }
 
-/**
- * Get all keyword rules for a guild
- */
 export async function getKeywordRules(
   bot: Bot,
   module: any,

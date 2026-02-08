@@ -67,9 +67,6 @@ export class DiscordErrorHandler {
     };
   }
 
-  /**
-   * Handle resource not found errors (10xxx)
-   */
   private static handleResourceNotFound(
     errorCode: number,
     context: Record<string, any>
@@ -110,9 +107,6 @@ export class DiscordErrorHandler {
     };
   }
 
-  /**
-   * Handle permission errors (50xxx)
-   */
   private static handlePermissionError(
     errorCode: number,
     context: Record<string, any>
@@ -153,9 +147,6 @@ export class DiscordErrorHandler {
     };
   }
 
-  /**
-   * Handle rate limit errors
-   */
   private static handleRateLimitError(context: Record<string, any>): ErrorHandlingResult {
     const retryAfter = context.retryAfter || 'unknown';
     log.warn(context, `Rate limit hit. Retry after: ${retryAfter}ms`);
@@ -168,9 +159,6 @@ export class DiscordErrorHandler {
     };
   }
 
-  /**
-   * Extract error code from error object
-   */
   private static extractErrorCode(error: unknown): number | null {
     if (!error || typeof error !== 'object') return null;
     if ('code' in error && typeof error.code === 'number') {
@@ -179,9 +167,6 @@ export class DiscordErrorHandler {
     return null;
   }
 
-  /**
-   * Convert error to custom error type
-   */
   static toCustomError(error: unknown, context: ErrorContext): Error {
     const errorCode = this.extractErrorCode(error);
     const errorMessage = error instanceof Error ? error.message : String(error);

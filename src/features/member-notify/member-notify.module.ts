@@ -23,60 +23,31 @@ export interface UpdateMessageInput {
 export interface MemberNotifyModule {
   // ========== NotificationChannel Operations ==========
 
-  /**
-   * Get notification channel for specific type (MEMBER_JOIN or MEMBER_LEAVE).
-   */
   getNotificationChannel$(
     guildId: string,
     type: NotificationType
   ): Observable<NotificationChannel | null>;
 
-  /**
-   * Create or update notification channel.
-   * Sets enabled to true by default.
-   */
   setNotificationChannel$(input: CreateNotificationChannelInput): Observable<NotificationChannel>;
 
-  /**
-   * Toggle notification channel enabled state.
-   */
   toggleChannelEnabled$(
     guildId: string,
     type: NotificationType,
     enabled: boolean
   ): Observable<NotificationChannel>;
 
-  /**
-   * Delete notification channel.
-   */
   deleteNotificationChannel$(guildId: string, type: NotificationType): Observable<void>;
 
-  /**
-   * Get all notification channels for a guild.
-   */
   getNotificationChannels$(guildId: string): Observable<NotificationChannel[]>;
 
   // ========== MemberNotifyMessage Operations ==========
 
-  /**
-   * Get message templates for a guild.
-   */
   getMessageTemplates$(guildId: string): Observable<MemberNotifyMessage | null>;
 
-  /**
-   * Create or update message templates.
-   * Creates with defaults if not exists.
-   */
   upsertMessageTemplates$(input: UpsertMessageInput): Observable<MemberNotifyMessage>;
 
-  /**
-   * Update specific message (join or leave).
-   */
   updateMessage$(input: UpdateMessageInput): Observable<MemberNotifyMessage>;
 
-  /**
-   * Delete message templates.
-   */
   deleteMessageTemplates$(guildId: string): Observable<void>;
 }
 
@@ -84,9 +55,6 @@ export function createMemberNotifyModule(prisma: PrismaClient): MemberNotifyModu
   return {
     // ========== NotificationChannel Operations ==========
 
-    /**
-     * Get notification channel for specific type.
-     */
     getNotificationChannel$(
       guildId: string,
       type: NotificationType
@@ -100,9 +68,6 @@ export function createMemberNotifyModule(prisma: PrismaClient): MemberNotifyModu
       );
     },
 
-    /**
-     * Create or update notification channel.
-     */
     setNotificationChannel$(
       input: CreateNotificationChannelInput
     ): Observable<NotificationChannel> {
@@ -125,9 +90,6 @@ export function createMemberNotifyModule(prisma: PrismaClient): MemberNotifyModu
       );
     },
 
-    /**
-     * Toggle notification channel enabled state.
-     */
     toggleChannelEnabled$(
       guildId: string,
       type: NotificationType,
@@ -143,9 +105,6 @@ export function createMemberNotifyModule(prisma: PrismaClient): MemberNotifyModu
       );
     },
 
-    /**
-     * Delete notification channel.
-     */
     deleteNotificationChannel$(guildId: string, type: NotificationType): Observable<void> {
       return from(
         prisma.notificationChannel
@@ -158,9 +117,6 @@ export function createMemberNotifyModule(prisma: PrismaClient): MemberNotifyModu
       );
     },
 
-    /**
-     * Get all notification channels for a guild.
-     */
     getNotificationChannels$(guildId: string): Observable<NotificationChannel[]> {
       return from(
         prisma.notificationChannel.findMany({
@@ -172,9 +128,6 @@ export function createMemberNotifyModule(prisma: PrismaClient): MemberNotifyModu
 
     // ========== MemberNotifyMessage Operations ==========
 
-    /**
-     * Get message templates.
-     */
     getMessageTemplates$(guildId: string): Observable<MemberNotifyMessage | null> {
       return from(
         prisma.memberNotifyMessage.findUnique({
@@ -183,9 +136,6 @@ export function createMemberNotifyModule(prisma: PrismaClient): MemberNotifyModu
       );
     },
 
-    /**
-     * Upsert message templates (create if not exists).
-     */
     upsertMessageTemplates$(input: UpsertMessageInput): Observable<MemberNotifyMessage> {
       const updateData: any = {};
       if (input.joinMessage !== undefined) updateData.joinMessage = input.joinMessage;
@@ -203,9 +153,6 @@ export function createMemberNotifyModule(prisma: PrismaClient): MemberNotifyModu
       );
     },
 
-    /**
-     * Update specific message template.
-     */
     updateMessage$(input: UpdateMessageInput): Observable<MemberNotifyMessage> {
       const updateData =
         input.type === 'join' ? { joinMessage: input.message } : { leaveMessage: input.message };
@@ -222,9 +169,6 @@ export function createMemberNotifyModule(prisma: PrismaClient): MemberNotifyModu
       );
     },
 
-    /**
-     * Delete message templates.
-     */
     deleteMessageTemplates$(guildId: string): Observable<void> {
       return from(
         prisma.memberNotifyMessage

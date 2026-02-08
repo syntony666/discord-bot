@@ -3,16 +3,9 @@ import { createLogger } from '@core/logger';
 
 const log = createLogger('FeatureRegistry');
 
-/**
- * Feature registry for managing feature lifecycle.
- * Ensures all features are properly cleaned up during shutdown.
- */
 export class FeatureRegistry {
   private features: Feature[] = [];
 
-  /**
-   * Register a feature
-   */
   register(feature: Feature): void {
     if (!isFeature(feature)) {
       throw new Error(`Invalid feature object: missing name or cleanup function`);
@@ -22,17 +15,10 @@ export class FeatureRegistry {
     log.info({ featureName: feature.name }, 'Feature registered');
   }
 
-  /**
-   * Get all registered features
-   */
   getFeatures(): ReadonlyArray<Feature> {
     return this.features;
   }
 
-  /**
-   * Cleanup all registered features in reverse order.
-   * Called during graceful shutdown.
-   */
   cleanup(): void {
     log.info({ count: this.features.length }, 'Starting feature cleanup');
 
@@ -52,9 +38,6 @@ export class FeatureRegistry {
     log.info('All features cleaned up');
   }
 
-  /**
-   * Get the number of registered features
-   */
   count(): number {
     return this.features.length;
   }

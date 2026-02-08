@@ -69,9 +69,6 @@ export async function createDisableConfirmation(
   );
 }
 
-/**
- * Create message template confirmation dialog
- */
 export async function createMessageTemplateConfirmation(
   bot: Bot,
   interaction: BotInteraction,
@@ -111,9 +108,6 @@ export async function createMessageTemplateConfirmation(
   );
 }
 
-/**
- * Create toggle confirmation dialog
- */
 export async function createToggleConfirmation(
   bot: Bot,
   interaction: BotInteraction,

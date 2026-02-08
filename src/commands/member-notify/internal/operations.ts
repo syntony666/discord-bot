@@ -8,9 +8,6 @@ import { lastValueFrom } from 'rxjs';
 
 const log = createLogger('MemberNotifyOperations');
 
-/**
- * Setup member notifications
- */
 export async function setupMemberNotifications(
   bot: Bot,
   module: any,
@@ -47,9 +44,6 @@ export async function setupMemberNotifications(
   }
 }
 
-/**
- * Disable all member notifications
- */
 export async function disableMemberNotifications(
   bot: Bot,
   module: any,
@@ -69,9 +63,6 @@ export async function disableMemberNotifications(
   }
 }
 
-/**
- * Get member notification status
- */
 export async function getMemberNotificationStatus(
   bot: Bot,
   module: any,
@@ -91,9 +82,6 @@ export async function getMemberNotificationStatus(
   }
 }
 
-/**
- * Test message template
- */
 export async function testMessageTemplate(
   bot: Bot,
   module: any,
@@ -129,9 +117,6 @@ export async function testMessageTemplate(
   }
 }
 
-/**
- * Update message template
- */
 export async function updateMessageTemplate(
   bot: Bot,
   module: any,
@@ -148,9 +133,6 @@ export async function updateMessageTemplate(
   }
 }
 
-/**
- * Toggle notification type
- */
 export async function toggleNotificationType(
   bot: Bot,
   module: any,

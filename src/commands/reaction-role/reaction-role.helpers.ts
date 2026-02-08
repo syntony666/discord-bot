@@ -2,10 +2,6 @@ import { Colors } from '@core/config/colors.config';
 import type { BuildPanelEmbedOptions, PanelMode } from './reaction-role.types';
 import { formatEmojiForDisplay } from '@features/reaction-role/internal/emoji.helper';
 
-/**
- * Build panel embed message for reaction role panel.
- * Used in create, edit, add, and remove operations.
- */
 export function buildPanelEmbed(options: BuildPanelEmbedOptions) {
   const { title, description, mode, roles, messageId } = options;
 
@@ -46,9 +42,6 @@ export function buildPanelEmbed(options: BuildPanelEmbedOptions) {
   };
 }
 
-/**
- * Get display text for panel mode.
- */
 export function getModeText(mode: PanelMode): string {
   switch (mode) {
     case 'NORMAL':

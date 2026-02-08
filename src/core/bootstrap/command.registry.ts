@@ -23,9 +23,6 @@ class CommandRegistry {
     this.customIdHandlers.set(prefix, handler);
     log.info({ prefix }, 'CustomId handler registered');
   }
-  /**
-   * Start listening to interaction events and route them to handlers.
-   */
   activate(bot: Bot): void {
     this.subscription = interactionCreate$.subscribe(async (interaction) => {
       try {
@@ -64,9 +61,6 @@ class CommandRegistry {
       'Command registry activated'
     );
   }
-  /**
-   * Stop listening to interaction events.
-   */
   deactivate(): void {
     this.subscription?.unsubscribe();
     log.info('Command registry deactivated');

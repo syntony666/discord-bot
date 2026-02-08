@@ -16,9 +16,6 @@ export interface CommandContext {
   subCommand: InteractionDataOption;
 }
 
-/**
- * Options for building panel embed
- */
 export interface BuildPanelEmbedOptions {
   title?: string;
   description?: string;
@@ -27,9 +24,6 @@ export interface BuildPanelEmbedOptions {
   messageId?: string;
 }
 
-/**
- * Data structure for panel delete confirmation
- */
 export interface PanelDeleteData {
   guildId: string;
   panelId: string;
@@ -37,9 +31,6 @@ export interface PanelDeleteData {
   rolesCount: number;
 }
 
-/**
- * Data structure for panel edit confirmation
- */
 export interface PanelEditData {
   guildId: string;
   panelId: string;
@@ -51,9 +42,6 @@ export interface PanelEditData {
   };
 }
 
-/**
- * Data structure for reaction role remove confirmation
- */
 export interface ReactionRoleRemoveData {
   guildId: string;
   panelId: string;
