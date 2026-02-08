@@ -2,16 +2,11 @@ import { Bot, InteractionDataOption } from '@discordeno/bot';
 import { KeywordModule } from '@features/keyword/keyword.module';
 import { BotInteraction } from '@core/rx/bus';
 
-// Import subcommand handlers
 import { handleAddKeyword } from './subcommands/add';
 import { handleListKeywords } from './subcommands/list';
 import { handleEditKeyword } from './subcommands/edit';
 import { handleDeleteKeyword } from './subcommands/delete';
 
-/**
- * Setup keyword command handler.
- * Supports subcommands: add, list, edit, delete.
- */
 export function setupKeywordCommand(module: KeywordModule) {
   return async (interaction: BotInteraction, bot: Bot) => {
     const sub = interaction.data?.options?.[0] as InteractionDataOption;

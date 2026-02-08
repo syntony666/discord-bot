@@ -2,9 +2,6 @@ import { ReplyStrategy } from './reply.strategy';
 import { Colors } from '@core/config';
 import type { MessageStrategy, AutoErrorReplyOptions } from '../message.types';
 
-/**
- * Prisma error codes used by auto error handling.
- */
 export enum PrismaErrorCode {
   UniqueConstraintViolation = 'P2002',
   RecordNotFound = 'P2025',
@@ -14,9 +11,6 @@ export enum PrismaErrorCode {
   Timeout = 'P1008',
 }
 
-/**
- * Strategy that maps known errors to user-friendly messages in Chinese.
- */
 export class AutoErrorReplyStrategy implements MessageStrategy {
   constructor(private readonly options: AutoErrorReplyOptions) {}
 

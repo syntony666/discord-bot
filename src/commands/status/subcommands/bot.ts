@@ -12,9 +12,6 @@ import { appConfig } from '@core/config';
 import { replyInfo } from 'shared/message/message.helper';
 import { handleError } from 'shared/error';
 
-/**
- * Handle /status bot
- */
 export async function handleBotStatus(interaction: BotInteraction, bot: Bot) {
   try {
     const version = getBotVersion();

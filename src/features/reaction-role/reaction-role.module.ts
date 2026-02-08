@@ -14,10 +14,6 @@ export interface ReactionRoleMatch {
   mode: 'NORMAL' | 'UNIQUE' | 'VERIFY';
 }
 
-/**
- * Data access layer for reaction role configuration.
- * All methods return Observables wrapping Prisma operations.
- */
 export interface ReactionRoleModule {
   // Panel CRUD
   getPanel$(guildId: string, messageId: string): Observable<ReactionRolePanel | null>;

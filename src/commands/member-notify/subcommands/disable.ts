@@ -11,9 +11,6 @@ import { disableMemberNotifications } from '../internal/operations';
 
 const log = createLogger('MemberNotifyCommand');
 
-/**
- * Handle /member-notify disable
- */
 export async function handleDisable(
   bot: Bot,
   interaction: BotInteraction,

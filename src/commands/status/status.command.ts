@@ -1,28 +1,22 @@
 import { Bot, InteractionDataOption } from '@discordeno/bot';
 import { BotInteraction } from '@core/rx/bus';
 
-// Import subcommand handlers
 import { handleBotStatus } from './subcommands/bot';
 import { handleGuildStatus } from './subcommands/guild';
 import { handleNotifyStatus } from './subcommands/notify';
 
-// Import feature modules
 import { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import { StreamNotifyModule } from '@features/stream-notify/stream-notify.module';
 import { KeywordModule } from '@features/keyword/keyword.module';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 
-interface StatusCommandModules {
+export interface StatusCommandModules {
   memberNotify: MemberNotifyModule;
   streamNotify: StreamNotifyModule;
   keyword: KeywordModule;
   reactionRole: ReactionRoleModule;
 }
 
-/**
- * Setup status command handler.
- * Supports subcommands: bot, guild, notify.
- */
 export function setupStatusCommand(modules: StatusCommandModules) {
   return async (interaction: BotInteraction, bot: Bot) => {
     const subcommand = interaction.data?.options?.[0] as InteractionDataOption;

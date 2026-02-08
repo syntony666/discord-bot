@@ -1,7 +1,3 @@
-/**
- * Comprehensive Discord API error codes
- * @see https://discord.com/developers/docs/topics/opcodes-and-status-codes#json
- */
 export const DiscordApiErrorCodes = {
   // General errors (10xxx)
   UNKNOWN_ACCOUNT: 10001,
@@ -87,23 +83,14 @@ export const DiscordApiErrorCodes = {
 
 export type DiscordApiErrorCode = (typeof DiscordApiErrorCodes)[keyof typeof DiscordApiErrorCodes];
 
-/**
- * Check if error code indicates a resource not found
- */
 export function isResourceNotFoundError(code: number): boolean {
   return code >= 10000 && code < 20000;
 }
 
-/**
- * Check if error code indicates a permission/access issue
- */
 export function isPermissionError(code: number): boolean {
   return code >= 50000 && code < 60000;
 }
 
-/**
- * Check if error code indicates a rate limit
- */
 export function isRateLimitError(code: number): boolean {
   return code === DiscordApiErrorCodes.RATE_LIMIT;
 }

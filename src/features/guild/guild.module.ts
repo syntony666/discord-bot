@@ -3,34 +3,14 @@ import { Observable, from } from 'rxjs';
 import { GuildData } from './guild.types';
 
 export interface GuildModule {
-  /**
-   * Ensure guild exists in database.
-   * Creates guild record if not exists, returns existing record otherwise.
-   */
   ensureGuild$(guildId: string, guildName?: string): Observable<GuildData>;
-
-  /**
-   * Get guild by ID.
-   */
   getGuild$(guildId: string): Observable<GuildData | null>;
-
-  /**
-   * Delete guild and cascade all related data.
-   */
   deleteGuild$(guildId: string): Observable<void>;
-
-  /**
-   * List all guilds.
-   */
   listGuilds$(): Observable<GuildData[]>;
 }
 
 export function createGuildModule(prisma: PrismaClient): GuildModule {
   return {
-    /**
-     * Ensure guild exists.
-     * If not found, create with provided name or placeholder.
-     */
     ensureGuild$(guildId: string, guildName?: string): Observable<GuildData> {
       return from(
         prisma.guild.upsert({
@@ -47,9 +27,6 @@ export function createGuildModule(prisma: PrismaClient): GuildModule {
       );
     },
 
-    /**
-     * Get guild by ID.
-     */
     getGuild$(guildId: string): Observable<GuildData | null> {
       return from(
         prisma.guild.findUnique({
@@ -58,9 +35,6 @@ export function createGuildModule(prisma: PrismaClient): GuildModule {
       );
     },
 
-    /**
-     * Delete guild (cascades to all related data).
-     */
     deleteGuild$(guildId: string): Observable<void> {
       return from(
         prisma.guild
@@ -71,9 +45,6 @@ export function createGuildModule(prisma: PrismaClient): GuildModule {
       );
     },
 
-    /**
-     * List all guilds ordered by creation time.
-     */
     listGuilds$(): Observable<GuildData[]> {
       return from(
         prisma.guild.findMany({

@@ -25,9 +25,6 @@ async function main() {
   }
 }
 
-/**
- * Graceful shutdown handler
- */
 async function gracefulShutdown(signal: string) {
   logger.info({ signal }, 'Received shutdown signal, shutting down gracefully...');
 

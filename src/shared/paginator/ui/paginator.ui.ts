@@ -1,9 +1,6 @@
 import { PageRenderResult } from '../paginator.types';
 import { ButtonStyles, CustomIdPrefixes } from '@core/config/constants';
 
-/**
- * Build the interaction response payload for a specific page.
- */
 export function buildPaginatorResponse(params: {
   sessionId: string;
   page: PageRenderResult;
@@ -31,9 +28,6 @@ export function buildPaginatorResponse(params: {
   return data;
 }
 
-/**
- * Build Discord message components (Prev / Page / Next buttons).
- */
 function buildPaginatorComponents(params: {
   sessionId: string;
   hasPrev: boolean;

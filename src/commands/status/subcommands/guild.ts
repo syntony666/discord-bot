@@ -6,9 +6,6 @@ import { replyInfo } from 'shared/message/message.helper';
 import { handleError } from 'shared/error';
 import { userMention, timestampShort } from 'shared/utils/discord.utils';
 
-/**
- * Handle /status guild
- */
 export async function handleGuildStatus(interaction: BotInteraction, bot: Bot) {
   const guildId = interaction.guildId;
 

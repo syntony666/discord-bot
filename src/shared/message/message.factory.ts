@@ -10,9 +10,6 @@ import type {
   NotificationOptions,
 } from './message.types';
 
-/**
- * Configuration for each message type (default title and color).
- */
 const MESSAGE_CONFIG = {
   SUCCESS_REPLY: {
     defaultTitle: '✅ 成功',
@@ -56,13 +53,7 @@ const MESSAGE_CONFIG = {
   },
 } as const;
 
-/**
- * Message Factory - creates appropriate strategy based on message type
- */
 export class MessageFactory {
-  /**
-   * Create strategy for the given message options
-   */
   static createStrategy(options: MessageOptions): MessageStrategy {
     const type = options.type as MessageType;
 
@@ -70,7 +61,15 @@ export class MessageFactory {
     if (this.isReplyType(type)) {
       const replyOptions = options as any;
       const config = MESSAGE_CONFIG[type];
-      const { type: _, bot, interaction, ephemeral, components, isEdit, ...embedProps } = replyOptions;
+      const {
+        type: _,
+        bot,
+        interaction,
+        ephemeral,
+        components,
+        isEdit,
+        ...embedProps
+      } = replyOptions;
 
       return new ReplyStrategy({
         bot,
@@ -89,9 +88,10 @@ export class MessageFactory {
       const notificationOptions = options as any;
       const { type: _, bot, channelId, ...embedProps } = notificationOptions;
 
-      const color = type === 'CUSTOM_NOTIFICATION'
-        ? (embedProps.color ?? Colors.INFO)
-        : MESSAGE_CONFIG[type].color;
+      const color =
+        type === 'CUSTOM_NOTIFICATION'
+          ? (embedProps.color ?? Colors.INFO)
+          : MESSAGE_CONFIG[type].color;
 
       return new NotificationStrategy({
         bot,
@@ -121,16 +121,10 @@ export class MessageFactory {
     throw new Error(`Unknown message type: ${type}`);
   }
 
-  /**
-   * Narrow MessageType into reply-only types.
-   */
   private static isReplyType(type: MessageType): boolean {
     return ['SUCCESS_REPLY', 'ERROR_REPLY', 'INFO_REPLY', 'WARNING_REPLY'].includes(type);
   }
 
-  /**
-   * Narrow MessageType into notification-only types.
-   */
   private static isNotificationType(type: MessageType): boolean {
     return [
       'STREAM_LIVE_NOTIFICATION',

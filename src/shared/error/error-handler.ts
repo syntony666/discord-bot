@@ -7,32 +7,8 @@ import { replyError } from 'shared/message/message.helper';
 
 const log = createLogger('ErrorHandler');
 
-// Global strategy manager instance
 const errorStrategyManager = new ErrorStrategyManager();
 
-/**
- * Unified error handler with contextual error messages.
- *
- * This handler provides a centralized way to handle errors across all commands,
- * using the Strategy Pattern to handle different types of errors:
- * - Discord API errors
- * - Prisma database errors
- * - Context-specific custom messages
- *
- * @param bot Bot instance
- * @param interaction User interaction
- * @param error The caught error
- * @param contextKey Key to lookup context-specific error messages
- *
- * @example
- * ```typescript
- * try {
- *   await lastValueFrom(module.createRule$(...));
- * } catch (error) {
- *   await handleError(bot, interaction, error, 'keywordAdd');
- * }
- * ```
- */
 export async function handleError(
   bot: Bot,
   interaction: BotInteraction,
@@ -46,10 +22,9 @@ export async function handleError(
       { error: handlerError, originalError: error, contextKey },
       'Error handler itself failed'
     );
-
-    // Ultimate fallback
     await replyError(bot, interaction, {
-      description: '發生未預期的錯誤，請稍後再試。',
+      title: '發生未預期的錯誤',
+      description: '處理您的請求時遇到問題，請稍後再試。',
     });
   }
 }

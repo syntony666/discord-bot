@@ -10,9 +10,6 @@ import { toggleNotificationType } from '../internal/operations';
 
 const log = createLogger('MemberNotifyCommand');
 
-/**
- * Handle /member-notify toggle
- */
 export async function handleToggle(
   bot: Bot,
   interaction: BotInteraction,

@@ -6,18 +6,8 @@ import { createLogger } from '@core/logger';
 
 const log = createLogger('ErrorStrategy');
 
-/**
- * Base interface for error handling strategies
- */
 export interface ErrorStrategy {
-  /**
-   * Check if this strategy can handle the error
-   */
   canHandle(error: unknown): boolean;
-
-  /**
-   * Handle the error and send appropriate response
-   */
   handle(
     bot: Bot,
     interaction: BotInteraction,
@@ -26,9 +16,6 @@ export interface ErrorStrategy {
   ): Promise<void>;
 }
 
-/**
- * Base class for error strategies with common functionality
- */
 export abstract class BaseErrorStrategy implements ErrorStrategy {
   protected log = log;
 

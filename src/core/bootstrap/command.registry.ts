@@ -8,9 +8,7 @@ import { replyError } from '@shared/message/message.helper';
 const log = createLogger('CommandRegistry');
 
 export type CommandHandler = (interaction: BotInteraction, bot: Bot) => void | Promise<void>;
-/**
- * Central registry for slash commands and customId handlers.
- */
+
 class CommandRegistry {
   private commands = new Map<string, CommandHandler>();
   private customIdHandlers = new Map<string, CommandHandler>();

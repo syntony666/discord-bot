@@ -1,6 +1,3 @@
-/**
- * Error context structure
- */
 export interface ErrorContext {
   key: string;
   generic: string;
@@ -12,17 +9,10 @@ export interface ErrorContext {
   discordUnknownEmoji?: string;
 }
 
-/**
- * Helper function to create error context with key
- */
 function createContext(key: string, context: Omit<ErrorContext, 'key'>): ErrorContext {
   return { ...context, key };
 }
 
-/**
- * Centralized error message contexts for all commands.
- * Each context defines messages for specific error scenarios.
- */
 export const ErrorContexts: Record<string, ErrorContext> = {
   // ==================== Keyword Feature ====================
   keywordAdd: createContext('keywordAdd', {
@@ -106,7 +96,4 @@ export const ErrorContexts: Record<string, ErrorContext> = {
   }),
 };
 
-/**
- * Type-safe error context keys
- */
 export type ErrorContextKey = keyof typeof ErrorContexts;

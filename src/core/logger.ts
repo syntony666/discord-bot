@@ -33,18 +33,6 @@ export const logger = pino({
   },
 });
 
-/**
- * Create a child logger with a specific scope.
- * 
- * @param scope - The scope/context name for the logger (e.g., 'KeywordFeature', 'Bootstrap')
- * @returns A child logger instance with the specified scope
- * 
- * @example
- * ```typescript
- * const log = createLogger('MyFeature');
- * log.info({ guildId, userId }, 'Operation completed');
- * ```
- */
 export function createLogger(scope: string) {
   return logger.child({ scope });
 }

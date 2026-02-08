@@ -7,13 +7,9 @@ import { createLogger } from '@core/logger';
 import { handleError } from 'shared/error';
 import { userMention } from 'shared/utils/discord.utils';
 import { createDeleteConfirmation } from '../internal/confirmations';
-import type { DeleteData } from '../keyword.types';
 
 const log = createLogger('KeywordCommand');
 
-/**
- * Handle /keyword delete
- */
 export async function handleDeleteKeyword(
   bot: Bot,
   interaction: BotInteraction,

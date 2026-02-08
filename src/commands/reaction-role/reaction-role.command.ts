@@ -4,21 +4,15 @@ import { ReactionRoleService } from '@features/reaction-role/reaction-role.servi
 import { BotInteraction } from '@core/rx/bus';
 import type { InteractionDataOption } from '@discordeno/bot';
 
-// Import panel subcommands
 import { handlePanelCreate } from './subcommands/panel-create';
 import { handlePanelEdit } from './subcommands/panel-edit';
 import { handlePanelDelete } from './subcommands/panel-delete';
 import { handlePanelList } from './subcommands/panel-list';
 
-// Import role subcommands
 import { handleAdd } from './subcommands/role-add';
 import { handleRemove } from './subcommands/role-remove';
 import { handleList } from './subcommands/role-list';
 
-/**
- * Setup reaction-role command handler.
- * Routes to panel or role handlers based on subcommand.
- */
 export function setupReactionRoleCommand(module: ReactionRoleModule, service: ReactionRoleService) {
   return async (interaction: BotInteraction, bot: Bot) => {
     const guildId = interaction.guildId?.toString();

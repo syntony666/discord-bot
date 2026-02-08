@@ -4,10 +4,6 @@ import { ConfirmationManager } from './confirmation.manager';
 import { ConfirmationConfig, ConfirmationHandler } from './confirmation.types';
 import { _setConfirmationStrategy } from './confirmation.helper';
 
-/**
- * Strategy for handling confirmation button interactions.
- * Wraps ConfirmationManager and provides a consistent interface.
- */
 export class ConfirmationStrategy {
   private manager: ConfirmationManager;
 

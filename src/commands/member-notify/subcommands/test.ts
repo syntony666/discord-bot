@@ -9,9 +9,6 @@ import { testMessageTemplate } from '../internal/operations';
 
 const log = createLogger('MemberNotifyCommand');
 
-/**
- * Handle /member-notify test
- */
 export async function handleTest(
   bot: Bot,
   interaction: BotInteraction,

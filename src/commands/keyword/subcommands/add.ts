@@ -8,13 +8,9 @@ import { createLogger } from '@core/logger';
 import { handleError } from 'shared/error';
 import { userMention } from 'shared/utils/discord.utils';
 import { createOverwriteConfirmation } from '../internal/confirmations';
-import type { OverwriteData } from '../keyword.types';
 
 const log = createLogger('KeywordCommand');
 
-/**
- * Handle /keyword add
- */
 export async function handleAddKeyword(
   bot: Bot,
   interaction: BotInteraction,

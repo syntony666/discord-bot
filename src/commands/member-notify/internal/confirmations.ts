@@ -7,9 +7,6 @@ import { channelMention } from 'shared/utils/discord.utils';
 import type { MemberNotifyDisableData, MessageTemplateData, ToggleData } from '../member-notify.types';
 import { getNotificationTypeName, getNotificationTypeEmoji } from '../member-notify.helpers';
 
-/**
- * Default cancel handler for confirmations
- */
 async function defaultCancelHandler(
   bot: Bot,
   interaction: BotInteraction,
@@ -22,9 +19,6 @@ async function defaultCancelHandler(
   });
 }
 
-/**
- * Create disable confirmation dialog
- */
 export async function createDisableConfirmation(
   bot: Bot,
   interaction: BotInteraction,

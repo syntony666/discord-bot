@@ -12,10 +12,6 @@ export interface GuildFeature extends Feature {
   module: GuildModule;
 }
 
-/**
- * Setup guild lifecycle management feature.
- * Handles guild creation and deletion events.
- */
 export function setupGuildFeature(prisma: PrismaClient, bot: Bot): GuildFeature {
   const module = createGuildModule(prisma);
   const subscriptions: Subscription[] = [];

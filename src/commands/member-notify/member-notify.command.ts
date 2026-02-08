@@ -4,7 +4,6 @@ import { GuildModule } from '@features/guild/guild.module';
 import { MemberNotifyService } from '@features/member-notify/member-notify.service';
 import { BotInteraction } from '@core/rx/bus';
 
-// Import subcommand handlers
 import { handleEnable } from './subcommands/enable';
 import { handleStatus } from './subcommands/status';
 import { handleDisable } from './subcommands/disable';
@@ -12,10 +11,6 @@ import { handleTest } from './subcommands/test';
 import { handleMessage } from './subcommands/message';
 import { handleToggle } from './subcommands/toggle';
 
-/**
- * Enable member-notify command handler.
- * Supports subcommands: enable, disable, status, test, message, toggle.
- */
 export function setupMemberNotifyCommand(
   module: MemberNotifyModule,
   guildModule: GuildModule,

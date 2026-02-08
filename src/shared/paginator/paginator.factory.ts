@@ -6,13 +6,7 @@ import { PaginatorType } from './paginator.types';
 import type { PaginatorOptions } from './paginator.types';
 import type { Renderer } from './renderer/renderer.interface';
 
-/**
- * Paginator factory
- */
 export class PaginatorFactory {
-  /**
-   * Create paginator strategy
-   */
   static createStrategy<T>(options: PaginatorOptions<T>): PaginatorStrategy<T> {
     const renderer = this.createRenderer(options);
     const pageSize = this.getPageSize(options);
@@ -27,9 +21,6 @@ export class PaginatorFactory {
     });
   }
 
-  /**
-   * Create renderer
-   */
   private static createRenderer<T>(options: PaginatorOptions<T>): Renderer<T> {
     switch (options.type) {
       case PaginatorType.TEXT_LIST:
@@ -56,9 +47,6 @@ export class PaginatorFactory {
     }
   }
 
-  /**
-   * Get page size
-   */
   private static getPageSize<T>(options: PaginatorOptions<T>): number {
     if (options.type === PaginatorType.IMAGE_LIST) {
       return options.pageSize ?? 1;

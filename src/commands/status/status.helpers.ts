@@ -1,6 +1,3 @@
-/**
- * Format uptime duration
- */
 export function formatUptime(startTime: Date): string {
   const now = new Date();
   const uptime = now.getTime() - startTime.getTime();
@@ -18,9 +15,6 @@ export function formatUptime(startTime: Date): string {
   return parts.join(' ') || '0秒';
 }
 
-/**
- * Format memory usage
- */
 export function formatMemoryUsage(bytes: number): string {
   const units = ['B', 'KB', 'MB', 'GB'];
   let size = bytes;
@@ -34,9 +28,6 @@ export function formatMemoryUsage(bytes: number): string {
   return `${size.toFixed(2)} ${units[unitIndex]}`;
 }
 
-/**
- * Get bot status color based on uptime
- */
 export function getStatusColor(uptimeMs: number): string {
   if (uptimeMs < 60000) return '🟢'; // < 1 minute
   if (uptimeMs < 300000) return '🟡'; // < 5 minutes

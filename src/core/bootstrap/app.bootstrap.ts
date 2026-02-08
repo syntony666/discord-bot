@@ -23,10 +23,6 @@ import { createSchedulerService } from '@core/scheduler';
 
 const log = createLogger('Bootstrap');
 
-/**
- * Bootstrap application.
- * Initializes features in dependency order: Guild → Other Features
- */
 export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaClient) {
   log.info('Bootstrapping application...');
 

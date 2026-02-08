@@ -3,9 +3,6 @@ import { BotInteraction } from '@core/rx/bus';
 import { BaseConfirmationState } from './confirmation.state';
 import { StoredConfirmation } from '../confirmation.types';
 
-/**
- * Pending state - confirmation is waiting for user action
- */
 export class PendingState extends BaseConfirmationState {
   enter(confirmation: StoredConfirmation): void {
     // No special action when entering pending state

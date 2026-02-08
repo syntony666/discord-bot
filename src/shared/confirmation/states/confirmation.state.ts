@@ -5,33 +5,11 @@ import { StoredConfirmation } from '../confirmation.types';
 
 const log = createLogger('ConfirmationState');
 
-/**
- * Base interface for confirmation states
- */
 export interface ConfirmationState {
-  /**
-   * Called when entering this state
-   */
   enter(confirmation: StoredConfirmation): void;
-
-  /**
-   * Called when confirmation expires
-   */
   expire(confirmation: StoredConfirmation): void;
-
-  /**
-   * Called when user confirms
-   */
   confirm(confirmation: StoredConfirmation, bot: Bot, interaction: BotInteraction): Promise<void>;
-
-  /**
-   * Called when user cancels
-   */
   cancel(confirmation: StoredConfirmation, bot: Bot, interaction: BotInteraction): Promise<void>;
-
-  /**
-   * Called when unauthorized user tries to interact
-   */
   unauthorized(
     confirmation: StoredConfirmation,
     bot: Bot,
@@ -39,9 +17,6 @@ export interface ConfirmationState {
   ): Promise<void>;
 }
 
-/**
- * Base class for confirmation states with common functionality
- */
 export abstract class BaseConfirmationState implements ConfirmationState {
   protected log = log;
 

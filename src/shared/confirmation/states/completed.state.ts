@@ -3,9 +3,6 @@ import { BotInteraction } from '@core/rx/bus';
 import { BaseConfirmationState } from './confirmation.state';
 import { StoredConfirmation } from '../confirmation.types';
 
-/**
- * Completed state - confirmation has been processed (confirmed or cancelled)
- */
 export class CompletedState extends BaseConfirmationState {
   enter(confirmation: StoredConfirmation): void {
     // No action needed when entering completed state

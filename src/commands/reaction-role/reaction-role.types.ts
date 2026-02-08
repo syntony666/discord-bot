@@ -1,20 +1,18 @@
 import type { ReactionRole, ReactionRolePanel } from '@prisma-client/client';
 import type { InteractionDataOption } from '@discordeno/bot';
+import type { Bot } from '@discordeno/bot';
+import type { BotInteraction } from '@core/rx/bus';
+import type { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
+import type { ReactionRoleService } from '@features/reaction-role/reaction-role.service';
 
-/**
- * Panel mode types
- */
 export type PanelMode = 'NORMAL' | 'UNIQUE' | 'VERIFY';
 
-/**
- * Command execution context
- */
 export interface CommandContext {
-  bot: any;
-  interaction: any;
+  bot: Bot;
+  interaction: BotInteraction;
   guildId: string;
-  module: any;
-  service?: any;
+  module: ReactionRoleModule;
+  service?: ReactionRoleService;
   subCommand: InteractionDataOption;
 }
 

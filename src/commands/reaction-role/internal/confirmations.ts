@@ -26,9 +26,6 @@ export interface ConfirmationOptions<T> {
   onCancel?: (bot: Bot, interaction: BotInteraction, data: T) => Promise<void>;
 }
 
-/**
- * Default cancel handler for confirmations
- */
 async function defaultCancelHandler(
   bot: Bot,
   interaction: BotInteraction,
@@ -41,9 +38,6 @@ async function defaultCancelHandler(
   });
 }
 
-/**
- * Create standardized confirmation dialog
- */
 export async function createStandardConfirmation<T>(
   bot: Bot,
   confirmationType: string,

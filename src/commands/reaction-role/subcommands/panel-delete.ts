@@ -15,9 +15,6 @@ import { createStandardConfirmation } from '../internal/confirmations';
 
 const log = createLogger('ReactionRolePanel');
 
-/**
- * Handle /reaction-role panel delete
- */
 export async function handlePanelDelete(
   bot: Bot,
   interaction: BotInteraction,

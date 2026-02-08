@@ -9,9 +9,6 @@ import { handleError } from 'shared/error';
 
 const log = createLogger('KeywordCommand');
 
-/**
- * Handle /keyword edit
- */
 export async function handleEditKeyword(
   bot: Bot,
   interaction: BotInteraction,

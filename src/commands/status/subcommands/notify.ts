@@ -38,7 +38,6 @@ export async function handleNotifyStatus(
       streamWatchers,
       keywordRules,
       reactionRolePanels,
-      reactionRoles,
     ] = await Promise.all([
       lastValueFrom(
         modules.memberNotify.getNotificationChannel$(guildId, NotificationType.MEMBER_JOIN),
@@ -53,12 +52,12 @@ export async function handleNotifyStatus(
       lastValueFrom(modules.streamNotify.getWatchers$(guildId), { defaultValue: [] }),
       lastValueFrom(modules.keyword.getRulesForList$(guildId), { defaultValue: [] }),
       lastValueFrom(modules.reactionRole.getPanelsByGuild$(guildId), { defaultValue: [] }),
-      lastValueFrom(from([]), { defaultValue: [] }), // 暫時使用空陣列，因為沒有 getRolesByGuild 方法
+      // lastValueFrom(modules.reactionRole.getRolesByGuild$(guildId), { defaultValue: [] }),
     ]);
 
     const statusItems = [];
 
-    // 成員進出通知
+    // Member join/leave notifications
     if (joinChannel || leaveChannel) {
       statusItems.push('👥 **成員進出通知**');
       statusItems.push(
@@ -75,7 +74,7 @@ export async function handleNotifyStatus(
       statusItems.push('');
     }
 
-    // 直播通知
+    // Stream notifications
     if (streamNotifyConfig || streamWatchers.length > 0) {
       const liveWatchers = streamWatchers.filter((w) => w.isLive).length;
 
@@ -95,7 +94,7 @@ export async function handleNotifyStatus(
       statusItems.push('');
     }
 
-    // 關鍵字回覆
+    // Keyword replies
     if (keywordRules.length > 0) {
       statusItems.push('🔤 **關鍵字回覆**');
       statusItems.push(`   規則數量: ${keywordRules.length} 個`);
@@ -108,12 +107,12 @@ export async function handleNotifyStatus(
       statusItems.push('');
     }
 
-    // 反應身分組
+    // Reaction roles
     if (reactionRolePanels.length > 0) {
       statusItems.push('🎭 **反應身分組**');
       statusItems.push(`   Panel 數量: ${reactionRolePanels.length} 個`);
 
-      // 簡化統計，不計算身分組數量
+      // Simplified statistics, do not count role groups
       const modeCounts = reactionRolePanels.reduce(
         (acc, panel) => {
           acc[panel.mode] = (acc[panel.mode] || 0) + 1;
@@ -128,7 +127,7 @@ export async function handleNotifyStatus(
       statusItems.push('');
     }
 
-    // 如果沒有任何通知設定
+    // If no notification settings
     if (statusItems.length === 0) {
       statusItems.push('📭 **目前沒有啟用任何通知功能**');
     }

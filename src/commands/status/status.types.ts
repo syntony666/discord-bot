@@ -1,12 +1,12 @@
 import type { InteractionDataOption } from '@discordeno/bot';
+import type { Bot } from '@discordeno/bot';
+import type { BotInteraction } from '@core/rx/bus';
+import type { StatusCommandModules } from './status.command';
 
-/**
- * Command execution context
- */
 export interface CommandContext {
-  bot: any;
-  interaction: any;
+  bot: Bot;
+  interaction: BotInteraction;
   guildId: string;
-  module: any;
+  module: StatusCommandModules;
   subCommand: InteractionDataOption;
 }

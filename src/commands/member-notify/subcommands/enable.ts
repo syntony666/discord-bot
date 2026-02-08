@@ -10,9 +10,6 @@ import { setupMemberNotifications } from '../internal/operations';
 
 const log = createLogger('MemberNotifyCommand');
 
-/**
- * Handle /member-notify enable
- */
 export async function handleEnable(
   bot: Bot,
   interaction: BotInteraction,

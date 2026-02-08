@@ -7,9 +7,6 @@ export interface MessageVariables {
   memberCount: number;
 }
 
-/**
- * Business logic for member notification formatting and validation.
- */
 export interface MemberNotifyService {
   formatMessage(template: string, vars: MessageVariables): string;
   shouldSendJoin(channel: NotificationChannel | null): boolean;
@@ -18,10 +15,6 @@ export interface MemberNotifyService {
 
 export function createMemberNotifyService(): MemberNotifyService {
   return {
-    /**
-     * Replace template variables with actual values.
-     * Supports: {user}, {username}, {server}, {memberCount}
-     */
     formatMessage(template: string, vars: MessageVariables): string {
       return template
         .replace(/\{user\}/g, vars.user)
@@ -30,18 +23,10 @@ export function createMemberNotifyService(): MemberNotifyService {
         .replace(/\{memberCount\}/g, vars.memberCount.toString());
     },
 
-    /**
-     * Check if join notifications should be sent.
-     * Requires: channel exists, enabled, and has channelId.
-     */
     shouldSendJoin(channel: NotificationChannel | null): boolean {
       return Boolean(channel?.enabled && channel?.channelId);
     },
 
-    /**
-     * Check if leave notifications should be sent.
-     * Requires: channel exists, enabled, and has channelId.
-     */
     shouldSendLeave(channel: NotificationChannel | null): boolean {
       return Boolean(channel?.enabled && channel?.channelId);
     },

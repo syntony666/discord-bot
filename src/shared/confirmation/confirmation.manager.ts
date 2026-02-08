@@ -11,10 +11,6 @@ import { CompletedState } from './states/completed.state';
 
 const log = createLogger('ConfirmationManager');
 
-/**
- * Manages confirmation workflows with button interactions using State Pattern.
- * Handles storage, expiration, and user authorization checks.
- */
 export class ConfirmationManager {
   private confirmations = new Map<string, StoredConfirmation>();
   private states = new Map<string, any>(); // Store current state for each confirmation
@@ -24,11 +20,6 @@ export class ConfirmationManager {
     this.startCleanupInterval();
   }
 
-  /**
-   * Create a confirmation request and send it to the user.
-   *
-   * @returns Unique confirmation ID for tracking
-   */
   async createConfirmation<TData = any>(
     bot: Bot,
     interaction: BotInteraction,
@@ -100,10 +91,6 @@ export class ConfirmationManager {
     return confirmationId;
   }
 
-  /**
-   * Handle button interaction for confirmations using State Pattern.
-   * Validates expiration and user authorization before delegating to state.
-   */
   async handle(bot: Bot, interaction: BotInteraction): Promise<void> {
     const customId = interaction.data?.customId || '';
     const match = customId.match(/^confirm:(.+):(confirm|cancel)$/);
@@ -159,10 +146,6 @@ export class ConfirmationManager {
     this.states.delete(confirmationId);
   }
 
-  /**
-   * Clean up expired confirmations.
-   * Called automatically every 30 seconds.
-   */
   cleanup(): void {
     const now = Date.now();
     let cleanedCount = 0;

@@ -17,14 +17,10 @@ export interface KeywordFeature extends Feature {
   service: KeywordService;
 }
 
-/**
- * Setup keyword auto-reply feature.
- * Uses filter to ignore bot messages, then mergeMap for parallel processing.
- */
 export function setupKeywordFeature(
   prisma: PrismaClient,
   bot: Bot,
-  guildModule: GuildModule // ← 加入參數
+  guildModule: GuildModule
 ): KeywordFeature {
   const module = createKeywordModule(prisma);
   const service = createKeywordService(module);

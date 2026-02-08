@@ -7,9 +7,6 @@ const log = createLogger('StatusOperations');
 // Global start time for the bot
 const botStartTime = new Date();
 
-/**
- * Get bot status information
- */
 export async function getBotStatus(bot: Bot): Promise<{
   uptime: number;
   startTime: Date;
@@ -43,9 +40,6 @@ export async function getBotStatus(bot: Bot): Promise<{
   }
 }
 
-/**
- * Get guild information
- */
 export async function getGuildInfo(bot: Bot, guildId: string): Promise<BotGuild | null> {
   try {
     const guild = await bot.helpers.getGuild(BigInt(guildId));

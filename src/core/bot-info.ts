@@ -8,10 +8,6 @@ interface VersionInfo {
 
 let cachedVersion: VersionInfo | null = null;
 
-/**
- * Get bot version and dependency versions from package.json.
- * Caches result for performance.
- */
 export function getBotVersion(): VersionInfo {
   if (cachedVersion) return cachedVersion;
 
@@ -35,9 +31,6 @@ export function getBotVersion(): VersionInfo {
   }
 }
 
-/**
- * Get uptime in human-readable format (e.g., "2d 3h 45m").
- */
 export function getUptime(): string {
   const uptime = process.uptime();
   const days = Math.floor(uptime / 86400);

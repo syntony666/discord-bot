@@ -5,14 +5,6 @@ export interface ParsedEmoji {
   formatted: string;
 }
 
-/**
- * Parse emoji string into structured format.
- * Handles multiple input formats:
- * - Custom emoji: <:name:id> or <a:name:id>
- * - Custom emoji shortcode: :name:
- * - Already formatted: name:id
- * - Unicode emoji: 🥛
- */
 export function parseEmoji(input: string): ParsedEmoji {
   const trimmed = input.trim();
 
@@ -77,17 +69,11 @@ export function parseEmoji(input: string): ParsedEmoji {
   };
 }
 
-/**
- * Normalize emoji for database storage and Discord reactions.
- */
 export function normalizeEmojiForStorage(input: string): string {
   const parsed = parseEmoji(input);
   return parsed.formatted;
 }
 
-/**
- * Normalize emoji from Discord reaction event.
- */
 export function normalizeEmojiFromReaction(emoji: { id?: bigint; name?: string }): string {
   if (emoji.id) {
     return `${emoji.name || 'emoji'}:${emoji.id.toString()}`;
@@ -95,16 +81,10 @@ export function normalizeEmojiFromReaction(emoji: { id?: bigint; name?: string }
   return emoji.name || '';
 }
 
-/**
- * Format emoji for adding reaction to message.
- */
 export function formatEmojiForReaction(stored: string): string {
   return stored;
 }
 
-/**
- * Format emoji for display in embeds.
- */
 export function formatEmojiForDisplay(stored: string): string {
   // Check if it's custom emoji format (name:id)
   const customMatch = stored.match(/^(\w+):(\d+)$/);

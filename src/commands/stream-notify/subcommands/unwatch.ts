@@ -32,11 +32,7 @@ export async function handleStreamNotifyUnwatch(
     }
 
     await lastValueFrom(
-      module.removeWatcher$(
-        guildId,
-        platform.toUpperCase() as StreamPlatform,
-        id
-      ) as Observable<StreamWatcher>
+      module.removeWatcher$(guildId, platform.toUpperCase() as StreamPlatform, id)
     );
 
     await replySuccess(ctx.bot, ctx.interaction, {

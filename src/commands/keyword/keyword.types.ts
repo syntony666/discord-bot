@@ -1,20 +1,17 @@
 import type { InteractionDataOption } from '@discordeno/bot';
 import type { KeywordRule, KeywordMatchType } from '@prisma-client/client';
+import type { Bot } from '@discordeno/bot';
+import type { BotInteraction } from '@core/rx/bus';
+import type { KeywordModule } from '@features/keyword/keyword.module';
 
-/**
- * Command execution context
- */
 export interface CommandContext {
-  bot: any;
-  interaction: any;
+  bot: Bot;
+  interaction: BotInteraction;
   guildId: string;
-  module: any;
+  module: KeywordModule;
   subCommand: InteractionDataOption;
 }
 
-/**
- * Data structure for keyword overwrite confirmation
- */
 export interface OverwriteData {
   guildId: string;
   pattern: string;
@@ -24,9 +21,6 @@ export interface OverwriteData {
   existingRule: KeywordRule;
 }
 
-/**
- * Data structure for keyword delete confirmation
- */
 export interface DeleteData {
   guildId: string;
   pattern: string;

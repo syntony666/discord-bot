@@ -1,6 +1,3 @@
-/**
- * Format match type for display
- */
 export function formatMatchType(matchType: string): string {
   switch (matchType) {
     case 'EXACT':
@@ -12,9 +9,6 @@ export function formatMatchType(matchType: string): string {
   }
 }
 
-/**
- * Validate keyword pattern
- */
 export function validateKeywordPattern(pattern: string): { valid: boolean; error?: string } {
   if (!pattern || pattern.trim().length === 0) {
     return { valid: false, error: '關鍵字不能為空' };
@@ -31,9 +25,6 @@ export function validateKeywordPattern(pattern: string): { valid: boolean; error
   return { valid: true };
 }
 
-/**
- * Validate response text
- */
 export function validateResponseText(response: string): { valid: boolean; error?: string } {
   if (!response || response.trim().length === 0) {
     return { valid: false, error: '回覆內容不能為空' };

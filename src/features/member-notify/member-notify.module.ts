@@ -20,11 +20,6 @@ export interface UpdateMessageInput {
   message: string;
 }
 
-/**
- * Data access layer for member notifications.
- * Uses NotificationChannel + MemberNotifyMessage schema.
- * All methods return Observables wrapping Prisma operations.
- */
 export interface MemberNotifyModule {
   // ========== NotificationChannel Operations ==========
 

@@ -15,35 +15,16 @@ import {
 
 const log = createLogger('DiscordErrorHandler');
 
-/**
- * Log levels based on error type
- */
 type LogLevel = 'warn' | 'error';
 
-/**
- * Result of error handling
- */
 export interface ErrorHandlingResult {
-  /** Whether the error was handled */
   handled: boolean;
-
-  /** User-friendly error message */
   userMessage?: string;
-
-  /** Log level to use */
   logLevel: LogLevel;
-
-  /** Whether the operation should be retried */
   shouldRetry: boolean;
 }
 
-/**
- * Unified Discord error handler
- */
 export class DiscordErrorHandler {
-  /**
-   * Handle Discord API errors and determine appropriate actions
-   */
   static handle(error: unknown, context: ErrorContext): ErrorHandlingResult {
     const errorCode = this.extractErrorCode(error);
     const errorContext = {

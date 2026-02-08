@@ -10,9 +10,6 @@ import { formatEmojiForDisplay } from '@features/reaction-role/internal/emoji.he
 
 const log = createLogger('ReactionRoleRole');
 
-/**
- * Handle /reaction-role list
- */
 export async function handleList(
   bot: Bot,
   interaction: BotInteraction,

@@ -3,10 +3,6 @@ import type { MessageStrategy, NotificationStrategyOptions } from '../message.ty
 
 const log = createLogger('NotificationStrategy');
 
-/**
- * Strategy for sending rich notifications to a channel.
- * Used for non-interaction messages (e.g. stream alerts).
- */
 export class NotificationStrategy implements MessageStrategy {
   constructor(private readonly options: NotificationStrategyOptions) {}
 

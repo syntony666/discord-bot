@@ -30,10 +30,6 @@ export interface KeywordModule {
 
 export function createKeywordModule(prisma: PrismaClient): KeywordModule {
   return {
-    /**
-     * Get active rules for runtime matching (optimized, no timestamps/editorId).
-     * Used by: keyword.service (messageCreate event handler)
-     */
     getRulesByGuild$(guildId: string): Observable<KeywordRuntime[]> {
       return from(
         prisma.keywordRule.findMany({
@@ -44,10 +40,6 @@ export function createKeywordModule(prisma: PrismaClient): KeywordModule {
       );
     },
 
-    /**
-     * Get rules for list display (full model with editorId).
-     * Used by: /keyword list command
-     */
     getRulesForList$(guildId: string): Observable<KeywordRule[]> {
       return from(
         prisma.keywordRule.findMany({

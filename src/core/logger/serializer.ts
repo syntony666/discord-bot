@@ -1,7 +1,3 @@
-/**
- * Recursively convert BigInt values to strings in an object.
- * This is necessary because JSON.stringify cannot handle BigInt.
- */
 export function serializeBigInt(obj: any): any {
   if (obj === null || obj === undefined) {
     return obj;
@@ -37,9 +33,6 @@ export function serializeBigInt(obj: any): any {
   return obj;
 }
 
-/**
- * Pino-compatible serializer for handling BigInt in log objects
- */
 export function createBigIntSerializer() {
   return (value: any) => {
     return serializeBigInt(value);

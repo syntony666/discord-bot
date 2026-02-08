@@ -1,6 +1,3 @@
-/**
- * Format message template with variables
- */
 export function formatMessageTemplate(template: string, variables: Record<string, string>): string {
   let result = template;
 
@@ -11,9 +8,6 @@ export function formatMessageTemplate(template: string, variables: Record<string
   return result;
 }
 
-/**
- * Validate message template
- */
 export function validateMessageTemplate(template: string): { valid: boolean; error?: string } {
   if (!template || template.trim().length === 0) {
     return { valid: false, error: '訊息模板不能為空' };
@@ -26,9 +20,6 @@ export function validateMessageTemplate(template: string): { valid: boolean; err
   return { valid: true };
 }
 
-/**
- * Get default message templates
- */
 export function getDefaultTemplates(): { join: string; leave: string } {
   return {
     join: '📥 {user} 加入了 {server}！目前共 {memberCount} 位成員',
@@ -36,16 +27,10 @@ export function getDefaultTemplates(): { join: string; leave: string } {
   };
 }
 
-/**
- * Get notification type display name
- */
 export function getNotificationTypeName(type: 'join' | 'leave'): string {
   return type === 'join' ? '加入通知' : '離開通知';
 }
 
-/**
- * Get notification type emoji
- */
 export function getNotificationTypeEmoji(enabled: boolean): string {
   return enabled ? '✅' : '❌';
 }

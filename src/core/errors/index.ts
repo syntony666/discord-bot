@@ -1,7 +1,3 @@
-/**
- * Core error handling exports
- */
-
 export { DiscordErrorHandler } from './discord-error.handler';
 export {
   DiscordApiErrorCodes,

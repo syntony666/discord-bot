@@ -11,9 +11,6 @@ import type { PanelMode } from '../reaction-role.types';
 
 const log = createLogger('ReactionRolePanel');
 
-/**
- * Handle /reaction-role panel list
- */
 export async function handlePanelList(
   bot: Bot,
   interaction: BotInteraction,

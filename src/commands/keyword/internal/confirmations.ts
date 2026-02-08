@@ -5,9 +5,6 @@ import { replySuccess, replyWarning, replyInfo } from 'shared/message/message.he
 import { ButtonStyles, Timeouts } from '@core/config/constants';
 import type { OverwriteData, DeleteData } from '../keyword.types';
 
-/**
- * Default cancel handler for confirmations
- */
 async function defaultCancelHandler(
   bot: Bot,
   interaction: BotInteraction,
@@ -20,9 +17,6 @@ async function defaultCancelHandler(
   });
 }
 
-/**
- * Create overwrite confirmation dialog
- */
 export async function createOverwriteConfirmation(
   bot: Bot,
   interaction: BotInteraction,
@@ -68,9 +62,6 @@ export async function createOverwriteConfirmation(
   );
 }
 
-/**
- * Create delete confirmation dialog
- */
 export async function createDeleteConfirmation(
   bot: Bot,
   interaction: BotInteraction,

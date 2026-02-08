@@ -2,9 +2,6 @@ import { appConfig, CommandColors } from '@core/config';
 import type { PageRenderResult } from '../paginator.types';
 import type { Renderer } from './renderer.interface';
 
-/**
- * Configuration for the image list renderer.
- */
 export interface ImageListRendererConfig<T> {
   title: string | ((pageIndex: number, totalPages: number) => string);
   mapItem: (item: T) => { url: string; description?: string };
@@ -12,9 +9,6 @@ export interface ImageListRendererConfig<T> {
   username?: string;
 }
 
-/**
- * Renders a list of items into a single image page (embed description).
- */
 export class ImageListRenderer<T> implements Renderer<T> {
   constructor(private readonly config: ImageListRendererConfig<T>) {}
 

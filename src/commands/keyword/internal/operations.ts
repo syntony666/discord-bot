@@ -4,9 +4,6 @@ import type { KeywordRule } from '@prisma-client/client';
 
 const log = createLogger('KeywordOperations');
 
-/**
- * Create keyword rule with error handling
- */
 export async function createKeywordRule(
   bot: Bot,
   module: any,
@@ -31,9 +28,6 @@ export async function createKeywordRule(
   }
 }
 
-/**
- * Update keyword rule with error handling
- */
 export async function updateKeywordRule(
   bot: Bot,
   module: any,
@@ -57,9 +51,6 @@ export async function updateKeywordRule(
   }
 }
 
-/**
- * Delete keyword rule with error handling
- */
 export async function deleteKeywordRule(
   bot: Bot,
   module: any,

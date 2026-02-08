@@ -3,9 +3,6 @@ import { BotInteraction } from '@core/rx/bus';
 import { BaseConfirmationState } from './confirmation.state';
 import { StoredConfirmation } from '../confirmation.types';
 
-/**
- * Expired state - confirmation has expired
- */
 export class ExpiredState extends BaseConfirmationState {
   enter(confirmation: StoredConfirmation): void {
     // No action needed when entering expired state

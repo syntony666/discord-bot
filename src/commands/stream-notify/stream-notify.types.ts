@@ -1,11 +1,14 @@
 import type { InteractionDataOption } from '@discordeno/bot';
+import type { Bot } from '@discordeno/bot';
+import type { BotInteraction } from '@core/rx/bus';
+import type { StreamNotifyModule } from '@features/stream-notify/stream-notify.module';
 import { StreamPlatform } from '@prisma-client/client';
 
 export interface StreamNotifyCommandContext {
-  bot: any;
-  interaction: any;
+  bot: Bot;
+  interaction: BotInteraction;
   guildId: string;
-  module: any;
+  module: StreamNotifyModule;
   subCommand: InteractionDataOption;
 }
 

@@ -10,9 +10,6 @@ import { getMemberNotificationStatus } from '../internal/operations';
 
 const log = createLogger('MemberNotifyCommand');
 
-/**
- * Handle /member-notify status
- */
 export async function handleStatus(
   bot: Bot,
   interaction: BotInteraction,

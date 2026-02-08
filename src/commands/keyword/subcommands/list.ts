@@ -9,9 +9,6 @@ import { userMention } from 'shared/utils/discord.utils';
 
 const log = createLogger('KeywordCommand');
 
-/**
- * Handle /keyword list
- */
 export async function handleListKeywords(
   bot: Bot,
   interaction: BotInteraction,

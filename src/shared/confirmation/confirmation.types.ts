@@ -11,9 +11,6 @@ export interface ConfirmationConfig<TData = any> {
   buttons?: ConfirmationButtons;
 }
 
-/**
- * Confirmation embed options extending DiscordEmbed.
- */
 export interface ConfirmationEmbed extends Omit<DiscordEmbed, 'type' | 'timestamp' | 'footer'> {
   title: string;
   description: string;

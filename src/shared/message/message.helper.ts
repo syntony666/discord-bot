@@ -5,12 +5,7 @@ import type { Bot, DiscordEmbed, MessageComponents } from '@discordeno/bot';
 import type { BotInteraction } from '@core/rx/bus';
 
 export { MessageType } from './message.types';
-export { PrismaErrorCode } from './reply/auto-error-reply.strategy';
 
-/**
- * Low-level entry point for all message sending.
- * Prefer using the convenience helpers below.
- */
 export async function sendMessage(options: MessageOptions): Promise<boolean> {
   const strategy = MessageFactory.createStrategy(options);
   return strategy.send();
@@ -18,9 +13,6 @@ export async function sendMessage(options: MessageOptions): Promise<boolean> {
 
 // ==================== Reply convenience functions ====================
 
-/**
- * Reply with a success-style embed.
- */
 export async function replySuccess(
   bot: Bot,
   interaction: BotInteraction,
@@ -38,9 +30,6 @@ export async function replySuccess(
   });
 }
 
-/**
- * Reply with an error-style embed.
- */
 export async function replyError(
   bot: Bot,
   interaction: BotInteraction,
@@ -58,9 +47,6 @@ export async function replyError(
   });
 }
 
-/**
- * Reply with an info-style embed.
- */
 export async function replyInfo(
   bot: Bot,
   interaction: BotInteraction,
@@ -78,9 +64,6 @@ export async function replyInfo(
   });
 }
 
-/**
- * Reply with a warning-style embed.
- */
 export async function replyWarning(
   bot: Bot,
   interaction: BotInteraction,
@@ -98,13 +81,10 @@ export async function replyWarning(
   });
 }
 
-/**
- * Reply with an automatically parsed error message.
- */
 export async function replyAutoError(
   bot: Bot,
   interaction: BotInteraction,
-  error: any,
+  error: Error | { code?: number | string; message?: string },
   customMessages?: {
     duplicate?: string;
     notFound?: string;
@@ -123,16 +103,10 @@ export async function replyAutoError(
 
 // ==================== Notification unified interface ====================
 
-/**
- * High-level options for channel notifications.
- */
 export interface NotifyOptions extends Omit<DiscordEmbed, 'type'> {
   type: 'stream_live' | 'member_join' | 'member_leave' | 'announcement' | 'custom';
 }
 
-/**
- * Send a notification to a channel using a semantic type.
- */
 export async function notify(
   bot: Bot,
   channelId: bigint,

@@ -3,13 +3,14 @@ import { PaginatorSessionRepository } from '../core/paginator.repository';
 import type { Renderer } from '../renderer/renderer.interface';
 import type { PageRenderResult, PaginatorSession } from '../paginator.types';
 import type { Bot } from '@discordeno/bot';
+import type { BotInteraction } from '@core/rx/bus';
 import { buildPaginatorResponse } from '../ui/paginator.ui';
 
 const log = createLogger('PaginatorStrategy');
 
 export interface PaginatorStrategyConfig<T> {
   bot: Bot;
-  interaction: any;
+  interaction: BotInteraction;
   items: T[];
   renderer: Renderer<T>;
   pageSize: number;
@@ -17,10 +18,6 @@ export interface PaginatorStrategyConfig<T> {
   ttlMs?: number;
 }
 
-/**
- * Orchestrates pagination: builds pages, stores session state,
- * and sends the initial interaction response.
- */
 export class PaginatorStrategy<T> {
   private readonly repository: PaginatorSessionRepository;
   private readonly ttlMs: number;
@@ -73,9 +70,6 @@ export class PaginatorStrategy<T> {
     }
   }
 
-  /**
-   * Build all pages up front using the provided renderer.
-   */
   private buildPages(items: T[], renderer: Renderer<T>, pageSize: number): PageRenderResult[] {
     const pages: PageRenderResult[] = [];
     const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
@@ -93,9 +87,6 @@ export class PaginatorStrategy<T> {
     return pages;
   }
 
-  /**
-   * Generate a short, human-unfriendly session id for button customIds.
-   */
   private generateSessionId(length = 5): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let id = '';

@@ -1,9 +1,9 @@
-import type { KeywordRuntime } from './keyword.select'; // ← 改用 KeywordRuntime
+import type { KeywordRuntime } from './keyword.select';
 import type { KeywordModule } from './keyword.module';
 import { Observable, of, map } from 'rxjs';
 
 export interface KeywordMatchResult {
-  rule: KeywordRuntime; // ← 改用 KeywordRuntime
+  rule: KeywordRuntime;
 }
 
 export interface KeywordService {
@@ -11,7 +11,6 @@ export interface KeywordService {
 }
 
 function applyMatch(rule: KeywordRuntime, content: string): boolean {
-  // ← 改用 KeywordRuntime
   const text = content.trim();
   const pattern = rule.pattern.trim();
 

@@ -9,21 +9,14 @@ import { replyError } from 'shared/message/message.helper';
 
 const log = createLogger('ErrorStrategyManager');
 
-/**
- * Error Strategy Manager that handles errors using the Strategy Pattern
- */
 export class ErrorStrategyManager {
   private strategies: ErrorStrategy[] = [];
 
   constructor() {
-    // Register strategies in order of priority
     this.strategies.push(new DiscordErrorStrategy());
     this.strategies.push(new FallbackErrorStrategy());
   }
 
-  /**
-   * Handle an error using the appropriate strategy
-   */
   async handleError(
     bot: Bot,
     interaction: BotInteraction,

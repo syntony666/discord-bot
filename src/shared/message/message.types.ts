@@ -1,10 +1,6 @@
 import type { Bot, DiscordEmbed, MessageComponents } from '@discordeno/bot';
 import type { BotInteraction } from '@core/rx/bus';
 
-/**
- * All supported message types.
- * Used to route to different strategies.
- */
 export enum MessageType {
   // Reply types (command responses)
   SUCCESS_REPLY = 'SUCCESS_REPLY',
@@ -21,16 +17,10 @@ export enum MessageType {
   CUSTOM_NOTIFICATION = 'CUSTOM_NOTIFICATION',
 }
 
-/**
- * Strategy interface implemented by all message handlers.
- */
 export interface MessageStrategy {
   send(): Promise<boolean>;
 }
 
-/**
- * Options for interaction replies (slash commands, buttons, etc.).
- */
 export interface ReplyOptions extends Omit<DiscordEmbed, 'type'> {
   type:
     | MessageType.SUCCESS_REPLY
@@ -44,14 +34,11 @@ export interface ReplyOptions extends Omit<DiscordEmbed, 'type'> {
   isEdit?: boolean;
 }
 
-/**
- * Options for automatic error reply handling.
- */
 export interface AutoErrorReplyOptions {
   type: MessageType.AUTO_ERROR_REPLY;
   bot: Bot;
   interaction: BotInteraction;
-  error: any;
+  error: Error | { code?: number | string; message?: string };
   customMessages?: {
     duplicate?: string;
     notFound?: string;
@@ -60,9 +47,6 @@ export interface AutoErrorReplyOptions {
   };
 }
 
-/**
- * Options for channel notifications (non-interaction messages).
- */
 export interface NotificationOptions extends Omit<DiscordEmbed, 'type'> {
   type:
     | MessageType.STREAM_LIVE_NOTIFICATION
@@ -74,9 +58,6 @@ export interface NotificationOptions extends Omit<DiscordEmbed, 'type'> {
   channelId: bigint;
 }
 
-/**
- * Discriminated union of all message options.
- */
 export type MessageOptions = ReplyOptions | AutoErrorReplyOptions | NotificationOptions;
 
 export interface ReplyStrategyOptions extends Omit<DiscordEmbed, 'type'> {

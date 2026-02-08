@@ -2,10 +2,7 @@ import { createSignal } from '@core/signals/signal';
 import type { PaginatorSession } from '../paginator.types';
 
 const [getSessions, setSessions] = createSignal<Map<string, PaginatorSession>>(new Map());
-/**
- * In-memory repository for paginator sessions.
- * Backed by a reactive signal so other parts can observe changes if needed.
- */
+
 export class PaginatorSessionRepository {
   get(id: string): PaginatorSession | undefined {
     return getSessions().get(id);

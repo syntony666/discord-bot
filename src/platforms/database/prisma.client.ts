@@ -14,7 +14,7 @@ export const prisma = new PrismaClient({
   ],
 });
 
-// 監聽 Prisma 警告和錯誤
+// Listen to Prisma warnings and errors
 prisma.$on('warn', (e) => {
   log.warn({ message: e.message, target: e.target }, 'Prisma warning');
 });

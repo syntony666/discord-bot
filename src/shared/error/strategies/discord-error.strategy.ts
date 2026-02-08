@@ -4,9 +4,6 @@ import { DiscordErrorCodes, DiscordErrorMessages } from '../discord-errors';
 import { BaseErrorStrategy } from './error.strategy';
 import { ErrorContext } from '../error-contexts';
 
-/**
- * Strategy for handling Discord API errors
- */
 export class DiscordErrorStrategy extends BaseErrorStrategy {
   canHandle(error: unknown): boolean {
     return (

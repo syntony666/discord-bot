@@ -4,11 +4,8 @@ import { replyAutoError } from 'shared/message/message.helper';
 import { BaseErrorStrategy } from './error.strategy';
 import { ErrorContext } from '../error-contexts';
 
-/**
- * Strategy for handling all other errors (Prisma, generic, etc.)
- */
 export class FallbackErrorStrategy extends BaseErrorStrategy {
-  canHandle(error: unknown): boolean {
+  canHandle(error: any): boolean {
     // This strategy handles everything that other strategies don't handle
     return true;
   }
@@ -16,7 +13,7 @@ export class FallbackErrorStrategy extends BaseErrorStrategy {
   async handle(
     bot: Bot,
     interaction: BotInteraction,
-    error: unknown,
+    error: any,
     context: ErrorContext
   ): Promise<void> {
     // Fallback to replyAutoError for Prisma and other errors

@@ -5,9 +5,6 @@ import { appConfig } from '@core/config';
 
 const log = createLogger('ReplyStrategy');
 
-/**
- * Strategy for sending interaction replies with a single embed.
- */
 export class ReplyStrategy implements MessageStrategy {
   constructor(private readonly options: ReplyStrategyOptions) {}
 

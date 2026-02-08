@@ -10,9 +10,6 @@ import { updateMessageTemplate } from '../internal/operations';
 
 const log = createLogger('MemberNotifyCommand');
 
-/**
- * Handle /member-notify message
- */
 export async function handleMessage(
   bot: Bot,
   interaction: BotInteraction,

@@ -21,9 +21,6 @@ function toEvent(action: 'prev' | 'page' | 'next'): PaginatorEvent {
   return { type: 'PAGE_CLICK' };
 }
 
-/**
- * Handle paginator button interactions (Prev / Next / Page label)
- */
 export class PaginatorButtonStrategy {
   private readonly repo = new PaginatorSessionRepository();
   private readonly ttlMs: number;
@@ -32,9 +29,6 @@ export class PaginatorButtonStrategy {
     this.ttlMs = ttlMs;
   }
 
-  /**
-   * Entry point for handling a paginator button interaction.
-   */
   async handle(bot: Bot, interaction: BotInteraction): Promise<void> {
     const customId: string | undefined = interaction.data?.customId;
     if (!customId) {
@@ -78,7 +72,7 @@ export class PaginatorButtonStrategy {
       return;
     }
 
-    // 處理跳頁按鈕
+    // Handle page jump button
     if (action === 'page') {
       await this.handlePageJump(bot, interaction, session, sessionId);
       return;
@@ -128,16 +122,6 @@ export class PaginatorButtonStrategy {
     }
   }
 
-  /**
-   * Handle page jump button click by displaying a modal for user input.
-   * Shows a modal dialog where users can enter the desired page number.
-   *
-   * @param bot - The Discord bot instance
-   * @param interaction - The button interaction that triggered the page jump
-   * @param session - The current paginator session containing page data
-   * @param sessionId - Unique identifier for the paginator session
-   * @returns Promise that resolves when the modal is displayed
-   */
   private async handlePageJump(
     bot: Bot,
     interaction: BotInteraction,
@@ -174,11 +158,6 @@ export class PaginatorButtonStrategy {
     }
   }
 
-  /**
-   * Handle modal submission for page jump.
-   * Validates the user input, updates the session to the specified page,
-   * and refreshes the paginator display.
-   */
   async handleModalSubmit(bot: Bot, interaction: BotInteraction): Promise<void> {
     const customId: string | undefined = interaction.data?.customId;
     if (!customId || !customId.startsWith('pg:') || !customId.endsWith(':jump')) {
@@ -236,9 +215,6 @@ export class PaginatorButtonStrategy {
     }
   }
 
-  /**
-   * Update the original message to indicate expiration and remove buttons.
-   */
   private async updateMessageAsExpired(bot: Bot, interaction: BotInteraction): Promise<void> {
     try {
       await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {

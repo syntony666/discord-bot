@@ -17,10 +17,6 @@ export interface MemberNotifyFeature extends Feature {
   service: MemberNotifyService;
 }
 
-/**
- * Setup member join/leave notification feature.
- * Uses NotificationChannel + MemberNotifyMessage schema.
- */
 export function setupMemberNotifyFeature(
   prisma: PrismaClient,
   bot: Bot,

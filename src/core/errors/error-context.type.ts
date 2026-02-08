@@ -1,29 +1,12 @@
-/**
- * Error context for structured logging and error handling
- */
 export interface ErrorContext {
-  /** Guild ID where the error occurred */
   guildId?: string;
-
-  /** User ID who triggered the operation */
   userId?: string;
-
-  /** Channel ID related to the error */
   channelId?: string;
-
-  /** Message ID related to the error */
   messageId?: string;
-
-  /** Operation identifier (e.g., 'keywordAdd', 'reactionRolePanelCreate') */
   operation: string;
-
-  /** Additional context fields */
   [key: string]: any;
 }
 
-/**
- * Extract error context from various error objects
- */
 export function extractErrorContext(error: unknown): Record<string, any> {
   if (!error || typeof error !== 'object') {
     return {};
