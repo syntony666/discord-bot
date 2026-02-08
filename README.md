@@ -26,10 +26,13 @@
 - **🔑 Keyword Auto-Reply** - Pattern-based message responses (exact/contains matching)
 - **🎭 Reaction Roles** - Role assignment via emoji reactions with multiple modes (Normal/Unique/Verify)
 - **👋 Member Notifications** - Customizable join/leave announcements with template variables
-- **📊 Status Commands** - Bot and guild information display
+- **� Stream Notifications** - Twitch/YouTube stream alerts with customizable channels
+- **� Status Commands** - Bot and guild information display
 - **📄 Generic Paginator** - Type-safe, reusable pagination system for any data type
+- **✅ Confirmation Dialogs** - Interactive confirmation prompts for destructive actions
 - **🔄 Hot-Reload** - Development mode with automatic restart on code changes
 - **📊 Structured Logging** - Production-ready logging with pino
+- **⏰ Scheduler Service** - Cron-based task scheduling for periodic operations
 
 **Built as a framework/template for creating scalable, maintainable Discord bots.**
 
@@ -61,6 +64,8 @@
 ```
 Discord Event → bot.events → RxJS Subject → Observable$ → Feature Subscriptions
 → Service Layer → Module Layer (Prisma) → Database → Response
+
+Scheduler Service → Cron Jobs → Feature Operations → Database Updates
 ```
 
 ### Layer Responsibilities
@@ -84,17 +89,38 @@ Discord Event → bot.events → RxJS Subject → Observable$ → Feature Subscr
 │   └── schema.prisma           # Database schema definition
 │
 src/
-├── core/                       # Framework-agnostic utilities
+├── core/
 │   ├── bootstrap/              # App initialization & DI
 │   │   ├── app.bootstrap.ts
 │   │   ├── command.registry.ts
 │   │   ├── feature.interface.ts
 │   │   └── feature.registry.ts
 │   ├── config/                 # Environment configuration
+│   │   ├── app.config.ts
+│   │   ├── colors.config.ts
+│   │   ├── discord.config.ts
+│   │   ├── index.ts
+│   │   └── constants/
+│   │       ├── button-styles.ts
+│   │       ├── custom-ids.ts
+│   │       ├── index.ts
+│   │       └── timeouts.ts
 │   ├── errors/                 # Custom error definitions
+│   │   ├── discord-error-codes.ts
+│   │   ├── discord-error.handler.ts
+│   │   ├── error-context.type.ts
+│   │   ├── error-types.ts
+│   │   └── index.ts
 │   ├── logger/                 # Logger configuration
+│   │   ├── index.ts
+│   │   └── serializer.ts
 │   ├── rx/
-│   │   └── bus.ts              # RxJS event bus
+│   │   ├── bus.ts              # RxJS event bus
+│   │   └── operators/
+│   │       └── handle-discord-error.ts
+│   ├── scheduler/              # Task scheduling
+│   │   ├── index.ts
+│   │   └── scheduler.service.ts
 │   ├── signals/
 │   │   └── signal.ts           # Simple state management
 │   ├── bot-info.ts
@@ -124,12 +150,24 @@ src/
 │   │   ├── reaction-role.feature.ts
 │   │   ├── reaction-role.module.ts
 │   │   ├── reaction-role.service.ts
-│   │   └── reaction-role.select.ts
-│   └── member-notify/
-│       ├── member-notify.feature.ts
-│       ├── member-notify.module.ts
-│       ├── member-notify.service.ts
-│       └── member-notify.select.ts
+│   │   ├── reaction-role.select.ts
+│   │   └── internal/
+│   │       └── emoji.helper.ts
+│   ├── member-notify/
+│   │   ├── member-notify.feature.ts
+│   │   ├── member-notify.module.ts
+│   │   ├── member-notify.service.ts
+│   │   └── member-notify.select.ts
+│   └── stream-notify/
+│       ├── stream-notify.feature.ts
+│       ├── stream-notify.module.ts
+│       ├── stream-notify.service.ts
+│       ├── stream-notify.select.ts
+│       ├── stream-notify.types.ts
+│       └── platforms/
+│           ├── platform.interface.ts
+│           ├── twitch.service.ts
+│           └── youtube.service.ts
 │
 ├── commands/                   # Discord command handlers
 │   ├── keyword/
@@ -137,22 +175,114 @@ src/
 │   │   ├── keyword.types.ts
 │   │   ├── keyword.helpers.ts
 │   │   ├── internal/
+│   │   │   ├── confirmations.ts
+│   │   │   └── operations.ts
 │   │   └── subcommands/
+│   │       ├── add.ts
+│   │       ├── delete.ts
+│   │       ├── edit.ts
+│   │       └── list.ts
 │   ├── reaction-role/
 │   │   ├── reaction-role.command.ts
 │   │   ├── reaction-role.types.ts
 │   │   ├── reaction-role.helpers.ts
 │   │   ├── internal/
+│   │   │   ├── confirmations.ts
+│   │   │   └── operations.ts
 │   │   └── subcommands/
+│   │       ├── panel-create.ts
+│   │       ├── panel-delete.ts
+│   │       ├── panel-edit.ts
+│   │       ├── panel-list.ts
+│   │       ├── role-add.ts
+│   │       ├── role-list.ts
+│   │       └── role-remove.ts
 │   ├── member-notify/
-│   └── status/
+│   │   ├── member-notify.command.ts
+│   │   ├── member-notify.types.ts
+│   │   ├── member-notify.helpers.ts
+│   │   ├── internal/
+│   │   │   ├── confirmations.ts
+│   │   │   └── operations.ts
+│   │   └── subcommands/
+│   │       ├── disable.ts
+│   │       ├── enable.ts
+│   │       ├── message.ts
+│   │       ├── status.ts
+│   │       ├── test.ts
+│   │       └── toggle.ts
+│   ├── status/
+│   │   ├── status.command.ts
+│   │   ├── status.types.ts
+│   │   ├── status.helpers.ts
+│   │   ├── internal/
+│   │   │   └── operations.ts
+│   │   └── subcommands/
+│   │       ├── bot.ts
+│   │       ├── guild.ts
+│   │       └── notify.ts
+│   └── stream-notify/
+│       ├── stream-notify.command.ts
+│       ├── stream-notify.types.ts
+│       ├── internal/
+│       │   └── operations.ts
+│       └── subcommands/
+│           ├── disable.ts
+│           ├── enable.ts
+│           ├── list.ts
+│           ├── unwatch.ts
+│           └── watch.ts
 │
 ├── shared/                     # Reusable components
 │   ├── confirmation/           # Confirmation dialogs
+│   │   ├── confirmation.helper.ts
+│   │   ├── confirmation.manager.ts
+│   │   ├── confirmation.strategy.ts
+│   │   ├── confirmation.types.ts
+│   │   └── states/
+│   │       ├── confirmation.state.ts
+│   │       ├── completed.state.ts
+│   │       ├── expired.state.ts
+│   │       └── pending.state.ts
 │   ├── error/                  # Error handling
+│   │   ├── discord-errors.ts
+│   │   ├── error-contexts.ts
+│   │   ├── error-handler.ts
+│   │   ├── error-strategy-manager.ts
+│   │   ├── prisma-errors.ts
+│   │   └── strategies/
+│   │       ├── discord-error.strategy.ts
+│   │       ├── error.strategy.ts
+│   │       └── fallback-error.strategy.ts
 │   ├── message/                # Message factory
+│   │   ├── message.factory.ts
+│   │   ├── message.helper.ts
+│   │   ├── message.types.ts
+│   │   ├── notification/
+│   │   │   └── notification.strategy.ts
+│   │   └── reply/
+│   │       ├── auto-error-reply.strategy.ts
+│   │       └── reply.strategy.ts
 │   ├── paginator/              # Generic paginator
+│   │   ├── paginator.factory.ts
+│   │   ├── paginator.helper.ts
+│   │   ├── paginator.types.ts
+│   │   ├── core/
+│   │   │   ├── paginator.actions.ts
+│   │   │   ├── paginator.repository.ts
+│   │   │   └── paginator.state.ts
+│   │   ├── renderer/
+│   │   │   ├── custom.renderer.ts
+│   │   │   ├── image-list.renderer.ts
+│   │   │   ├── renderer.interface.ts
+│   │   │   └── text-list.renderer.ts
+│   │   ├── strategy/
+│   │   │   ├── paginator-button.strategy.ts
+│   │   │   └── paginator.strategy.ts
+│   │   └── ui/
+│   │       └── paginator.ui.ts
 │   └── utils/                  # Common utilities
+│       └── discord.utils.ts
 │
 └── index.ts                    # Application entry point
 ```
@@ -326,13 +456,17 @@ src/commands/my-feature/
 export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaClient) {
   await registerApplicationCommands(rest);
   
-  // Setup features
-  const myFeature = setupMyFeature(prisma, bot);
+  // Setup features (guild first, then others)
+  const guildFeature = setupGuildFeature(prisma, bot);
+  const myFeature = setupMyFeature(prisma, bot, guildFeature.module);
+  
+  featureRegistry.register(guildFeature);
   featureRegistry.register(myFeature);
   
   // Setup commands
-  createMyFeatureCommandHandler(bot, myFeature.module);
+  commandRegistry.register('myfeature', setupMyFeatureCommand(myFeature.module));
   
+  // Activate command registry
   commandRegistry.activate(bot);
 }
 ```
@@ -342,10 +476,13 @@ export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaCl
 - [ ] Prisma schema defined and migrated
 - [ ] Module methods return `Observable<T>` using `from()`
 - [ ] Feature provides `cleanup()` function
-- [ ] Command handler registered
-- [ ] `commands.json` updated
-- [ ] Error handling implemented
+- [ ] Command handler registered in bootstrap
+- [ ] `commands.json` updated with command definitions
+- [ ] Error handling implemented with structured logging
 - [ ] Logger created with `createLogger()`
+- [ ] No JSDoc comments (per codebase policy)
+- [ ] All inline comments are in English
+- [ ] Feature dependency order respected (guild first)
 
 ***
 
@@ -470,46 +607,34 @@ function createKeywordModule(prisma: PrismaClient): KeywordModule {
 
 ### Comments & Documentation
 
+**Comment Policy:**
+- ✅ **No JSDoc comments** - All JSDoc (`/** ... */`) blocks have been removed from the codebase
+- ✅ **Only English comments** - All inline comments (`//`) are in English
+- ✅ **Minimal commenting** - Code is self-explanatory, comments only used for complex logic
+
 **When to Comment:**
-- ✅ Public APIs (interfaces, exported functions)
-- ✅ Complex business logic
-- ✅ Non-obvious constraints
+- ✅ Complex business logic that isn't obvious
+- ✅ Non-obvious constraints or edge cases
+- ✅ Temporary TODO markers for future improvements
 
 **When NOT to Comment:**
-- ❌ Self-explanatory code
-- ❌ Implementation details
+- ❌ Self-explanatory code (function names, variable names)
+- ❌ Simple getter/setter methods
+- ❌ Obvious implementation details
 
 **Inline Comments:**
 
 ```typescript
-// ✅ Explain WHY
+// ✅ Explain WHY (complex logic)
 // UNIQUE mode requires removing other roles to prevent multiple exclusive roles
 if (match.mode === 'UNIQUE') {
   await removeOtherRoles();
 }
 
-// ❌ Explain WHAT (code already shows this)
-// Check if mode is UNIQUE
-if (match.mode === 'UNIQUE') { }
-```
-
-**JSDoc Format:**
-
-```typescript
-/**
- * Strategy interface for rendering paginated items.
- * Implement this to create custom page layouts.
- */
-export interface PageRenderer<T> {
-  /**
-   * Render a page of items into Discord embed format.
-   * 
-   * @param items - Slice of items for current page
-   * @param pageIndex - Zero-based page index
-   * @param totalPages - Total pages available
-   * @returns Discord embed and components
-   */
-  renderPage(items: T[], pageIndex: number, totalPages: number): PageRenderResult;
+// ✅ Explain non-obvious constraints
+// Rate limit: 5 requests per second per user
+if (userRequestCount > 5) {
+  return replyError(bot, interaction, { description: 'Too many requests' });
 }
 ```
 
@@ -574,7 +699,7 @@ commandRegistry.registerCustomIdHandler('pg:', paginatorHandler);
 commandRegistry.activate(bot);
 ```
 
-### 4. Message Factory
+### 6. Message Factory
 
 ```typescript
 // Success/Error replies
@@ -588,7 +713,61 @@ await replyAutoError(bot, interaction, error, {
 });
 ```
 
-### 5. Generic Paginator
+### 7. Confirmation Dialogs
+
+```typescript
+// Create confirmation for destructive actions
+await createConfirmation(
+  bot,
+  interaction,
+  {
+    confirmationType: 'delete_item',
+    userId: interaction.user.id,
+    guildId: interaction.guildId,
+    data: { itemId: '123' },
+    expiresIn: Timeouts.CONFIRMATION_MS,
+    embed: {
+      title: '⚠️ Confirm Delete',
+      description: 'This action cannot be undone.',
+    },
+    buttons: {
+      confirmLabel: 'Delete',
+      confirmStyle: ButtonStyles.DANGER,
+      cancelLabel: 'Cancel',
+      cancelStyle: ButtonStyles.SECONDARY,
+    },
+  },
+  {
+    onConfirm: async (bot, interaction, data) => {
+      await deleteItem(data.itemId);
+      await replySuccess(bot, interaction, { description: 'Item deleted' });
+    },
+    onCancel: async (bot, interaction) => {
+      await replyInfo(bot, interaction, { description: 'Cancelled' });
+    },
+  }
+);
+```
+
+### 8. Scheduler Service
+
+```typescript
+// Create scheduled tasks
+const scheduler = createSchedulerService();
+
+// Add cron job
+scheduler.addJob('cleanup', '0 2 * * *', async () => {
+  await cleanupExpiredData();
+});
+
+// Start scheduler
+scheduler.start();
+
+// Cleanup on shutdown
+scheduler.stop();
+```
+
+### 9. Generic Paginator
 
 ```typescript
 await replyTextList({
