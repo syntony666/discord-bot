@@ -1,7 +1,6 @@
 import { createStreamNotifyModule, StreamNotifyModule } from './stream-notify.module';
 import { StreamNotifyService, createStreamNotifyService } from './stream-notify.service';
 import { TwitchService } from './platforms/twitch.service';
-import { YouTubeService } from './platforms/youtube.service';
 import { StreamPlatformService } from './platforms/platform.interface';
 import { createSchedulerService, SchedulerService } from '@core/scheduler';
 import { createLogger } from '@core/logger';
@@ -30,14 +29,7 @@ export function setupStreamNotifyFeature(
     process.env.TWITCH_CLIENT_SECRET || ''
   );
 
-  const youtubeService = new YouTubeService(
-    process.env.YOUTUBE_API_KEY || ''
-  );
-
-  const platformServices: StreamPlatformService[] = [twitchService, youtubeService];
-
   const twitchTaskId = 'twitch-stream-check';
-  const youtubeTaskId = 'youtube-stream-check';
 
   scheduler.addTask({
     id: twitchTaskId,
@@ -53,23 +45,8 @@ export function setupStreamNotifyFeature(
     isActive: true,
   });
 
-  scheduler.addTask({
-    id: youtubeTaskId,
-    name: 'YouTube Stream Check',
-    schedule: '*/3 * * * *',
-    handler: async () => {
-      try {
-        await service.checkAllStreams(module, [youtubeService]);
-      } catch (error) {
-        log.error({ error }, 'YouTube stream check failed');
-      }
-    },
-    isActive: true,
-  });
-
   const cleanup = () => {
     scheduler.removeTask(twitchTaskId);
-    scheduler.removeTask(youtubeTaskId);
     log.info('Stream notify feature cleaned up');
   };
 

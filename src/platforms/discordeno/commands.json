@@ -413,10 +413,7 @@
             "name": "platform",
             "description": "選擇平台",
             "required": true,
-            "choices": [
-              { "name": "Twitch", "value": "twitch" },
-              { "name": "YouTube", "value": "youtube" }
-            ]
+            "choices": [{ "name": "Twitch", "value": "twitch" }]
           },
           {
             "type": 3,
@@ -443,10 +440,7 @@
             "name": "platform",
             "description": "選擇平台",
             "required": true,
-            "choices": [
-              { "name": "Twitch", "value": "twitch" },
-              { "name": "YouTube", "value": "youtube" }
-            ]
+            "choices": [{ "name": "Twitch", "value": "twitch" }]
           },
           {
             "type": 3,
