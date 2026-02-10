@@ -143,7 +143,7 @@ model StreamNotifyConfig {
   guildId   String   @id
   channelId String
   enabled   Boolean  @default(true)
-  message   String   @default("🔴 {user} 開始直播了！\n{title}\n{url}")
+  message   String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -156,20 +156,22 @@ model StreamNotifyConfig {
  * StreamWatcher - Tracks stream channels to monitor
  */
 model StreamWatcher {
-  id          String           @id @default(cuid())
-  guildId     String
-  platformId  String
-  platform    StreamPlatform
-  displayName String
-  isLive      Boolean          @default(false)
-  lastChecked DateTime         @default(now())
-  createdAt   DateTime         @default(now())
+  id               String           @id @default(cuid())
+  guildId          String
+  platformId       String           // user_login (e.g., "yb57152")
+  platformUserId   String?          // user_id (e.g., "104484222") - null means needs conversion
+  platform         StreamPlatform
+  displayName      String
+  isLive           Boolean          @default(false)
+  lastChecked      DateTime         @default(now())
+  createdAt        DateTime         @default(now())
 
-  guild       Guild            @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  guild            Guild            @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   @@unique([guildId, platform, platformId])
   @@index([guildId])
   @@index([isLive])
+  @@index([platformUserId])
 }
 
 enum StreamPlatform {

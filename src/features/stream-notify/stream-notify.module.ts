@@ -12,6 +12,7 @@ export interface StreamNotifyModule {
   updateConfig$(guildId: string, data: Partial<StreamNotifyConfig>): Observable<StreamNotifyConfig>;
   deleteConfig$(guildId: string): Observable<void>;
   getWatchers$(guildId: string): Observable<StreamWatcher[]>;
+  getAllWatchers$(): Observable<StreamWatcher[]>;
   getWatcher$(
     guildId: string,
     platform: StreamPlatform,
@@ -25,6 +26,7 @@ export interface StreamNotifyModule {
   ): Observable<StreamWatcher>;
   removeWatcher$(guildId: string, platform: StreamPlatform, platformId: string): Observable<void>;
   updateWatcherStatus$(id: string, isLive: boolean): Observable<StreamWatcher>;
+  updateWatcherUserId$(id: string, platformUserId: string): Observable<StreamWatcher>;
   updateLastChecked$(id: string): Observable<StreamWatcher>;
 }
 
@@ -44,7 +46,7 @@ export function createStreamNotifyModule(prisma: PrismaClient): StreamNotifyModu
           data: {
             guildId,
             channelId,
-            message: message || '🔴 {user} 開始直播了！\n{title}\n{url}',
+            message: message || '',
           },
         })
       );
@@ -71,6 +73,14 @@ export function createStreamNotifyModule(prisma: PrismaClient): StreamNotifyModu
       return from(
         prisma.streamWatcher.findMany({
           where: { guildId },
+          orderBy: { createdAt: 'asc' },
+        })
+      );
+    },
+
+    getAllWatchers$() {
+      return from(
+        prisma.streamWatcher.findMany({
           orderBy: { createdAt: 'asc' },
         })
       );
@@ -127,6 +137,15 @@ export function createStreamNotifyModule(prisma: PrismaClient): StreamNotifyModu
         prisma.streamWatcher.update({
           where: { id },
           data: { isLive },
+        })
+      );
+    },
+
+    updateWatcherUserId$(id: string, platformUserId: string) {
+      return from(
+        prisma.streamWatcher.update({
+          where: { id },
+          data: { platformUserId },
         })
       );
     },

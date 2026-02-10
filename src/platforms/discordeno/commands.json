@@ -392,7 +392,7 @@
           {
             "type": 3,
             "name": "message",
-            "description": "自訂通知訊息範本",
+            "description": "自訂通知訊息範本 (可用變數: {user})",
             "required": false,
             "max_length": 1000
           }

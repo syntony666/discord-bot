@@ -4,6 +4,7 @@ import { StreamPlatformService } from './platforms/platform.interface';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap, catchError } from 'rxjs/operators';
 import { createLogger } from '@core/logger';
+import { StreamWatcher } from '@prisma-client/client';
 
 const log = createLogger('StreamNotifyService');
 
@@ -23,11 +24,37 @@ export function createStreamNotifyService(bot: any): StreamNotifyService {
     services: StreamPlatformService[]
   ): Promise<void> => {
     try {
-      const allWatchers = await lastValueFrom(module.getWatchers$(''));
+      // Get all watchers across all guilds
+      const allWatchers: StreamWatcher[] = await lastValueFrom(module.getAllWatchers$());
+
+      // Handle ID conversion for Twitch watchers that don't have platformUserId yet
+      const twitchWatchersNeedingConversion = allWatchers.filter(
+        (w) => w.platform === 'TWITCH' && !w.platformUserId
+      );
+
+      if (twitchWatchersNeedingConversion.length > 0) {
+        const twitchService = services.find((s) => s.getPlatformName() === 'twitch') as any;
+        if (twitchService && twitchService.convertUsernamesToUserIds) {
+          const usernames = twitchWatchersNeedingConversion.map((w) => w.platformId);
+          const usernameToIdMap = await twitchService.convertUsernamesToUserIds(usernames);
+
+          // Update watchers with their user IDs
+          for (const watcher of twitchWatchersNeedingConversion) {
+            const userId = usernameToIdMap.get(watcher.platformId.toLowerCase());
+            if (userId) {
+              await lastValueFrom(module.updateWatcherUserId$(watcher.id, userId));
+            } else {
+            }
+          }
+        }
+      }
+
+      // Get updated list after conversions
+      const updatedWatchers: StreamWatcher[] = await lastValueFrom(module.getAllWatchers$());
 
       const watchersByPlatform = new Map<string, string[]>();
 
-      for (const watcher of allWatchers) {
+      for (const watcher of updatedWatchers) {
         const platformServices = services.filter(
           (s) => s.getPlatformName() === watcher.platform.toLowerCase()
         );
@@ -35,7 +62,9 @@ export function createStreamNotifyService(bot: any): StreamNotifyService {
           if (!watchersByPlatform.has(watcher.platform.toLowerCase())) {
             watchersByPlatform.set(watcher.platform.toLowerCase(), []);
           }
-          watchersByPlatform.get(watcher.platform.toLowerCase())!.push(watcher.platformId);
+          // Use platformUserId if available (for Twitch), otherwise use platformId
+          const idToCheck = watcher.platformUserId || watcher.platformId;
+          watchersByPlatform.get(watcher.platform.toLowerCase())!.push(idToCheck);
         }
       }
 
@@ -47,10 +76,12 @@ export function createStreamNotifyService(bot: any): StreamNotifyService {
           const liveStreams = await service.checkStreamStatus(platformIds);
 
           for (const streamInfo of liveStreams) {
-            const watcher = allWatchers.find(
-              (w) =>
-                w.platform.toLowerCase() === platformName && w.platformId === streamInfo.platformId
-            );
+            const watcher = updatedWatchers.find((w: StreamWatcher) => {
+              const watcherId = w.platformUserId || w.platformId;
+              return (
+                w.platform.toLowerCase() === platformName && watcherId === streamInfo.platformId
+              );
+            });
 
             if (watcher && !watcher.isLive) {
               await lastValueFrom(module.updateWatcherStatus$(watcher.id, true));
@@ -62,10 +93,11 @@ export function createStreamNotifyService(bot: any): StreamNotifyService {
             }
           }
 
-          for (const watcher of allWatchers.filter(
-            (w) => w.platform.toLowerCase() === platformName
+          for (const watcher of updatedWatchers.filter(
+            (w: StreamWatcher) => w.platform.toLowerCase() === platformName
           )) {
-            const isStillLive = liveStreams.some((s) => s.platformId === watcher.platformId);
+            const watcherId = watcher.platformUserId || watcher.platformId;
+            const isStillLive = liveStreams.some((s) => s.platformId === watcherId);
 
             if (watcher.isLive && !isStillLive) {
               await lastValueFrom(module.updateWatcherStatus$(watcher.id, false));
@@ -89,12 +121,7 @@ export function createStreamNotifyService(bot: any): StreamNotifyService {
     module: StreamNotifyModule
   ): Promise<void> => {
     try {
-      const message = messageTemplate
-        .replace(/{user}/g, streamInfo.displayName)
-        .replace(/{title}/g, streamInfo.title)
-        .replace(/{url}/g, streamInfo.url)
-        .replace(/{game}/g, streamInfo.game || 'N/A')
-        .replace(/{viewers}/g, streamInfo.viewers?.toString() || 'N/A');
+      const message = messageTemplate.replace(/{user}/g, streamInfo.displayName);
 
       const config = await lastValueFrom(module.getConfig$(guildId));
 
@@ -105,7 +132,8 @@ export function createStreamNotifyService(bot: any): StreamNotifyService {
         embeds: streamInfo.thumbnailUrl
           ? [
               {
-                title: `${streamInfo.displayName} 正在直播`,
+                title: `🔴 ${streamInfo.displayName} 正在直播！`,
+                description: streamInfo.title,
                 url: streamInfo.url,
                 color: 0x6441a5,
                 image: {
@@ -120,14 +148,31 @@ export function createStreamNotifyService(bot: any): StreamNotifyService {
                       },
                     ]
                   : [],
-                footer: streamInfo.viewers
-                  ? {
-                      text: `觀眾: ${streamInfo.viewers}`,
-                    }
-                  : undefined,
+                footer: {
+                  timestamp: new Date().toISOString(),
+                },
               },
             ]
-          : undefined,
+          : [
+              {
+                title: `🔴 ${streamInfo.displayName} 正在直播！`,
+                description: streamInfo.title,
+                url: streamInfo.url,
+                color: 0x6441a5,
+                fields: streamInfo.game
+                  ? [
+                      {
+                        name: '遊戲',
+                        value: streamInfo.game,
+                        inline: true,
+                      },
+                    ]
+                  : [],
+                footer: {
+                  timestamp: new Date().toISOString(),
+                },
+              },
+            ],
       });
 
       log.info(
