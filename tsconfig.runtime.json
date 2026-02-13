@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./dist",
+    "paths": {
+      "@core/*": ["core/*"],
+      "@features/*": ["features/*"],
+      "@platforms/*": ["platforms/*"],
+      "@commands/*": ["commands/*"],
+      "@shared/*": ["shared/*"],
+      "@prisma-client/*": [".prisma/*"]
+    }
+  }
+}
