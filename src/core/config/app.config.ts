@@ -12,6 +12,9 @@ function requireEnv(name: string): string {
 
 export const appConfig = {
   nodeEnv: process.env.NODE_ENV ?? 'development',
+  health: {
+    port: Number(process.env.HEALTH_PORT ?? '3000'),
+  },
   discord: {
     token: requireEnv('DISCORD_TOKEN'),
     appId: requireEnv('DISCORD_APP_ID'),

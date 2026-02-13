@@ -4,6 +4,10 @@ import { prisma, connectPrisma, disconnectPrisma } from '@platforms/database/pri
 import { createBotClient } from '@platforms/discordeno/bot.client';
 import { bootstrapApp } from '@core/bootstrap/app.bootstrap';
 import { featureRegistry } from '@core/bootstrap/feature.registry';
+import { startHealthServer, HealthServer } from '@core/health/health.server';
+import { buildStatusPayload } from '@core/health/status.provider';
+
+let healthServer: HealthServer | null = null;
 
 async function main() {
   logger.info({ env: appConfig.nodeEnv }, 'Starting bot');
@@ -12,6 +16,8 @@ async function main() {
     await connectPrisma();
 
     const { bot, rest, start } = createBotClient();
+
+    healthServer = startHealthServer(appConfig.health.port, buildStatusPayload);
 
     await bootstrapApp(bot as any, rest, prisma);
 
@@ -29,10 +35,13 @@ async function gracefulShutdown(signal: string) {
   logger.info({ signal }, 'Received shutdown signal, shutting down gracefully...');
 
   try {
-    // Step 1: Cleanup all features
     featureRegistry.cleanup();
 
-    // Step 2: Disconnect Prisma
+    if (healthServer) {
+      await healthServer.close();
+      healthServer = null;
+    }
+
     await disconnectPrisma();
 
     logger.info('Graceful shutdown completed');
