@@ -88,8 +88,7 @@ export async function handleNotifyStatus(
 
       if (streamWatchers.length > 0) {
         const twitchCount = streamWatchers.filter((w) => w.platform === 'TWITCH').length;
-        const youtubeCount = streamWatchers.filter((w) => w.platform === 'YOUTUBE').length;
-        statusItems.push(`   Twitch: ${twitchCount} 個, YouTube: ${youtubeCount} 個`);
+        statusItems.push(`   Twitch: ${twitchCount} 個`);
       }
       statusItems.push('');
     }
