@@ -42,9 +42,8 @@ export function createSchedulerService(): SchedulerService {
   };
 
   const addTask = (task: ScheduledTask): void => {
-    console.log(`Adding task: ${task.name}`);
     tasks.set(task.id, task);
-    
+
     if (isRunning && task.isActive) {
       const intervalMs = parseCronExpression(task.schedule);
       const timeout = setInterval(task.handler, intervalMs);

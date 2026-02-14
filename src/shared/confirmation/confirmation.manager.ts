@@ -124,7 +124,6 @@ export class ConfirmationManager {
 
     // Check user authorization
     const currentUserId = interaction.user?.id?.toString() || '';
-    console.log({ currentUserId, storedUserId: stored.userId });
     if (currentUserId !== stored.userId) {
       const state = this.states.get(confirmationId);
       await state.unauthorized(stored, bot, interaction);
