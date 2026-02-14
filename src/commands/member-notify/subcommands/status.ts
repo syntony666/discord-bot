@@ -30,6 +30,8 @@ export async function handleStatus(
     const joinEmoji = getNotificationTypeEmoji(joinChannel?.enabled || false);
     const leaveEmoji = getNotificationTypeEmoji(leaveChannel?.enabled || false);
 
+    console.log(joinChannel, leaveChannel, templates);
+
     const description = [
       `**${getNotificationTypeName('join')}:** ${joinEmoji} ${joinChannel?.enabled ? '已啟用' : '已停用'}`,
       joinChannel ? `通知頻道: ${channelMention(joinChannel.channelId)}` : '*(未設定)*',

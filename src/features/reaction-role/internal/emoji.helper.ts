@@ -19,22 +19,21 @@ export function parseEmoji(input: string): ParsedEmoji {
       id: id as string,
       name: name as string,
       animated,
-      formatted: `${animated ? 'a:' : ''}${name}:${id}`,
+      formatted: `${name}:${id}`,
     };
   }
 
-  // Format 2: Already formatted name:id or a:name:id
-  const formattedMatch = trimmed.match(/^(a:)?(\w+):(\d+)$/);
+  // Format 2: Already formatted name:id
+  const formattedMatch = trimmed.match(/^(\w+):(\d+)$/);
   if (formattedMatch) {
-    const animated = !!formattedMatch[1];
-    const name = formattedMatch[2];
-    const id = formattedMatch[3];
+    const name = formattedMatch[1];
+    const id = formattedMatch[2];
 
     return {
       id: id as string,
       name: name as string,
-      animated,
-      formatted: `${animated ? 'a:' : ''}${name}:${id}`,
+      animated: false,
+      formatted: trimmed,
     };
   }
 
@@ -87,21 +86,14 @@ export function formatEmojiForReaction(stored: string): string {
 }
 
 export function formatEmojiForDisplay(stored: string): string {
-  const trimmed = stored.trim();
-  const fullMatch = trimmed.match(/^<a?:(\w+):(\d+)>$/);
-  if (fullMatch) {
-    return trimmed;
-  }
-
-  // Check if it's custom emoji format (name:id or a:name:id)
-  const customMatch = trimmed.match(/^(a:)?(\w+):(\d+)$/);
+  // Check if it's custom emoji format (name:id)
+  const customMatch = stored.match(/^(\w+):(\d+)$/);
   if (customMatch) {
-    const animated = !!customMatch[1];
-    const name = customMatch[2];
-    const id = customMatch[3];
-    return `<${animated ? 'a' : ''}:${name}:${id}>`;
+    const name = customMatch[1];
+    const id = customMatch[2];
+    return `<:${name}:${id}>`;
   }
 
   // Unicode emoji or other format
-  return trimmed;
+  return stored;
 }
