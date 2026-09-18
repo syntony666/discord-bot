@@ -1,5 +1,4 @@
-import { config } from 'dotenv';
-config({ path: ['.env', '../../.env'] });
+import '@discord-bot/shared';
 import { serve } from '@hono/node-server';
 import { app } from './app';
 import { connectPrisma, disconnectPrisma } from './db/client';

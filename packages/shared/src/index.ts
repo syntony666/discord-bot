@@ -1,3 +1,5 @@
+import './env';
+
 export * from './enums';
 export * from './error.type';
 export * from './guild.type';

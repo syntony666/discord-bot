@@ -20,6 +20,7 @@
     "tsconfig-paths": "^4.2.0"
   },
   "dependencies": {
+    "@discord-bot/shared": "*",
     "@discordeno/bot": "^21.0.0",
     "@discordeno/gateway": "^21.0.0",
     "@discordeno/rest": "^21.0.0",

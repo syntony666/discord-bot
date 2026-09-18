@@ -1,3 +1,4 @@
+import '@discord-bot/shared';
 import { appConfig } from '@core/config';
 import { logger } from '@core/logger';
 import { prisma, connectPrisma, disconnectPrisma } from '@platforms/database/prisma.client';

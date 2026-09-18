@@ -1,6 +1,4 @@
-import dotenv from 'dotenv';
-
-dotenv.config({ path: ['.env', '../../.env'] });
+import '@discord-bot/shared';
 
 function requireEnv(name: string): string {
   const value = process.env[name];
