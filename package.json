@@ -10,9 +10,9 @@
     "dev:api": "npm run dev --workspace=@discord-bot/api",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "prisma:init": "npm run prisma:init --workspace=@discord-bot/bot",
-    "prisma:migrate": "npm run prisma:migrate --workspace=@discord-bot/bot",
-    "prisma:deploy": "npm run prisma:deploy --workspace=@discord-bot/bot",
+    "prisma:init": "npm run prisma:init --workspace=@discord-bot/api",
+    "prisma:migrate": "npm run prisma:migrate --workspace=@discord-bot/api",
+    "prisma:deploy": "npm run prisma:deploy --workspace=@discord-bot/api",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
