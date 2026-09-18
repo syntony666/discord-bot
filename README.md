@@ -3,7 +3,8 @@
 > Modular Discord bot built with TypeScript, Discordeno, RxJS, and Prisma  
 > Featuring reactive event streams, clean architecture, and strict type safety
 
-**Version:** 5.0.0-alpha.1
+**Version:** 5.0.0
+**Layout:** npm workspaces monorepo — `apps/bot` (Discord bot) + `apps/api` (Hono REST API) + `packages/*`
 
 ## 📋 Table of Contents
 
@@ -43,9 +44,11 @@
 |----------|-----------|---------|
 | **Runtime** | Node.js 18+ | JavaScript runtime |
 | **Language** | TypeScript 5.9.3 | Type-safe development |
+| **Monorepo** | npm workspaces | `apps/*`, `packages/*` |
 | **Discord** | Discordeno v21.0.0 | Lightweight Discord API wrapper |
+| **API** | Hono + @hono/node-server | Internal REST API (`apps/api`, :3001) |
 | **Reactive** | RxJS 7.8.2 | Event stream management |
-| **Database** | Prisma 7.2.0 + PostgreSQL | Type-safe ORM with PostgreSQL adapter |
+| **Database** | Prisma 7.2.0 + PostgreSQL | Type-safe ORM with PostgreSQL adapter (owned by `apps/api`) |
 | **Logger** | pino 10.1.0 | Structured logging |
 | **Dev Tools** | ts-node-dev, tsconfig-paths | Hot reload & path aliases |
 
@@ -84,11 +87,24 @@ Scheduler Service → Cron Jobs → Feature Operations → Database Updates
 
 ```
 /
-├── prisma.config.ts            # Prisma configuration
-├── prisma/
-│   └── schema.prisma           # Database schema definition
+├── apps/
+│   ├── api/                        # Internal REST API (Hono, :3001) — owns Prisma
+│   │   ├── prisma.config.ts
+│   │   ├── prisma/schema.prisma    # Database schema definition
+│   │   └── src/
+│   │       ├── index.ts            # Entry point
+│   │       ├── app.ts              # Hono app + route mounting + error mapping
+│   │       ├── db/client.ts        # PrismaClient singleton
+│   │       ├── modules/            # Data-access modules (promise-based)
+│   │       └── routes/             # Hono routes under /api/v1/*
+│   └── bot/                        # Discord bot (Discordeno, health :3000)
+│       └── src/                    # Detailed tree below
+├── packages/
+│   ├── shared/src/                 # API DTOs, enums, createRequest(), env loader
+│   └── discord-client/             # (planned — self-hosted Discord client)
+├── example.env                     # Env template — copy to .env at repo root
 │
-src/
+apps/bot/src/
 ├── core/
 │   ├── bootstrap/              # App initialization & DI
 │   │   ├── app.bootstrap.ts
@@ -294,19 +310,26 @@ src/
 ### 1. Install Dependencies
 
 ```bash
-npm install
+npm install   # also builds packages/shared via the `prepare` script
 ```
 
 ### 2. Environment Setup
 
-Create `.env` file:
+```bash
+cp example.env .env   # at repo root — both apps load it via @discord-bot/shared
+```
 
 ```env
-NODE_ENV=development
 DISCORD_TOKEN=your-bot-token
 DISCORD_APP_ID=your-application-id
 DATABASE_URL=postgresql://user:password@localhost:5432/discord_bot
+# API_PORT=3001  API_URL=http://localhost:3001  HEALTH_PORT=3000
+# TWITCH_CLIENT_ID=  TWITCH_CLIENT_SECRET=   (optional, stream-notify)
 ```
+
+Env loading: `@discord-bot/shared` runs `dotenv` on import (`./.env` then `../../.env`
+relative to cwd) — app entry points import it first, so every module sees env vars.
+An `apps/<app>/.env` file takes precedence over the root one if present.
 
 **Required Intents** (Discord Developer Portal):
 - ✅ MESSAGE CONTENT INTENT
@@ -315,7 +338,7 @@ DATABASE_URL=postgresql://user:password@localhost:5432/discord_bot
 ### 3. Database Setup
 
 ```bash
-# Push schema to database
+# Push schema to database (runs in apps/api, which owns the schema)
 npm run prisma:init
 
 # Or create migration
@@ -325,10 +348,18 @@ npm run prisma:migrate
 ### 4. Run
 
 ```bash
-npm run dev        # Dev mode with hot reload
-npm run build      # Production build
-npm start          # Run production
+npm run dev:api    # Hono API on :3001
+npm run dev:bot    # Discord bot, health endpoint on :3000
+
+# Production
+npm run build
+npm run start -w @discord-bot/api
+npm run start -w @discord-bot/bot
 ```
+
+> **Transitional state:** `apps/api` owns the Prisma schema, but the bot still
+> accesses the database directly. It will switch to the HTTP API (`API_URL`)
+> in a later refactor step.
 
 ***
 
@@ -339,7 +370,7 @@ npm start          # Run production
 #### 1. Define Prisma Schema
 
 ```prisma
-// prisma/schema.prisma
+// apps/api/prisma/schema.prisma
 model MyFeature {
   id        String   @id @default(cuid())
   guildId   String
@@ -358,7 +389,7 @@ npm run prisma:migrate
 #### 2. Create Feature Structure
 
 ```
-src/features/my-feature/
+apps/bot/src/features/my-feature/
 ├── my-feature.feature.ts
 ├── my-feature.module.ts
 ├── my-feature.service.ts      # Optional
@@ -416,7 +447,7 @@ export function setupMyFeature(prisma: PrismaClient, bot: Bot): MyFeature {
 #### 5. Create Command Structure
 
 ```
-src/commands/my-feature/
+apps/bot/src/commands/my-feature/
 ├── my-feature.command.ts      # Main entry point
 ├── my-feature.types.ts        # Type definitions
 ├── my-feature.helpers.ts      # Utility functions
@@ -427,7 +458,7 @@ src/commands/my-feature/
 #### 6. Define Command in JSON
 
 ```json
-// platforms/discordeno/commands.json
+// apps/bot/src/platforms/discordeno/commands.json
 {
   "name": "myfeature",
   "description": "My feature management",
@@ -452,7 +483,7 @@ src/commands/my-feature/
 #### 7. Register in Bootstrap
 
 ```typescript
-// core/bootstrap/app.bootstrap.ts
+// apps/bot/src/core/bootstrap/app.bootstrap.ts
 export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaClient) {
   await registerApplicationCommands(rest);
   
