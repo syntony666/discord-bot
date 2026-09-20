@@ -7,7 +7,7 @@ import { replySuccess } from 'shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError } from 'shared/error';
-import { userMention } from 'shared/utils/discord.utils';
+import { Formatters } from '@discord-bot/discord-client';
 import { createOverwriteConfirmation } from '../internal/confirmations';
 
 const log = createLogger('KeywordCommand');
@@ -99,7 +99,7 @@ async function handleDuplicateKeyword(
 
           await replySuccess(actions, interaction, {
             title: '關鍵字已更新',
-            description: `${userMention(data.editorId)} 已覆蓋更新關鍵字 \`${data.pattern}\``,
+            description: `${Formatters.userMention(data.editorId)} 已覆蓋更新關鍵字 \`${data.pattern}\``,
             fields: [
               {
                 name: '新設定',

@@ -6,7 +6,7 @@ import { replyWarning } from 'shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError } from 'shared/error';
-import { userMention } from 'shared/utils/discord.utils';
+import { Formatters } from '@discord-bot/discord-client';
 import { createDeleteConfirmation } from '../internal/confirmations';
 
 const log = createLogger('KeywordCommand');
@@ -39,7 +39,7 @@ export async function handleDeleteKeyword(
 
           await replyWarning(actions, interaction, {
             title: '關鍵字已刪除',
-            description: `${userMention(data.editorId)} 已刪除關鍵字 \`${data.pattern}\``,
+            description: `${Formatters.userMention(data.editorId)} 已刪除關鍵字 \`${data.pattern}\``,
             fields: [
               {
                 name: '已刪除的設定',

@@ -5,7 +5,7 @@ import { replyInfo } from 'shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError } from 'shared/error';
-import { getMessageUrl, channelMention } from 'shared/utils/discord.utils';
+import { Formatters } from '@discord-bot/discord-client';
 import { getModeText } from '../reaction-role.helpers';
 import type { PanelMode } from '../reaction-role.types';
 
@@ -35,12 +35,12 @@ export async function handlePanelList(
           module.getReactionRolesByMessage$(guildId, panel.messageId)
         );
         const modeText = getModeText(panel.mode as PanelMode);
-        const messageUrl = getMessageUrl(guildId, panel.channelId, panel.messageId);
+        const messageUrl = Formatters.messageLink(panel.channelId, panel.messageId, guildId);
 
         return [
           `**${panel.title}**`,
           `ID: \`${panel.messageId}\``,
-          `頻道: ${channelMention(panel.channelId)}`,
+          `頻道: ${Formatters.channelMention(panel.channelId)}`,
           `模式: ${modeText}`,
           `身分組數量: ${roles.length} 個`,
           `[跳轉至訊息](${messageUrl})`,

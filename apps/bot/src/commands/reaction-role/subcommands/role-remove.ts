@@ -6,7 +6,7 @@ import { replyError, replySuccess, replyInfo } from 'shared/message/message.help
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError } from 'shared/error';
-import { roleMention } from 'shared/utils/discord.utils';
+import { Formatters } from '@discord-bot/discord-client';
 import { createStandardConfirmation } from '../internal/confirmations';
 import { CustomIdPrefixes } from '@core/config/constants';
 import { deleteDiscordReaction, updatePanelMessage } from '../internal/operations';
@@ -72,7 +72,7 @@ export async function handleRemove(
               value: [
                 `**Panel**: ${panel.title} (\`${panelId}\`)`,
                 `**Emoji**: ${displayEmoji}`,
-                `**身分組**: ${roleMention(reactionRole.roleId)}`,
+                `**身分組**: ${Formatters.roleMention(reactionRole.roleId)}`,
                 reactionRole.description ? `**說明**: ${reactionRole.description}` : '',
               ]
                 .filter(Boolean)

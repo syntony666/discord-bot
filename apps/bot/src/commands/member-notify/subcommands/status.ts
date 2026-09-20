@@ -4,7 +4,7 @@ import { replyInfo } from 'shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError } from 'shared/error';
-import { channelMention } from 'shared/utils/discord.utils';
+import { Formatters } from '@discord-bot/discord-client';
 import { getNotificationTypeName, getNotificationTypeEmoji } from '../member-notify.helpers';
 import { getMemberNotificationStatus } from '../internal/operations';
 
@@ -34,11 +34,11 @@ export async function handleStatus(
 
     const description = [
       `**${getNotificationTypeName('join')}:** ${joinEmoji} ${joinChannel?.enabled ? '已啟用' : '已停用'}`,
-      joinChannel ? `通知頻道: ${channelMention(joinChannel.channelId)}` : '*(未設定)*',
+      joinChannel ? `通知頻道: ${Formatters.channelMention(joinChannel.channelId)}` : '*(未設定)*',
       `訊息模板: \`${templates?.joinMessage || '預設訊息'}\``,
       '',
       `**${getNotificationTypeName('leave')}:** ${leaveEmoji} ${leaveChannel?.enabled ? '已啟用' : '已停用'}`,
-      leaveChannel ? `通知頻道: ${channelMention(leaveChannel.channelId)}` : '*(未設定)*',
+      leaveChannel ? `通知頻道: ${Formatters.channelMention(leaveChannel.channelId)}` : '*(未設定)*',
       `訊息模板: \`${templates?.leaveMessage || '預設訊息'}\``,
       '',
       '**可用變數**: `{user}`, `{username}`, `{server}`, `{memberCount}`',

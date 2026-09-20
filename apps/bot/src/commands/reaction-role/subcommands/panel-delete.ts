@@ -6,7 +6,7 @@ import { replyError, replyWarning, replyInfo } from 'shared/message/message.help
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError, DiscordErrorHandler } from 'shared/error';
-import { getMessageUrl, channelMention } from 'shared/utils/discord.utils';
+import { Formatters } from '@discord-bot/discord-client';
 import { getModeText } from '../reaction-role.helpers';
 import type { PanelMode } from '../reaction-role.types';
 import type { PanelDeleteData } from '../reaction-role.types';
@@ -37,7 +37,7 @@ export async function handlePanelDelete(
     }
 
     const roles = await lastValueFrom(module.getReactionRolesByMessage$(guildId, panelId));
-    const messageUrl = getMessageUrl(guildId, panel.channelId, panelId);
+    const messageUrl = Formatters.messageLink(panel.channelId, panelId, guildId);
 
     await createStandardConfirmation<PanelDeleteData>(
       actions,
@@ -57,7 +57,7 @@ export async function handlePanelDelete(
               value: [
                 `**標題**: ${panel.title}`,
                 `**ID**: \`${panelId}\``,
-                `**頻道**: ${channelMention(panel.channelId)}`,
+                `**頻道**: ${Formatters.channelMention(panel.channelId)}`,
                 `**模式**: ${getModeText(panel.mode as PanelMode)}`,
                 `**身分組數量**: ${roles.length} 個`,
                 `[跳轉至訊息](${messageUrl})`,

@@ -5,7 +5,7 @@ import { createConfirmation } from 'shared/confirmation/confirmation.helper';
 import { replySuccess, replyInfo, replyWarning } from 'shared/message/message.helper';
 import { ButtonStyle } from 'discord-api-types/v10';
 import { Timeouts } from '@core/config/constants';
-import { channelMention } from 'shared/utils/discord.utils';
+import { Formatters } from '@discord-bot/discord-client';
 import type { MemberNotifyDisableData, MessageTemplateData, ToggleData } from '../member-notify.types';
 import { getNotificationTypeName, getNotificationTypeEmoji } from '../member-notify.helpers';
 
@@ -53,7 +53,7 @@ export async function createDisableConfirmation(
           },
           {
             name: '通知頻道',
-            value: data.channels.map((ch) => channelMention(ch.channelId)).join(', '),
+            value: data.channels.map((ch) => Formatters.channelMention(ch.channelId)).join(', '),
           },
         ],
       },

@@ -6,7 +6,7 @@ import { replySuccess } from 'shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError } from 'shared/error';
-import { channelMention } from 'shared/utils/discord.utils';
+import { Formatters } from '@discord-bot/discord-client';
 import { setupMemberNotifications } from '../internal/operations';
 
 const log = createLogger('MemberNotifyCommand');
@@ -26,7 +26,7 @@ export async function handleEnable(
 
     await replySuccess(actions, interaction, {
       title: '成員通知已啟用',
-      description: `通知頻道已設定為 ${channelMention(channelId)}\n加入與離開通知已自動開啟。`,
+      description: `通知頻道已設定為 ${Formatters.channelMention(channelId)}\n加入與離開通知已自動開啟。`,
     });
 
     log.info({ guildId, channelId }, 'Member notify enabled completed');

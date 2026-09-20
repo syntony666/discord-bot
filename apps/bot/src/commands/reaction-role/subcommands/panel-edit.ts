@@ -6,7 +6,7 @@ import { replyError, replySuccess, replyInfo } from 'shared/message/message.help
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError, DiscordErrorHandler } from 'shared/error';
-import { getMessageUrl } from 'shared/utils/discord.utils';
+import { Formatters } from '@discord-bot/discord-client';
 import { getModeText } from '../reaction-role.helpers';
 import type { PanelMode } from '../reaction-role.types';
 import type { PanelEditData } from '../reaction-role.types';
@@ -47,7 +47,7 @@ export async function handlePanelEdit(
     if (description !== undefined) updates.description = description;
     if (mode !== undefined) updates.mode = mode;
 
-    const messageUrl = getMessageUrl(guildId, panel.channelId, panelId);
+    const messageUrl = Formatters.messageLink(panel.channelId, panelId, guildId);
 
     // Build comparison fields
     const currentFields: string[] = [];

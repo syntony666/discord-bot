@@ -6,7 +6,7 @@ import { replyError, replyInfo } from 'shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError } from 'shared/error';
-import { roleMention } from 'shared/utils/discord.utils';
+import { Formatters } from '@discord-bot/discord-client';
 import { formatEmojiForDisplay } from '@features/reaction-role/internal/emoji.helper';
 
 const log = createLogger('ReactionRoleRole');
@@ -44,7 +44,7 @@ export async function handleList(
       .map((role, index) => {
         const displayEmoji = formatEmojiForDisplay(role.emoji);
         return [
-          `**${index + 1}.** ${displayEmoji} → ${roleMention(role.roleId)}`,
+          `**${index + 1}.** ${displayEmoji} → ${Formatters.roleMention(role.roleId)}`,
           role.description ? `   └ ${role.description}` : '',
           `   \`emoji: ${role.emoji}\``,
         ]
