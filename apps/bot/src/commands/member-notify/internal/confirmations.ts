@@ -3,7 +3,8 @@ import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { createConfirmation } from 'shared/confirmation/confirmation.helper';
 import { replySuccess, replyInfo, replyWarning } from 'shared/message/message.helper';
-import { ButtonStyles, Timeouts } from '@core/config/constants';
+import { Timeouts } from '@core/config/constants';
+import { ButtonStyle } from 'discord-api-types/v10';
 import { channelMention } from 'shared/utils/discord.utils';
 import type { MemberNotifyDisableData, MessageTemplateData, ToggleData } from '../member-notify.types';
 import { getNotificationTypeName, getNotificationTypeEmoji } from '../member-notify.helpers';
@@ -58,9 +59,9 @@ export async function createDisableConfirmation(
       },
       buttons: {
         confirmLabel: '確認關閉',
-        confirmStyle: ButtonStyles.DANGER,
+        confirmStyle: ButtonStyle.Danger,
         cancelLabel: '取消',
-        cancelStyle: ButtonStyles.SECONDARY,
+        cancelStyle: ButtonStyle.Secondary,
       },
     },
     {
@@ -97,9 +98,9 @@ export async function createMessageTemplateConfirmation(
       },
       buttons: {
         confirmLabel: '確認更新',
-        confirmStyle: ButtonStyles.PRIMARY,
+        confirmStyle: ButtonStyle.Primary,
         cancelLabel: '取消',
-        cancelStyle: ButtonStyles.SECONDARY,
+        cancelStyle: ButtonStyle.Secondary,
       },
     },
     {
@@ -130,9 +131,9 @@ export async function createToggleConfirmation(
       },
       buttons: {
         confirmLabel: `確認${data.enabled ? '啟用' : '停用'}`,
-        confirmStyle: data.enabled ? ButtonStyles.SUCCESS : ButtonStyles.DANGER,
+        confirmStyle: data.enabled ? ButtonStyle.Success : ButtonStyle.Danger,
         cancelLabel: '取消',
-        cancelStyle: ButtonStyles.SECONDARY,
+        cancelStyle: ButtonStyle.Secondary,
       },
     },
     {

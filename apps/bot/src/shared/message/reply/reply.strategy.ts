@@ -1,6 +1,7 @@
 import { createLogger } from '@core/logger';
 import type { MessageStrategy, ReplyStrategyOptions } from '../message.types';
-import type { DiscordEmbed } from '@discordeno/bot';
+import type { APIEmbed } from 'discord-api-types/v10';
+import { InteractionResponseType, MessageFlags } from 'discord-api-types/v10';
 import { appConfig } from '@core/config';
 
 const log = createLogger('ReplyStrategy');
@@ -16,7 +17,7 @@ export class ReplyStrategy implements MessageStrategy {
       ephemeral = false,
       isEdit = false,
       components,
-      // Extract all DiscordEmbed properties
+      // Extract all APIEmbed properties
       title,
       description,
       fields,
@@ -30,7 +31,7 @@ export class ReplyStrategy implements MessageStrategy {
     } = this.options;
 
     try {
-      const embed: DiscordEmbed = {
+      const embed: APIEmbed = {
         title,
         description,
         color,
@@ -56,7 +57,7 @@ export class ReplyStrategy implements MessageStrategy {
           // Use type: 7 to update the message that triggered the interaction
           // When editing, remove buttons unless explicitly provided
           await actions.sendInteractionResponse(interaction.id, interaction.token, {
-            type: 7, // UPDATE_MESSAGE
+            type: InteractionResponseType.UpdateMessage,
             data: {
               embeds: [embed],
               components: components ?? [], // Clear components by default when editing
@@ -72,11 +73,11 @@ export class ReplyStrategy implements MessageStrategy {
       } else {
         // Original reply logic for non-edit cases
         await actions.sendInteractionResponse(interaction.id, interaction.token, {
-          type: 4, // DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE or CHANNEL_MESSAGE_WITH_SOURCE
+          type: InteractionResponseType.ChannelMessageWithSource,
           data: {
             embeds: [embed],
             components,
-            flags: ephemeral ? 64 : undefined,
+            flags: ephemeral ? MessageFlags.Ephemeral : undefined,
           },
         });
       }

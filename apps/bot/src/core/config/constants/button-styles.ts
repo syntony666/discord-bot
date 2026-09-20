@@ -1,10 +1,12 @@
-export const ButtonStyles = {
-  PRIMARY: 1,
-  SECONDARY: 2,
-  SUCCESS: 3,
-  DANGER: 4,
-  LINK: 5,
-  PREMIUM: 6,
-} as const;
+import { ButtonStyle } from 'discord-api-types/v10';
 
-export type ButtonStyle = (typeof ButtonStyles)[keyof typeof ButtonStyles];
+export { ButtonStyle };
+
+export const ButtonStyles = {
+  PRIMARY: ButtonStyle.Primary,
+  SECONDARY: ButtonStyle.Secondary,
+  SUCCESS: ButtonStyle.Success,
+  DANGER: ButtonStyle.Danger,
+  LINK: ButtonStyle.Link,
+  PREMIUM: ButtonStyle.Premium,
+} as const;

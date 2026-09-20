@@ -1,6 +1,13 @@
 import type { DiscordActions } from '@core/discord/discord-actions';
-import type { BotGuild, BotMessage, BotUser } from '@core/rx/bus';
+import type { BotGuild, BotUser } from '@core/rx/bus';
+import type { APIMessage } from 'discord-api-types/v10';
 import type { createBotClient } from './bot.client';
+import {
+  toCreateMessageOptions,
+  toEditMessageOptions,
+  toInteractionResponse,
+  toInteractionCallbackData,
+} from './payload.mapper';
 
 type RuntimeBot = ReturnType<typeof createBotClient>['bot'];
 
@@ -9,11 +16,16 @@ export function createDiscordActions(bot: RuntimeBot): DiscordActions {
   return {
     botId: bot.id,
     sendMessage: (channelId, content) =>
-      helpers.sendMessage(BigInt(channelId), content) as Promise<BotMessage>,
-    sendInteractionResponse: (id, token, response) => helpers.sendInteractionResponse(id, token, response),
-    editOriginalInteractionResponse: (token, data) => helpers.editOriginalInteractionResponse(token, data),
+      helpers.sendMessage(
+        BigInt(channelId),
+        toCreateMessageOptions(content)
+      ) as unknown as Promise<APIMessage>,
+    sendInteractionResponse: (id, token, response) =>
+      helpers.sendInteractionResponse(BigInt(id), token, toInteractionResponse(response)),
+    editOriginalInteractionResponse: (token, data) =>
+      helpers.editOriginalInteractionResponse(token, toInteractionCallbackData(data)),
     editMessage: (channelId, messageId, options) =>
-      helpers.editMessage(BigInt(channelId), BigInt(messageId), options),
+      helpers.editMessage(BigInt(channelId), BigInt(messageId), toEditMessageOptions(options)),
     deleteMessage: (channelId, messageId, reason) =>
       helpers.deleteMessage(BigInt(channelId), BigInt(messageId), reason),
     getGuild: (guildId) => helpers.getGuild(BigInt(guildId)) as Promise<BotGuild>,

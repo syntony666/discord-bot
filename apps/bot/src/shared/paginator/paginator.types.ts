@@ -1,4 +1,4 @@
-import type { DiscordEmbed } from '@discordeno/bot';
+import type { APIEmbed } from 'discord-api-types/v10';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import type { BotInteraction } from '@core/rx/bus';
 
@@ -10,7 +10,7 @@ export enum PaginatorType {
 
 export interface PageRenderResult {
   content?: string;
-  embeds?: DiscordEmbed[];
+  embeds?: APIEmbed[];
   footer?: {
     text: string;
     iconUrl?: string;

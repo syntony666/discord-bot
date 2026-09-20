@@ -1,10 +1,7 @@
 import type {
   APIActionRowComponent,
   APIComponentInMessageActionRow,
-  APIEmbed,
 } from 'discord-api-types/v10';
-
-export type DiscordEmbed = APIEmbed;
 
 export type MessageComponents = APIActionRowComponent<APIComponentInMessageActionRow>[];
 

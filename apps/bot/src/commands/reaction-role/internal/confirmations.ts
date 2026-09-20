@@ -1,7 +1,8 @@
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { createConfirmation } from 'shared/confirmation/confirmation.helper';
-import { ButtonStyles, Timeouts } from '@core/config/constants';
+import { Timeouts } from '@core/config/constants';
+import { ButtonStyle } from 'discord-api-types/v10';
 import { replyInfo } from 'shared/message/message.helper';
 
 export interface ConfirmationEmbedData {
@@ -44,7 +45,7 @@ export async function createStandardConfirmation<T>(
   options: ConfirmationOptions<T>
 ): Promise<void> {
   const confirmStyle =
-    options.buttonStyle === 'danger' ? ButtonStyles.DANGER : ButtonStyles.PRIMARY;
+    options.buttonStyle === 'danger' ? ButtonStyle.Danger : ButtonStyle.Primary;
   const defaultConfirmLabel = options.buttonStyle === 'danger' ? '確認刪除' : '確認';
 
   await createConfirmation<T>(
@@ -65,7 +66,7 @@ export async function createStandardConfirmation<T>(
         confirmLabel: options.confirmLabel || defaultConfirmLabel,
         confirmStyle: confirmStyle,
         cancelLabel: '取消',
-        cancelStyle: ButtonStyles.SECONDARY,
+        cancelStyle: ButtonStyle.Secondary,
       },
     },
     {

@@ -1,4 +1,5 @@
-import { MessageComponents } from '@discordeno/bot';
+import type { MessageComponents } from '@core/discord/discord.types';
+import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
@@ -55,19 +56,19 @@ export class ConfirmationManager {
     const buttons = config.buttons ?? {};
     const components: MessageComponents = [
       {
-        type: 1,
+        type: ComponentType.ActionRow,
         components: [
           {
-            type: 2,
-            style: buttons.confirmStyle ?? 3,
+            type: ComponentType.Button,
+            style: buttons.confirmStyle ?? ButtonStyle.Success,
             label: buttons.confirmLabel ?? '確認',
-            customId: `confirm:${confirmationId}:confirm`,
+            custom_id: `confirm:${confirmationId}:confirm`,
           },
           {
-            type: 2,
-            style: buttons.cancelStyle ?? 2,
+            type: ComponentType.Button,
+            style: buttons.cancelStyle ?? ButtonStyle.Secondary,
             label: buttons.cancelLabel ?? '取消',
-            customId: `confirm:${confirmationId}:cancel`,
+            custom_id: `confirm:${confirmationId}:cancel`,
           },
         ],
       },

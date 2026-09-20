@@ -2,7 +2,8 @@ import { MessageFactory } from './message.factory';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { MessageType } from './message.types';
 import type { MessageOptions } from './message.types';
-import { type DiscordEmbed, MessageComponents } from '@discordeno/bot';
+import type { APIEmbed } from 'discord-api-types/v10';
+import type { MessageComponents } from '@core/discord/discord.types';
 import type { BotInteraction } from '@core/rx/bus';
 
 export { MessageType } from './message.types';
@@ -17,7 +18,7 @@ export async function sendMessage(options: MessageOptions): Promise<boolean> {
 export async function replySuccess(
   actions: DiscordActions,
   interaction: BotInteraction,
-  options: Omit<DiscordEmbed, 'type'> & {
+  options: Omit<APIEmbed, 'type'> & {
     ephemeral?: boolean;
     components?: MessageComponents;
     isEdit?: boolean;
@@ -34,7 +35,7 @@ export async function replySuccess(
 export async function replyError(
   actions: DiscordActions,
   interaction: BotInteraction,
-  options: Omit<DiscordEmbed, 'type'> & {
+  options: Omit<APIEmbed, 'type'> & {
     ephemeral?: boolean;
     components?: MessageComponents;
     isEdit?: boolean;
@@ -51,7 +52,7 @@ export async function replyError(
 export async function replyInfo(
   actions: DiscordActions,
   interaction: BotInteraction,
-  options: Omit<DiscordEmbed, 'type'> & {
+  options: Omit<APIEmbed, 'type'> & {
     ephemeral?: boolean;
     components?: MessageComponents;
     isEdit?: boolean;
@@ -68,7 +69,7 @@ export async function replyInfo(
 export async function replyWarning(
   actions: DiscordActions,
   interaction: BotInteraction,
-  options: Omit<DiscordEmbed, 'type'> & {
+  options: Omit<APIEmbed, 'type'> & {
     ephemeral?: boolean;
     components?: MessageComponents;
     isEdit?: boolean;
@@ -104,7 +105,7 @@ export async function replyAutoError(
 
 // ==================== Notification unified interface ====================
 
-export interface NotifyOptions extends Omit<DiscordEmbed, 'type'> {
+export interface NotifyOptions extends Omit<APIEmbed, 'type'> {
   type: 'stream_live' | 'member_join' | 'member_leave' | 'announcement' | 'custom';
 }
 

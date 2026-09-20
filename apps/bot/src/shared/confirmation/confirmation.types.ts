@@ -1,4 +1,5 @@
-import { DiscordEmbed } from '@discordeno/bot';
+import type { APIEmbed } from 'discord-api-types/v10';
+import type { APIButtonComponentWithCustomId } from 'discord-api-types/v10';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 
@@ -12,7 +13,7 @@ export interface ConfirmationConfig<TData = any> {
   buttons?: ConfirmationButtons;
 }
 
-export interface ConfirmationEmbed extends Omit<DiscordEmbed, 'type' | 'timestamp' | 'footer'> {
+export interface ConfirmationEmbed extends Omit<APIEmbed, 'type' | 'timestamp' | 'footer'> {
   title: string;
   description: string;
   footerText?: string;
@@ -20,9 +21,9 @@ export interface ConfirmationEmbed extends Omit<DiscordEmbed, 'type' | 'timestam
 
 export interface ConfirmationButtons {
   confirmLabel?: string;
-  confirmStyle?: number;
+  confirmStyle?: APIButtonComponentWithCustomId['style'];
   cancelLabel?: string;
-  cancelStyle?: number;
+  cancelStyle?: APIButtonComponentWithCustomId['style'];
 }
 
 export interface ConfirmationHandler<TData = any> {

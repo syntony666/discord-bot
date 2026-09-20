@@ -2,13 +2,9 @@ import { getBotVersion, getUptime } from '@core/bot-info';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { logger } from '@core/logger';
 import { BotInteraction, BotUser } from '@core/rx/bus';
-import {
-  avatarUrl,
-  Bot,
-  ButtonStyles,
-  MessageComponents,
-  MessageComponentTypes,
-} from '@discordeno/bot';
+import { avatarUrl, Bot } from '@discordeno/bot';
+import type { MessageComponents } from '@core/discord/discord.types';
+import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
 import { appConfig } from '@core/config';
 import { replyInfo } from 'shared/message/message.helper';
 import { handleError } from 'shared/error';
@@ -24,17 +20,17 @@ export async function handleBotStatus(interaction: BotInteraction, actions: Disc
 
     const statusButtons: MessageComponents = [
       {
-        type: 1,
+        type: ComponentType.ActionRow,
         components: [
           {
-            type: MessageComponentTypes.Button,
-            style: ButtonStyles.Link,
+            type: ComponentType.Button,
+            style: ButtonStyle.Link,
             label: '使用說明',
             url: 'https://github.com/syntony666/discord-actions#readme',
           },
           {
-            type: MessageComponentTypes.Button,
-            style: ButtonStyles.Link,
+            type: ComponentType.Button,
+            style: ButtonStyle.Link,
             label: '邀請連結',
             url: `https://discord.com/api/oauth2/authorize?client_id=${actions.botId}&permissions=8&scope=bot%20applications.commands`,
           },

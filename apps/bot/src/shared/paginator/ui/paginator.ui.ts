@@ -1,5 +1,6 @@
 import { PageRenderResult } from '../paginator.types';
-import { ButtonStyles, CustomIdPrefixes } from '@core/config/constants';
+import { CustomIdPrefixes } from '@core/config/constants';
+import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
 
 export function buildPaginatorResponse(params: {
   sessionId: string;
@@ -38,26 +39,26 @@ function buildPaginatorComponents(params: {
 
   return [
     {
-      type: 1,
+      type: ComponentType.ActionRow,
       components: [
         {
-          type: 2,
-          style: ButtonStyles.PRIMARY,
+          type: ComponentType.Button,
+          style: ButtonStyle.Primary,
           label: 'Prev',
-          customId: `${CustomIdPrefixes.PAGINATOR}:${sessionId}:prev`,
+          custom_id: `${CustomIdPrefixes.PAGINATOR}:${sessionId}:prev`,
           disabled: !hasPrev,
         },
         {
-          type: 2,
-          style: ButtonStyles.SUCCESS,
+          type: ComponentType.Button,
+          style: ButtonStyle.Success,
           label: pageLabel,
-          customId: `${CustomIdPrefixes.PAGINATOR}:${sessionId}:page`,
+          custom_id: `${CustomIdPrefixes.PAGINATOR}:${sessionId}:page`,
         },
         {
-          type: 2,
-          style: ButtonStyles.PRIMARY,
+          type: ComponentType.Button,
+          style: ButtonStyle.Primary,
           label: 'Next',
-          customId: `${CustomIdPrefixes.PAGINATOR}:${sessionId}:next`,
+          custom_id: `${CustomIdPrefixes.PAGINATOR}:${sessionId}:next`,
           disabled: !hasNext,
         },
       ],

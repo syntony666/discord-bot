@@ -10,6 +10,7 @@ import { parsePaginatorAction } from '../core/paginator.actions';
 import { buildPaginatorResponse } from '../ui/paginator.ui';
 import { replyError } from '../../message/message.helper';
 import { Timeouts } from '@core/config/constants';
+import { ComponentType, InteractionResponseType, TextInputStyle } from 'discord-api-types/v10';
 import type { BotInteraction } from '@core/rx/bus';
 import { PageRenderResult } from '../paginator.types';
 
@@ -114,7 +115,7 @@ export class PaginatorButtonStrategy {
 
     try {
       await actions.sendInteractionResponse(interaction.id, interaction.token, {
-        type: 7, // UPDATE_MESSAGE
+        type: InteractionResponseType.UpdateMessage,
         data,
       });
     } catch (error) {
@@ -130,23 +131,23 @@ export class PaginatorButtonStrategy {
   ): Promise<void> {
     try {
       await actions.sendInteractionResponse(interaction.id, interaction.token, {
-        type: 9, // MODAL
+        type: InteractionResponseType.Modal,
         data: {
-          customId: `pg:${sessionId}:jump`,
+          custom_id: `pg:${sessionId}:jump`,
           title: '跳轉至指定頁面',
           components: [
             {
-              type: 1,
+              type: ComponentType.ActionRow,
               components: [
                 {
-                  type: 4,
-                  customId: 'page_number',
+                  type: ComponentType.TextInput,
+                  custom_id: 'page_number',
                   label: '頁碼',
-                  style: 1,
+                  style: TextInputStyle.Short,
                   placeholder: `請輸入 1-${session.totalPages} 之間的數字`,
                   required: true,
-                  minLength: 1,
-                  maxLength: String(session.totalPages).length,
+                  min_length: 1,
+                  max_length: String(session.totalPages).length,
                 },
               ],
             },
@@ -207,7 +208,7 @@ export class PaginatorButtonStrategy {
 
     try {
       await actions.sendInteractionResponse(interaction.id, interaction.token, {
-        type: 7,
+        type: InteractionResponseType.UpdateMessage,
         data,
       });
     } catch (error) {
@@ -218,7 +219,7 @@ export class PaginatorButtonStrategy {
   private async updateMessageAsExpired(actions: DiscordActions, interaction: BotInteraction): Promise<void> {
     try {
       await actions.sendInteractionResponse(interaction.id, interaction.token, {
-        type: 7,
+        type: InteractionResponseType.UpdateMessage,
         data: {
           embeds: [
             {

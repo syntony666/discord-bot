@@ -1,4 +1,5 @@
-import { type DiscordEmbed, MessageComponents } from '@discordeno/bot';
+import type { APIEmbed } from 'discord-api-types/v10';
+import type { MessageComponents } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import type { BotInteraction } from '@core/rx/bus';
 
@@ -22,7 +23,7 @@ export interface MessageStrategy {
   send(): Promise<boolean>;
 }
 
-export interface ReplyOptions extends Omit<DiscordEmbed, 'type'> {
+export interface ReplyOptions extends Omit<APIEmbed, 'type'> {
   type:
     | MessageType.SUCCESS_REPLY
     | MessageType.ERROR_REPLY
@@ -48,7 +49,7 @@ export interface AutoErrorReplyOptions {
   };
 }
 
-export interface NotificationOptions extends Omit<DiscordEmbed, 'type'> {
+export interface NotificationOptions extends Omit<APIEmbed, 'type'> {
   type:
     | MessageType.STREAM_LIVE_NOTIFICATION
     | MessageType.MEMBER_JOIN_NOTIFICATION
@@ -61,7 +62,7 @@ export interface NotificationOptions extends Omit<DiscordEmbed, 'type'> {
 
 export type MessageOptions = ReplyOptions | AutoErrorReplyOptions | NotificationOptions;
 
-export interface ReplyStrategyOptions extends Omit<DiscordEmbed, 'type'> {
+export interface ReplyStrategyOptions extends Omit<APIEmbed, 'type'> {
   actions: DiscordActions;
   interaction: BotInteraction;
   color: number;
@@ -70,7 +71,7 @@ export interface ReplyStrategyOptions extends Omit<DiscordEmbed, 'type'> {
   components?: MessageComponents;
 }
 
-export interface NotificationStrategyOptions extends Omit<DiscordEmbed, 'type'> {
+export interface NotificationStrategyOptions extends Omit<APIEmbed, 'type'> {
   actions: DiscordActions;
   channelId: bigint;
   color: number;

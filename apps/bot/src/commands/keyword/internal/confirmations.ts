@@ -2,7 +2,8 @@ import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { createConfirmation } from 'shared/confirmation/confirmation.helper';
 import { replySuccess, replyWarning, replyInfo } from 'shared/message/message.helper';
-import { ButtonStyles, Timeouts } from '@core/config/constants';
+import { Timeouts } from '@core/config/constants';
+import { ButtonStyle } from 'discord-api-types/v10';
 import type { OverwriteData, DeleteData } from '../keyword.types';
 
 async function defaultCancelHandler(
@@ -50,9 +51,9 @@ export async function createOverwriteConfirmation(
       },
       buttons: {
         confirmLabel: '確認覆寫',
-        confirmStyle: ButtonStyles.DANGER,
+        confirmStyle: ButtonStyle.Danger,
         cancelLabel: '取消',
-        cancelStyle: ButtonStyles.SECONDARY,
+        cancelStyle: ButtonStyle.Secondary,
       },
     },
     {
@@ -90,9 +91,9 @@ export async function createDeleteConfirmation(
       },
       buttons: {
         confirmLabel: '確認刪除',
-        confirmStyle: ButtonStyles.DANGER,
+        confirmStyle: ButtonStyle.Danger,
         cancelLabel: '取消',
-        cancelStyle: ButtonStyles.SECONDARY,
+        cancelStyle: ButtonStyle.Secondary,
       },
     },
     {

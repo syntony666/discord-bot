@@ -3,7 +3,7 @@ import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { lastValueFrom } from 'rxjs';
 import { replySuccess, replyError } from 'shared/message/message.helper';
-import { BotInteraction, BotMessage } from '@core/rx/bus';
+import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError, DiscordErrorHandler } from 'shared/error';
 import { channelMention } from 'shared/utils/discord.utils';
@@ -27,7 +27,7 @@ export async function handlePanelCreate(
 
   try {
     // Step 1: Send Discord message
-    const message = (await actions.sendMessage(
+    const message = await actions.sendMessage(
       BigInt(channelId),
       buildPanelEmbed({
         title,
@@ -35,7 +35,7 @@ export async function handlePanelCreate(
         mode,
         roles: [],
       })
-    )) as BotMessage;
+    );
 
     // Step 2: Update message with panel ID
     await actions.editMessage(
