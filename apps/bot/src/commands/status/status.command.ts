@@ -1,4 +1,5 @@
-import { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
+import { interactionOptions, interactionCustomId, interactionComponents } from '@core/discord/interaction.helpers';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 
@@ -20,7 +21,7 @@ export interface StatusCommandModules {
 
 export function setupStatusCommand(modules: StatusCommandModules) {
   return async (interaction: BotInteraction, actions: DiscordActions) => {
-    const subcommand = interaction.data?.options?.[0] as InteractionDataOption;
+    const subcommand = interactionOptions(interaction)?.[0] as CommandOption;
     if (!subcommand) return;
 
     if (subcommand.name === 'bot') {

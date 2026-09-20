@@ -27,7 +27,7 @@ export async function handleNotifyStatus(
   modules: StatusCommandModules
 ): Promise<void> {
   try {
-    const guildId = interaction.guildId?.toString();
+    const guildId = interaction.guild_id?.toString();
     if (!guildId) return;
 
     const [
@@ -142,7 +142,7 @@ export async function handleNotifyStatus(
 
     log.info({ guildId }, 'Notify status displayed');
   } catch (error) {
-    log.error({ error, guildId: interaction.guildId }, 'Failed to display notify status');
+    log.error({ error, guildId: interaction.guild_id }, 'Failed to display notify status');
     await handleError(actions, interaction, error, 'status-notify');
   }
 }

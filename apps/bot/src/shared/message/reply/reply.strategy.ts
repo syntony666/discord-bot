@@ -1,7 +1,7 @@
 import { createLogger } from '@core/logger';
+import { InteractionResponseType, InteractionType, MessageFlags } from 'discord-api-types/v10';
 import type { MessageStrategy, ReplyStrategyOptions } from '../message.types';
 import type { APIEmbed } from 'discord-api-types/v10';
-import { InteractionResponseType, MessageFlags } from 'discord-api-types/v10';
 import { appConfig } from '@core/config';
 
 const log = createLogger('ReplyStrategy');
@@ -44,17 +44,17 @@ export class ReplyStrategy implements MessageStrategy {
         provider,
         timestamp: new Date().toISOString(),
         footer: footer ?? {
-          text: interaction.user.username,
+          text: interaction.user?.username ?? '',
           icon_url: appConfig.footerIconUrl,
         },
       };
 
       if (isEdit) {
-        const isComponentInteraction = interaction.type === 3; // MESSAGE_COMPONENT
-        const isModalInteraction = interaction.type === 5; // MODAL_SUBMIT
+        const isComponentInteraction = interaction.type === InteractionType.MessageComponent;
+        const isModalInteraction = interaction.type === InteractionType.ModalSubmit;
 
         if (isComponentInteraction || isModalInteraction) {
-          // Use type: 7 to update the message that triggered the interaction
+          // Update the message that triggered the interaction
           // When editing, remove buttons unless explicitly provided
           await actions.sendInteractionResponse(interaction.id, interaction.token, {
             type: InteractionResponseType.UpdateMessage,
@@ -64,14 +64,13 @@ export class ReplyStrategy implements MessageStrategy {
             },
           });
         } else {
-          // Use editOriginalInteractionResponse to update bot's own response
+          // Update bot's own original response
           await actions.editOriginalInteractionResponse(interaction.token, {
             embeds: [embed],
             components: components ?? [], // Clear components by default when editing
           });
         }
       } else {
-        // Original reply logic for non-edit cases
         await actions.sendInteractionResponse(interaction.id, interaction.token, {
           type: InteractionResponseType.ChannelMessageWithSource,
           data: {

@@ -1,4 +1,4 @@
-import { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { ReactionRoleService } from '@features/reaction-role/reaction-role.service';
@@ -25,7 +25,7 @@ export async function handleAdd(
   module: ReactionRoleModule,
   service: ReactionRoleService,
   guildId: string,
-  subGroup: InteractionDataOption
+  subGroup: CommandOption
 ) {
   const panelId = subGroup.options?.find((o) => o.name === 'panel_id')?.value as string;
   const emojiInput = subGroup.options?.find((o) => o.name === 'emoji')?.value as string;

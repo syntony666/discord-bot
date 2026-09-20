@@ -74,9 +74,12 @@ export function normalizeEmojiForStorage(input: string): string {
   return parsed.formatted;
 }
 
-export function normalizeEmojiFromReaction(emoji: { id?: bigint; name?: string }): string {
+export function normalizeEmojiFromReaction(emoji: {
+  id?: string | null;
+  name?: string | null;
+}): string {
   if (emoji.id) {
-    return `${emoji.name || 'emoji'}:${emoji.id.toString()}`;
+    return `${emoji.name || 'emoji'}:${emoji.id}`;
   }
   return emoji.name || '';
 }

@@ -1,4 +1,4 @@
-import type { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import type { BotInteraction } from '@core/rx/bus';
 import type { StreamNotifyModule } from '@features/stream-notify/stream-notify.module';
@@ -9,7 +9,7 @@ export interface StreamNotifyCommandContext {
   interaction: BotInteraction;
   guildId: string;
   module: StreamNotifyModule;
-  subCommand: InteractionDataOption;
+  subCommand: CommandOption;
 }
 
 export interface EnableCommandOptions {

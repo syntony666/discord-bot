@@ -29,8 +29,9 @@ export function setupMemberNotifyFeature(
   // ========== Member Join Event ==========
   const joinSub = guildMemberAdd$
     .pipe(
-      mergeMap(async ({ member, user }) => {
-        const guildId = member.guildId.toString();
+      mergeMap(async (payload) => {
+        const { user, guild_id: guildId } = payload;
+        if (!user) return;
 
         try {
           // Ensure guild exists
@@ -45,8 +46,8 @@ export function setupMemberNotifyFeature(
 
           // Get message templates
           const templates = await lastValueFrom(module.getMessageTemplates$(guildId));
-          const guild = (await actions.getGuild(member.guildId)) as BotGuild;
-          const memberCount = guild.approximateMemberCount || 0;
+          const guild = (await actions.getGuild(guildId)) as BotGuild;
+          const memberCount = guild.approximate_member_count || 0;
 
           const message = service.formatMessage(
             templates?.joinMessage || '📥 {user} 加入了 {server}！目前共 {memberCount} 位成員',
@@ -58,18 +59,15 @@ export function setupMemberNotifyFeature(
             }
           );
 
-          await notify(actions, BigInt(joinChannel!.channelId), {
+          await notify(actions, joinChannel!.channelId, {
             type: 'member_join',
             title: '新成員加入',
             description: message,
           });
 
-          log.info({ guildId, userId: user.id.toString() }, 'Sent join notification');
+          log.info({ guildId, userId: user.id }, 'Sent join notification');
         } catch (error) {
-          log.error(
-            { error, guildId, userId: user.id.toString() },
-            'Failed to send join notification'
-          );
+          log.error({ error, guildId, userId: user.id }, 'Failed to send join notification');
         }
       }),
       handleDiscordError({
@@ -85,8 +83,7 @@ export function setupMemberNotifyFeature(
   // ========== Member Leave Event ==========
   const leaveSub = guildMemberRemove$
     .pipe(
-      mergeMap(async ({ user, guildId }) => {
-        const guildIdStr = guildId.toString();
+      mergeMap(async ({ user, guild_id: guildIdStr }) => {
 
         try {
           // Get leave notification channel
@@ -99,7 +96,7 @@ export function setupMemberNotifyFeature(
           // Get message templates
           const templates = await lastValueFrom(module.getMessageTemplates$(guildIdStr));
           const guild = (await actions.getGuild(guildIdStr)) as BotGuild;
-          const memberCount = guild.approximateMemberCount || 0;
+          const memberCount = guild.approximate_member_count || 0;
 
           const message = service.formatMessage(
             templates?.leaveMessage ||
@@ -112,13 +109,13 @@ export function setupMemberNotifyFeature(
             }
           );
 
-          await notify(actions, BigInt(leaveChannel!.channelId), {
+          await notify(actions, leaveChannel!.channelId, {
             type: 'member_leave',
             title: '成員離開',
             description: message,
           });
 
-          log.info({ guildId: guildIdStr, userId: user.id.toString() }, 'Sent leave notification');
+          log.info({ guildId: guildIdStr, userId: user.id }, 'Sent leave notification');
         } catch (error) {
           log.error(
             { error, guildId: guildIdStr, userId: user.id.toString() },

@@ -1,6 +1,6 @@
 import type { ReactionRole, ReactionRolePanel } from '@discord-bot/shared';
 import type { DiscordActions } from '@core/discord/discord-actions';
-import type { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { BotInteraction } from '@core/rx/bus';
 import type { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import type { ReactionRoleService } from '@features/reaction-role/reaction-role.service';
@@ -13,7 +13,7 @@ export interface CommandContext {
   guildId: string;
   module: ReactionRoleModule;
   service?: ReactionRoleService;
-  subCommand: InteractionDataOption;
+  subCommand: CommandOption;
 }
 
 export interface BuildPanelEmbedOptions {

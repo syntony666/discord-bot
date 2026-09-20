@@ -57,7 +57,7 @@ export interface NotificationOptions extends Omit<APIEmbed, 'type'> {
     | MessageType.ANNOUNCEMENT_NOTIFICATION
     | MessageType.CUSTOM_NOTIFICATION;
   actions: DiscordActions;
-  channelId: bigint;
+  channelId: bigint | string;
 }
 
 export type MessageOptions = ReplyOptions | AutoErrorReplyOptions | NotificationOptions;
@@ -73,6 +73,6 @@ export interface ReplyStrategyOptions extends Omit<APIEmbed, 'type'> {
 
 export interface NotificationStrategyOptions extends Omit<APIEmbed, 'type'> {
   actions: DiscordActions;
-  channelId: bigint;
+  channelId: bigint | string;
   color: number;
 }

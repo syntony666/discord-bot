@@ -1,4 +1,4 @@
-import type { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import type { KeywordRule, KeywordMatchType } from '@discord-bot/shared';
 import type { BotInteraction } from '@core/rx/bus';
@@ -9,7 +9,7 @@ export interface CommandContext {
   interaction: BotInteraction;
   guildId: string;
   module: KeywordModule;
-  subCommand: InteractionDataOption;
+  subCommand: CommandOption;
 }
 
 export interface OverwriteData {

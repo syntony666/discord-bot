@@ -1,8 +1,9 @@
 import type { DiscordActions } from '@core/discord/discord-actions';
+import { interactionOptions, interactionCustomId, interactionComponents } from '@core/discord/interaction.helpers';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { ReactionRoleService } from '@features/reaction-role/reaction-role.service';
 import { BotInteraction } from '@core/rx/bus';
-import type { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 
 import { handlePanelCreate } from './subcommands/panel-create';
 import { handlePanelEdit } from './subcommands/panel-edit';
@@ -15,14 +16,14 @@ import { handleList } from './subcommands/role-list';
 
 export function setupReactionRoleCommand(module: ReactionRoleModule, service: ReactionRoleService) {
   return async (interaction: BotInteraction, actions: DiscordActions) => {
-    const guildId = interaction.guildId?.toString();
+    const guildId = interaction.guild_id?.toString();
     if (!guildId) return;
 
-    const subGroup = interaction.data?.options?.[0] as InteractionDataOption;
+    const subGroup = interactionOptions(interaction)?.[0] as CommandOption;
     const subGroupName = subGroup?.name;
 
     if (subGroupName === 'panel') {
-      const subCommand = subGroup.options?.[0] as InteractionDataOption;
+      const subCommand = subGroup.options?.[0] as CommandOption;
       const subCommandName = subCommand?.name;
 
       if (subCommandName === 'create') {

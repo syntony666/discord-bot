@@ -1,4 +1,6 @@
 import type { DiscordActions } from '@core/discord/discord-actions';
+import { interactionCustomId, interactionOptions } from '@core/discord/interaction.helpers';
+import { InteractionType } from 'discord-api-types/v10';
 import { interactionCreate$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { Subscription } from 'rxjs';
@@ -26,16 +28,17 @@ class CommandRegistry {
   activate(actions: DiscordActions): void {
     this.subscription = interactionCreate$.subscribe(async (interaction) => {
       try {
-        if (interaction.data?.customId) {
+        const customId = interactionCustomId(interaction);
+        if (customId) {
           for (const [prefix, handler] of this.customIdHandlers.entries()) {
-            if (interaction.data.customId.startsWith(prefix)) {
+            if (customId.startsWith(prefix)) {
               await handler(interaction, actions);
               return;
             }
           }
         }
 
-        if (interaction.type === 2 && interaction.data?.name) {
+        if (interaction.type === InteractionType.ApplicationCommand && interaction.data?.name) {
           const handler = this.commands.get(interaction.data.name);
           if (handler) {
             await handler(interaction, actions);

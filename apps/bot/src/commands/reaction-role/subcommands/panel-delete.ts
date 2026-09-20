@@ -1,4 +1,4 @@
-import { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { lastValueFrom } from 'rxjs';
@@ -21,7 +21,7 @@ export async function handlePanelDelete(
   interaction: BotInteraction,
   module: ReactionRoleModule,
   guildId: string,
-  subCommand: InteractionDataOption
+  subCommand: CommandOption
 ) {
   const panelId = subCommand.options?.find((o) => o.name === 'panel_id')?.value as string;
   const userId = interaction.user?.id?.toString() || '';

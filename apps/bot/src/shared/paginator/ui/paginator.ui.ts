@@ -1,13 +1,19 @@
 import { PageRenderResult } from '../paginator.types';
 import { CustomIdPrefixes } from '@core/config/constants';
-import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
+import {
+  ButtonStyle,
+  ComponentType,
+  type APIActionRowComponent,
+  type APIComponentInMessageActionRow,
+  type APIInteractionResponseCallbackData,
+} from 'discord-api-types/v10';
 
 export function buildPaginatorResponse(params: {
   sessionId: string;
   page: PageRenderResult;
   currentPage: number;
   totalPages: number;
-}) {
+}): APIInteractionResponseCallbackData {
   const { sessionId, page, currentPage, totalPages } = params;
 
   const hasPrev = currentPage > 0;
@@ -21,7 +27,7 @@ export function buildPaginatorResponse(params: {
     pageLabel,
   });
 
-  const data: any = { components };
+  const data: APIInteractionResponseCallbackData = { components };
 
   if (page.content !== undefined) data.content = page.content;
   if (page.embeds !== undefined) data.embeds = page.embeds;
@@ -34,7 +40,7 @@ function buildPaginatorComponents(params: {
   hasPrev: boolean;
   hasNext: boolean;
   pageLabel: string;
-}) {
+}): APIActionRowComponent<APIComponentInMessageActionRow>[] {
   const { sessionId, hasPrev, hasNext, pageLabel } = params;
 
   return [

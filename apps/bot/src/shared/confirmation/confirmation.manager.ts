@@ -1,5 +1,4 @@
 import type { MessageComponents } from '@core/discord/discord.types';
-import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
@@ -7,6 +6,8 @@ import { BaseColors } from '@core/config/colors.config';
 import { appConfig } from '@core/config';
 import { StoredConfirmation, ConfirmationConfig, ConfirmationHandler } from './confirmation.types';
 import { replyWarning } from 'shared/message/message.helper';
+import { interactionCustomId } from '@core/discord/interaction.helpers';
+import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
 import { PendingState } from './states/pending.state';
 import { ExpiredState } from './states/expired.state';
 import { CompletedState } from './states/completed.state';
@@ -94,7 +95,7 @@ export class ConfirmationManager {
   }
 
   async handle(actions: DiscordActions, interaction: BotInteraction): Promise<void> {
-    const customId = interaction.data?.customId || '';
+    const customId = interactionCustomId(interaction) || '';
     const match = customId.match(/^confirm:(.+):(confirm|cancel)$/);
 
     if (!match) {

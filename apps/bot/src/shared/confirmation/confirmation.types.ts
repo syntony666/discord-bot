@@ -1,5 +1,4 @@
 import type { APIEmbed } from 'discord-api-types/v10';
-import type { APIButtonComponentWithCustomId } from 'discord-api-types/v10';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 
@@ -21,9 +20,9 @@ export interface ConfirmationEmbed extends Omit<APIEmbed, 'type' | 'timestamp' |
 
 export interface ConfirmationButtons {
   confirmLabel?: string;
-  confirmStyle?: APIButtonComponentWithCustomId['style'];
+  confirmStyle?: number;
   cancelLabel?: string;
-  cancelStyle?: APIButtonComponentWithCustomId['style'];
+  cancelStyle?: number;
 }
 
 export interface ConfirmationHandler<TData = any> {

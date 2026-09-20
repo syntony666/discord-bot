@@ -1,4 +1,4 @@
-import { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { KeywordModule } from '@features/keyword/keyword.module';
 import { lastValueFrom } from 'rxjs';
@@ -16,7 +16,7 @@ export async function handleDeleteKeyword(
   interaction: BotInteraction,
   module: KeywordModule,
   guildId: string,
-  sub: InteractionDataOption
+  sub: CommandOption
 ) {
   const pattern = sub.options?.find((o: any) => o.name === 'pattern')?.value as string;
   const editorId = interaction.user?.id?.toString() || '';

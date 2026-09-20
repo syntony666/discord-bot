@@ -1,13 +1,13 @@
 import { getBotVersion, getUptime } from '@core/bot-info';
 import type { DiscordActions } from '@core/discord/discord-actions';
+import type { MessageComponents } from '@core/discord/discord.types';
 import { logger } from '@core/logger';
 import { BotInteraction, BotUser } from '@core/rx/bus';
-import { avatarUrl, Bot } from '@discordeno/bot';
-import type { MessageComponents } from '@core/discord/discord.types';
-import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
+import { ComponentType, ButtonStyle } from 'discord-api-types/v10';
 import { appConfig } from '@core/config';
 import { replyInfo } from 'shared/message/message.helper';
 import { handleError } from 'shared/error';
+import { avatarUrl } from 'shared/utils/discord.utils';
 
 export async function handleBotStatus(interaction: BotInteraction, actions: DiscordActions) {
   try {
@@ -16,7 +16,7 @@ export async function handleBotStatus(interaction: BotInteraction, actions: Disc
     const nodeVersion = process.version;
 
     const botUser = (await actions.getUser(actions.botId)) as BotUser;
-    const botIcon = avatarUrl(actions.botId, botUser.discriminator);
+    const botIcon = avatarUrl(actions.botId, botUser.avatar, botUser.discriminator);
 
     const statusButtons: MessageComponents = [
       {
@@ -26,7 +26,7 @@ export async function handleBotStatus(interaction: BotInteraction, actions: Disc
             type: ComponentType.Button,
             style: ButtonStyle.Link,
             label: '使用說明',
-            url: 'https://github.com/syntony666/discord-actions#readme',
+            url: 'https://github.com/syntony666/discord-bot#readme',
           },
           {
             type: ComponentType.Button,
@@ -52,7 +52,7 @@ export async function handleBotStatus(interaction: BotInteraction, actions: Disc
           inline: false,
         },
         { name: 'Node.js', value: `\`${nodeVersion}\``, inline: true },
-        { name: 'Discordeno', value: `\`v${version.discordenoVersion}\``, inline: true },
+        { name: 'discord-api-types', value: `\`v${version.apiTypesVersion}\``, inline: true },
       ],
       footer: {
         text: `ver. ${version.version}`,
@@ -73,11 +73,11 @@ export async function handleBotStatus(interaction: BotInteraction, actions: Disc
     });
 
     logger.info(
-      { guildId: interaction.guildId?.toString(), latency: `${latency}ms` },
+      { guildId: interaction.guild_id, latency: `${latency}ms` },
       'Bot status displayed'
     );
   } catch (error) {
-    logger.error({ error }, 'Failed to display actions status');
+    logger.error({ error }, 'Failed to display bot status');
     await handleError(actions, interaction, error, 'status');
   }
 }

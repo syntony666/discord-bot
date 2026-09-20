@@ -111,7 +111,7 @@ export interface NotifyOptions extends Omit<APIEmbed, 'type'> {
 
 export async function notify(
   actions: DiscordActions,
-  channelId: bigint,
+  channelId: bigint | string,
   { type, ...embedOptions }: NotifyOptions
 ): Promise<boolean> {
   const typeMap = {

@@ -1,7 +1,8 @@
-import { RestManager } from '@discordeno/rest';
 import { createRequest } from '@discord-bot/shared';
-import { createBotClient } from '@platforms/discordeno/bot.client';
-import { createDiscordActions } from '@platforms/discordeno/discord-actions.adapter';
+import type { DiscordClient } from '@discord-bot/discord-client';
+import type { DiscordActions } from '@core/discord/discord-actions';
+import { interactionCustomId } from '@core/discord/interaction.helpers';
+import { registerApplicationCommands } from '@platforms/discord/commands-loader';
 import { appConfig } from '@core/config';
 import { createHttpGuildModule } from '@features/guild/guild.http-module';
 import { createHttpKeywordModule } from '@features/keyword/keyword.http-module';
@@ -10,7 +11,6 @@ import { createHttpReactionRoleModule } from '@features/reaction-role/reaction-r
 import { createHttpStreamNotifyModule } from '@features/stream-notify/stream-notify.http-module';
 import { setupKeywordFeature } from '@features/keyword/keyword.feature';
 import { setupGuildFeature } from '@features/guild/guild.feature';
-import { registerApplicationCommands } from '@platforms/discordeno/commands-loader';
 import { commandRegistry } from '@core/bootstrap/command.registry';
 import { ready$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
@@ -30,17 +30,16 @@ import { createSchedulerService } from '@core/scheduler';
 
 const log = createLogger('Bootstrap');
 
-export async function bootstrapApp(bot: ReturnType<typeof createBotClient>['bot'], rest: RestManager) {
+export async function bootstrapApp(actions: DiscordActions, client: DiscordClient) {
   log.info('Bootstrapping application...');
 
   const request = createRequest(appConfig.api.url);
-  const actions = createDiscordActions(bot);
 
   ready$.subscribe(({ user }) => {
     log.info({ user }, 'Bot is ready');
   });
 
-  await registerApplicationCommands(rest);
+  await registerApplicationCommands(client);
 
   // Create and start scheduler
   const scheduler = createSchedulerService();
@@ -53,7 +52,7 @@ export async function bootstrapApp(bot: ReturnType<typeof createBotClient>['bot'
   commandRegistry.registerCustomIdHandler(
     `${CustomIdPrefixes.PAGINATOR}:`,
     async (interaction, actions) => {
-      if (interaction.data?.customId?.endsWith(':jump')) {
+      if (interactionCustomId(interaction)?.endsWith(':jump')) {
         await paginatorButtonStrategy.handleModalSubmit(actions, interaction);
       } else {
         await paginatorButtonStrategy.handle(actions, interaction);

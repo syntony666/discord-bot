@@ -1,4 +1,4 @@
-import { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import { GuildModule } from '@features/guild/guild.module';
@@ -17,7 +17,7 @@ export async function handleEnable(
   module: MemberNotifyModule,
   guildModule: GuildModule,
   guildId: string,
-  subGroup: InteractionDataOption
+  subGroup: CommandOption
 ) {
   const channelId = subGroup.options?.find((o: any) => o.name === 'channel')?.value as string;
 

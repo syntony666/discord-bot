@@ -27,14 +27,14 @@ export function setupKeywordFeature(
 
   const messageCreateSub = messageCreate$
     .pipe(
-      filter((msg) => msg.guildId !== null && !msg.author.bot), // Ignore DMs and bot messages
+      filter((msg) => !!msg.guild_id && !msg.author.bot), // Ignore DMs and bot messages
       mergeMap(async (msg) => {
-        const guildId = msg.guildId!.toString();
+        const guildId = msg.guild_id!;
         const match = await lastValueFrom(service.findMatch$(guildId, msg.content));
 
         if (match) {
           try {
-            await actions.sendMessage(msg.channelId, {
+            await actions.sendMessage(msg.channel_id, {
               content: match.rule.response,
             });
             log.info({ guildId, pattern: match.rule.pattern }, 'Keyword matched and replied');

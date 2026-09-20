@@ -1,14 +1,13 @@
 import { logger } from '@core/logger';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotGuild, BotInteraction, BotUser } from '@core/rx/bus';
-import { guildIconUrl } from '@discordeno/bot';
 import { appConfig } from '@core/config';
 import { replyInfo } from 'shared/message/message.helper';
 import { handleError } from 'shared/error';
-import { userMention, timestampShort } from 'shared/utils/discord.utils';
+import { userMention, timestampShort, guildIconUrl } from 'shared/utils/discord.utils';
 
 export async function handleGuildStatus(interaction: BotInteraction, actions: DiscordActions) {
-  const guildId = interaction.guildId;
+  const guildId = interaction.guild_id;
 
   if (!guildId) {
     await handleError(actions, interaction, new Error('Guild ID missing'), 'status');
@@ -17,9 +16,9 @@ export async function handleGuildStatus(interaction: BotInteraction, actions: Di
 
   try {
     const guild = (await actions.getGuild(guildId)) as BotGuild;
-    const owner = (await actions.getUser(guild.ownerId)) as BotUser;
-    const createdAt = new Date(Number((guild.id >> 22n) + 1420070400000n));
-    const guildIcon = guildIconUrl(guild.id, guild.icon, { size: 256 });
+    const owner = (await actions.getUser(guild.owner_id)) as BotUser;
+    const createdAt = new Date(Number((BigInt(guild.id) >> 22n) + 1420070400000n));
+    const guildIcon = guildIconUrl(guild.id, guild.icon);
 
     await replyInfo(actions, interaction, {
       title: guild.name,
@@ -32,12 +31,12 @@ export async function handleGuildStatus(interaction: BotInteraction, actions: Di
         },
         {
           name: '成員',
-          value: `${guild.approximateMemberCount || 0} 人`,
+          value: `${guild.approximate_member_count || 0} 人`,
           inline: true,
         },
         {
           name: '在線',
-          value: `${guild.approximatePresenceCount || 0} 人`,
+          value: `${guild.approximate_presence_count || 0} 人`,
           inline: true,
         },
         {

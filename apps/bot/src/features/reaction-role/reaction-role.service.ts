@@ -12,7 +12,7 @@ export interface ReactionRoleService {
     messageId: string,
     emoji: string
   ): Observable<ReactionRoleMatch | null>;
-  normalizeEmoji(emoji: { id?: bigint; name?: string }): string;
+  normalizeEmoji(emoji: { id?: string | null; name?: string | null }): string;
 }
 
 export function createReactionRoleService(module: ReactionRoleModule): ReactionRoleService {
@@ -49,7 +49,7 @@ export function createReactionRoleService(module: ReactionRoleModule): ReactionR
       );
     },
 
-    normalizeEmoji(emoji: { id?: bigint; name?: string }): string {
+    normalizeEmoji(emoji: { id?: string | null; name?: string | null }): string {
       const normalized = normalizeEmojiFromReaction(emoji);
       log.debug({ input: emoji, normalized }, 'Emoji normalized');
       return normalized;

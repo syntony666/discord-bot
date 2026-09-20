@@ -1,10 +1,10 @@
-import { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { createConfirmation } from 'shared/confirmation/confirmation.helper';
 import { replySuccess, replyInfo, replyWarning } from 'shared/message/message.helper';
-import { Timeouts } from '@core/config/constants';
 import { ButtonStyle } from 'discord-api-types/v10';
+import { Timeouts } from '@core/config/constants';
 import { channelMention } from 'shared/utils/discord.utils';
 import type { MemberNotifyDisableData, MessageTemplateData, ToggleData } from '../member-notify.types';
 import { getNotificationTypeName, getNotificationTypeEmoji } from '../member-notify.helpers';

@@ -1,4 +1,3 @@
-import { InteractionTypes } from '@discordeno/bot';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { Subscription, concatMap, lastValueFrom, catchError, EMPTY } from 'rxjs';
 import { ReactionRoleModule } from './reaction-role.module';
@@ -28,11 +27,11 @@ export function setupReactionRoleFeature(
   const addSub = reactionAdd$
     .pipe(
       concatMap(async (reaction) => {
-        if (reaction.userId === BigInt(actions.botId)) return;
-        if (!reaction.guildId) return;
+        if (reaction.user_id === actions.botId) return;
+        if (!reaction.guild_id) return;
 
-        const guildId = reaction.guildId.toString();
-        const messageId = reaction.messageId.toString();
+        const guildId = reaction.guild_id;
+        const messageId = reaction.message_id;
         const emoji = service.normalizeEmoji(reaction.emoji);
 
         console.log({ guildId, messageId, emoji });
@@ -50,7 +49,7 @@ export function setupReactionRoleFeature(
             if (role.roleId !== match.roleId) {
               // Remove other roles
               await actions
-                .removeRole(reaction.guildId, reaction.userId, BigInt(role.roleId))
+                .removeRole(reaction.guild_id, reaction.user_id, role.roleId)
                 .catch((err) => {
                   log.debug(
                     { error: err, roleId: role.roleId },
@@ -61,9 +60,9 @@ export function setupReactionRoleFeature(
               // Remove other reactions
               await actions
                 .deleteUserReaction(
-                  reaction.channelId,
-                  reaction.messageId,
-                  reaction.userId.toString(),
+                  reaction.channel_id,
+                  reaction.message_id,
+                  reaction.user_id,
                   role.emoji
                 )
                 .catch((err) => {
@@ -76,18 +75,18 @@ export function setupReactionRoleFeature(
           }
 
           log.debug(
-            { userId: reaction.userId.toString() },
+            { userId: reaction.user_id },
             'Removed other roles and reactions (UNIQUE mode)'
           );
         }
 
         // Grant the new role
-        await actions.addRole(reaction.guildId, reaction.userId, BigInt(match.roleId));
+        await actions.addRole(reaction.guild_id, reaction.user_id, match.roleId);
 
         log.info(
           {
             guildId,
-            userId: reaction.userId.toString(),
+            userId: reaction.user_id,
             roleId: match.roleId,
             mode: match.mode,
           },
@@ -97,12 +96,12 @@ export function setupReactionRoleFeature(
         // VERIFY mode: remove reaction after granting role
         if (match.mode === 'VERIFY') {
           await actions.deleteUserReaction(
-            reaction.channelId,
-            reaction.messageId,
-            reaction.userId.toString(),
+            reaction.channel_id,
+            reaction.message_id,
+            reaction.user_id,
             emoji
           );
-          log.debug({ userId: reaction.userId.toString() }, 'Removed reaction (VERIFY mode)');
+          log.debug({ userId: reaction.user_id }, 'Removed reaction (VERIFY mode)');
         }
       }),
       handleDiscordError({
@@ -118,11 +117,11 @@ export function setupReactionRoleFeature(
   const removeSub = reactionRemove$
     .pipe(
       concatMap(async (reaction) => {
-        if (reaction.userId === BigInt(actions.botId)) return;
-        if (!reaction.guildId) return;
+        if (reaction.user_id === actions.botId) return;
+        if (!reaction.guild_id) return;
 
-        const guildId = reaction.guildId.toString();
-        const messageId = reaction.messageId.toString();
+        const guildId = reaction.guild_id;
+        const messageId = reaction.message_id;
         const emoji = service.normalizeEmoji(reaction.emoji);
 
         const match = await lastValueFrom(service.findMatch$(guildId, messageId, emoji));
@@ -130,16 +129,16 @@ export function setupReactionRoleFeature(
 
         // VERIFY mode does not remove role when reaction is removed
         if (match.mode === 'VERIFY') {
-          log.debug({ userId: reaction.userId.toString() }, 'Skipped role removal (VERIFY mode)');
+          log.debug({ userId: reaction.user_id }, 'Skipped role removal (VERIFY mode)');
           return;
         }
 
-        await actions.removeRole(reaction.guildId, reaction.userId, BigInt(match.roleId));
+        await actions.removeRole(reaction.guild_id, reaction.user_id, match.roleId);
 
         log.info(
           {
             guildId,
-            userId: reaction.userId.toString(),
+            userId: reaction.user_id,
             roleId: match.roleId,
             mode: match.mode,
           },

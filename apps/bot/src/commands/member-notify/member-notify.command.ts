@@ -1,4 +1,5 @@
-import { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
+import { interactionOptions, interactionCustomId, interactionComponents } from '@core/discord/interaction.helpers';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import { GuildModule } from '@features/guild/guild.module';
@@ -18,10 +19,10 @@ export function setupMemberNotifyCommand(
   service: MemberNotifyService
 ) {
   return async (interaction: BotInteraction, actions: DiscordActions) => {
-    const guildId = interaction.guildId?.toString();
+    const guildId = interaction.guild_id?.toString();
     if (!guildId) return;
 
-    const subGroup = interaction.data?.options?.[0] as InteractionDataOption;
+    const subGroup = interactionOptions(interaction)?.[0] as CommandOption;
     const subGroupName = subGroup?.name;
 
     if (subGroupName === 'enable') {

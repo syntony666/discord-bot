@@ -1,4 +1,4 @@
-import { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import { MemberNotifyService } from '@features/member-notify/member-notify.service';
@@ -16,7 +16,7 @@ export async function handleTest(
   module: MemberNotifyModule,
   service: MemberNotifyService,
   guildId: string,
-  subGroup: InteractionDataOption
+  subGroup: CommandOption
 ) {
   const type = subGroup.options?.find((o: any) => o.name === 'type')?.value as 'join' | 'leave';
 

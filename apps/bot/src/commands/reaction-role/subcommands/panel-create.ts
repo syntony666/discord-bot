@@ -1,9 +1,9 @@
-import { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { lastValueFrom } from 'rxjs';
 import { replySuccess, replyError } from 'shared/message/message.helper';
-import { BotInteraction } from '@core/rx/bus';
+import { BotInteraction, BotMessage } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError, DiscordErrorHandler } from 'shared/error';
 import { channelMention } from 'shared/utils/discord.utils';
@@ -17,7 +17,7 @@ export async function handlePanelCreate(
   interaction: BotInteraction,
   module: ReactionRoleModule,
   guildId: string,
-  subCommand: InteractionDataOption
+  subCommand: CommandOption
 ) {
   const channelId = subCommand.options?.find((o) => o.name === 'channel')?.value as string;
   const title = (subCommand.options?.find((o) => o.name === 'title')?.value as string) || undefined;
@@ -27,7 +27,7 @@ export async function handlePanelCreate(
 
   try {
     // Step 1: Send Discord message
-    const message = await actions.sendMessage(
+    const message = (await actions.sendMessage(
       BigInt(channelId),
       buildPanelEmbed({
         title,
@@ -35,7 +35,7 @@ export async function handlePanelCreate(
         mode,
         roles: [],
       })
-    );
+    )) as BotMessage;
 
     // Step 2: Update message with panel ID
     await actions.editMessage(

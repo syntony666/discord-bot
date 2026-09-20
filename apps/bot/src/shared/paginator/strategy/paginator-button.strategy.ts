@@ -1,5 +1,7 @@
 import { createLogger } from '@core/logger';
 import type { DiscordActions } from '@core/discord/discord-actions';
+import { interactionComponents, interactionCustomId } from '@core/discord/interaction.helpers';
+import { ComponentType, InteractionResponseType, TextInputStyle } from 'discord-api-types/v10';
 import { PaginatorSessionRepository } from '../core/paginator.repository';
 import {
   reducePaginatorState,
@@ -10,7 +12,6 @@ import { parsePaginatorAction } from '../core/paginator.actions';
 import { buildPaginatorResponse } from '../ui/paginator.ui';
 import { replyError } from '../../message/message.helper';
 import { Timeouts } from '@core/config/constants';
-import { ComponentType, InteractionResponseType, TextInputStyle } from 'discord-api-types/v10';
 import type { BotInteraction } from '@core/rx/bus';
 import { PageRenderResult } from '../paginator.types';
 
@@ -31,7 +32,7 @@ export class PaginatorButtonStrategy {
   }
 
   async handle(actions: DiscordActions, interaction: BotInteraction): Promise<void> {
-    const customId: string | undefined = interaction.data?.customId;
+    const customId = interactionCustomId(interaction);
     if (!customId) {
       log.warn('Button interaction without customId');
       return;
@@ -65,7 +66,7 @@ export class PaginatorButtonStrategy {
     }
 
     // Permission check → only creator can control (when userId is set)
-    if (session.userId && interaction.user?.id?.toString() !== session.userId) {
+    if (session.userId && interaction.user?.id !== session.userId) {
       await replyError(actions, interaction, {
         description: '只有建立此分頁的使用者可以操作按鈕。',
         ephemeral: true,
@@ -160,7 +161,7 @@ export class PaginatorButtonStrategy {
   }
 
   async handleModalSubmit(actions: DiscordActions, interaction: BotInteraction): Promise<void> {
-    const customId: string | undefined = interaction.data?.customId;
+    const customId = interactionCustomId(interaction);
     if (!customId || !customId.startsWith('pg:') || !customId.endsWith(':jump')) {
       return;
     }
@@ -176,7 +177,11 @@ export class PaginatorButtonStrategy {
       return;
     }
 
-    const pageNumberInput = interaction.data?.components?.[0]?.components?.[0]?.value;
+    const firstRow = interactionComponents(interaction)?.[0];
+    const pageNumberInput =
+      firstRow && 'components' in firstRow
+        ? (firstRow.components[0] as { value?: string } | undefined)?.value
+        : undefined;
     const pageNumber = parseInt(pageNumberInput || '1', 10);
 
     if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > session.totalPages) {

@@ -1,4 +1,4 @@
-import { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import { replySuccess } from 'shared/message/message.helper';
@@ -16,9 +16,9 @@ export async function handleToggle(
   interaction: BotInteraction,
   module: MemberNotifyModule,
   guildId: string,
-  subGroup: InteractionDataOption
+  subGroup: CommandOption
 ) {
-  const subCommand = subGroup.options?.[0] as InteractionDataOption;
+  const subCommand = subGroup.options?.[0] as CommandOption;
   const type = subCommand?.name as 'join' | 'leave';
   const enabled = subCommand.options?.find((o: any) => o.name === 'enabled')?.value as boolean;
   const userId = interaction.user?.id?.toString() || '';

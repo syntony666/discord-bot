@@ -1,4 +1,4 @@
-import { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { lastValueFrom } from 'rxjs';
@@ -24,7 +24,7 @@ export async function handleRemove(
   interaction: BotInteraction,
   module: ReactionRoleModule,
   guildId: string,
-  subGroup: InteractionDataOption
+  subGroup: CommandOption
 ) {
   const panelId = subGroup.options?.find((o) => o.name === 'panel_id')?.value as string;
   const emojiInput = subGroup.options?.find((o) => o.name === 'emoji')?.value as string;

@@ -3,7 +3,7 @@ import { join } from 'path';
 
 interface VersionInfo {
   version: string;
-  discordenoVersion: string;
+  apiTypesVersion: string;
 }
 
 let cachedVersion: VersionInfo | null = null;
@@ -17,8 +17,8 @@ export function getBotVersion(): VersionInfo {
 
     cachedVersion = {
       version: packageJson.version || '0.0.0',
-      discordenoVersion:
-        packageJson.dependencies?.['@discordeno/bot']?.replace(/[\^~]/, '') || 'unknown',
+      apiTypesVersion:
+        packageJson.dependencies?.['discord-api-types']?.replace(/[\^~]/, '') || 'unknown',
     };
 
     return cachedVersion;
@@ -26,7 +26,7 @@ export function getBotVersion(): VersionInfo {
     console.error('Failed to read package.json:', error);
     return {
       version: 'unknown',
-      discordenoVersion: 'unknown',
+      apiTypesVersion: 'unknown',
     };
   }
 }

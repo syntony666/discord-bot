@@ -1,4 +1,5 @@
 import { createLogger } from '@core/logger';
+import { InteractionResponseType } from 'discord-api-types/v10';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { PaginatorSessionRepository } from '../core/paginator.repository';
 import type { Renderer } from '../renderer/renderer.interface';
@@ -58,7 +59,7 @@ export class PaginatorStrategy<T> {
 
     try {
       await actions.sendInteractionResponse(interaction.id, interaction.token, {
-        type: 4,
+        type: InteractionResponseType.ChannelMessageWithSource,
         data,
       });
 

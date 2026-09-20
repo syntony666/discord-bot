@@ -1,4 +1,4 @@
-import { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { createLogger } from '@core/logger';
 import { MemberNotifyMessage, NotificationType } from '@discord-bot/shared';
@@ -95,7 +95,7 @@ export async function testMessageTemplate(
     const templates: MemberNotifyMessage = await lastValueFrom(
       module.getMessageTemplates$(guildId)
     );
-    const guild = (await actions.getGuild(interaction.guildId!)) as BotGuild;
+    const guild = (await actions.getGuild(interaction.guild_id!)) as BotGuild;
 
     const defaultTemplates = getDefaultTemplates();
     const template =
@@ -107,7 +107,7 @@ export async function testMessageTemplate(
       user: userMention(interaction.user?.id || ''),
       username: interaction.user?.username || 'TestUser',
       server: guild.name,
-      memberCount: guild.approximateMemberCount || 0,
+      memberCount: guild.approximate_member_count || 0,
     });
 
     log.debug({ guildId, type }, 'Message template tested');

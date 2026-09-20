@@ -1,4 +1,4 @@
-import type { InteractionDataOption } from '@discordeno/bot';
+import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import type { NotificationChannel } from '@discord-bot/shared';
 
@@ -9,7 +9,7 @@ export interface CommandContext {
   module: any;
   guildModule?: any;
   service?: any;
-  subCommand: InteractionDataOption;
+  subCommand: CommandOption;
 }
 
 export interface MemberNotifyDisableData {
