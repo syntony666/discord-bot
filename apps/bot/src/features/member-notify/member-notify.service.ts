@@ -1,4 +1,4 @@
-import { NotificationChannel } from './member-notify.select';
+import { NotificationChannel } from '@discord-bot/shared';
 
 export interface MessageVariables {
   user: string; // Discord mention format

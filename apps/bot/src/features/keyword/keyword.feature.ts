@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma-client/client';
 import { Bot } from '@discordeno/bot';
 import { lastValueFrom, Subscription, filter, mergeMap, catchError, EMPTY } from 'rxjs';
-import { createKeywordModule, KeywordModule } from './keyword.module';
+import { KeywordModule } from './keyword.module';
 import { createKeywordService, KeywordService } from './keyword.service';
 import { messageCreate$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
@@ -18,11 +17,10 @@ export interface KeywordFeature extends Feature {
 }
 
 export function setupKeywordFeature(
-  prisma: PrismaClient,
+  module: KeywordModule,
   bot: Bot,
   guildModule: GuildModule
 ): KeywordFeature {
-  const module = createKeywordModule(prisma);
   const service = createKeywordService(module);
 
   const subscriptions: Subscription[] = [];

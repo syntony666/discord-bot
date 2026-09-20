@@ -17,8 +17,8 @@ export const appConfig = {
     token: requireEnv('DISCORD_TOKEN'),
     appId: requireEnv('DISCORD_APP_ID'),
   },
-  database: {
-    url: requireEnv('DATABASE_URL'),
+  api: {
+    url: process.env.API_URL ?? 'http://localhost:3001',
   },
   footerIconUrl: 'https://cdn.jsdelivr.net/gh/syntony666/cdn/logo-128x128.png',
 } as const;

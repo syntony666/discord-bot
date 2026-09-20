@@ -1,6 +1,6 @@
 import { Bot } from '@discordeno/bot';
 import { createLogger } from '@core/logger';
-import type { KeywordRule } from '@prisma-client/client';
+import type { KeywordRule } from '@discord-bot/shared';
 
 const log = createLogger('KeywordOperations');
 

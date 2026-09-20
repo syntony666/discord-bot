@@ -1,6 +1,6 @@
 import { Bot, InteractionDataOption } from '@discordeno/bot';
 import { createLogger } from '@core/logger';
-import { MemberNotifyMessage, NotificationType } from '@prisma-client/client';
+import { MemberNotifyMessage, NotificationType } from '@discord-bot/shared';
 import { channelMention, userMention } from 'shared/utils/discord.utils';
 import type { BotGuild, BotInteraction } from '@core/rx/bus';
 import { formatMessageTemplate, getDefaultTemplates } from '../member-notify.helpers';

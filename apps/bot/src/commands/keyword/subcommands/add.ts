@@ -1,6 +1,6 @@
 import { Bot, InteractionDataOption } from '@discordeno/bot';
 import { KeywordModule } from '@features/keyword/keyword.module';
-import { KeywordMatchType } from '@prisma-client/client';
+import { KeywordMatchType } from '@discord-bot/shared';
 import { lastValueFrom } from 'rxjs';
 import { replySuccess } from 'shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';

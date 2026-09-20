@@ -2,7 +2,7 @@ import { lastValueFrom } from 'rxjs';
 import { createLogger } from '@core/logger';
 import { replySuccess } from 'shared/message/message.helper';
 import { handleError } from 'shared/error';
-import { StreamPlatform } from '@prisma-client/client';
+import { StreamPlatform } from '@discord-bot/shared';
 import { StreamNotifyCommandContext, WatchCommandOptions } from '../stream-notify.types';
 
 const log = createLogger('StreamNotifyWatch');

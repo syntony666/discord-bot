@@ -3,7 +3,7 @@ import { createLogger } from '@core/logger';
 import { replyTextList } from 'shared/paginator/paginator.helper';
 import { handleError } from 'shared/error';
 import { StreamNotifyCommandContext } from '../stream-notify.types';
-import { StreamNotifyConfig, StreamWatcher } from '@prisma-client/client';
+import { StreamNotifyConfig, StreamWatcher } from '@discord-bot/shared';
 
 const log = createLogger('StreamNotifyList');
 

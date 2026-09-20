@@ -1,4 +1,4 @@
-import type { ReactionRole, ReactionRolePanel } from '@prisma-client/client';
+import type { ReactionRole, ReactionRolePanel } from '@discord-bot/shared';
 import type { InteractionDataOption } from '@discordeno/bot';
 import type { Bot } from '@discordeno/bot';
 import type { BotInteraction } from '@core/rx/bus';

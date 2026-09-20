@@ -1,4 +1,4 @@
-import type { KeywordRuntime } from './keyword.select';
+import type { KeywordRuntime } from '@discord-bot/shared';
 import type { KeywordModule } from './keyword.module';
 import { Observable, of, map } from 'rxjs';
 

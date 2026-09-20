@@ -1,5 +1,5 @@
 import type { InteractionDataOption } from '@discordeno/bot';
-import type { NotificationChannel } from '@prisma-client/client';
+import type { NotificationChannel } from '@discord-bot/shared';
 
 export interface CommandContext {
   bot: any;

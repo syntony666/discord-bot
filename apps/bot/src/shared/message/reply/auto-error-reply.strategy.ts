@@ -1,3 +1,4 @@
+import { ApiError } from '@discord-bot/shared';
 import { ReplyStrategy } from './reply.strategy';
 import { Colors } from '@core/config';
 import type { MessageStrategy, AutoErrorReplyOptions } from '../message.types';
@@ -34,6 +35,15 @@ export class AutoErrorReplyStrategy implements MessageStrategy {
     error: any,
     customMessages?: AutoErrorReplyOptions['customMessages']
   ): string {
+    if (error instanceof ApiError) {
+      if (error.code === 'CONFLICT') return customMessages?.duplicate || '此項目已存在。';
+      if (error.code === 'NOT_FOUND') return customMessages?.notFound || '找不到指定的項目。';
+      return 'API 服務發生問題，請稍後再試。';
+    }
+    if (error instanceof TypeError && String(error.message).includes('fetch')) {
+      return 'API 服務連線發生問題，請稍後再試。';
+    }
+
     if (error.code === PrismaErrorCode.UniqueConstraintViolation) {
       return customMessages?.duplicate || '此項目已存在。';
     }

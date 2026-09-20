@@ -1,5 +1,5 @@
 import { Bot } from '@discordeno/bot';
-import { ReactionRolePanel, ReactionRole } from '@prisma-client/client';
+import { ReactionRolePanel, ReactionRole } from '@discord-bot/shared';
 import { createLogger } from '@core/logger';
 import { buildPanelEmbed } from '../reaction-role.helpers';
 import type { PanelMode } from '../reaction-role.types';

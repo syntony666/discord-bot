@@ -1,7 +1,6 @@
 import '@discord-bot/shared';
 import { appConfig } from '@core/config';
 import { logger } from '@core/logger';
-import { prisma, connectPrisma, disconnectPrisma } from '@platforms/database/prisma.client';
 import { createBotClient } from '@platforms/discordeno/bot.client';
 import { bootstrapApp } from '@core/bootstrap/app.bootstrap';
 import { featureRegistry } from '@core/bootstrap/feature.registry';
@@ -14,20 +13,17 @@ async function main() {
   logger.info({ env: appConfig.nodeEnv }, 'Starting bot');
 
   try {
-    await connectPrisma();
-
     const { bot, rest, start } = createBotClient();
 
     healthServer = startHealthServer(appConfig.health.port, buildStatusPayload);
 
-    await bootstrapApp(bot as any, rest, prisma);
+    await bootstrapApp(bot as any, rest);
 
     await start();
 
     logger.info('Bot started successfully');
   } catch (error) {
     logger.error({ error }, 'Failed to start bot');
-    await disconnectPrisma();
     process.exit(1);
   }
 }
@@ -42,8 +38,6 @@ async function gracefulShutdown(signal: string) {
       await healthServer.close();
       healthServer = null;
     }
-
-    await disconnectPrisma();
 
     logger.info('Graceful shutdown completed');
     process.exit(0);
@@ -67,8 +61,7 @@ process.on('uncaughtException', (error) => {
   gracefulShutdown('uncaughtException');
 });
 
-main().catch(async (error) => {
+main().catch((error) => {
   logger.error({ error }, 'Fatal error in main');
-  await disconnectPrisma();
   process.exit(1);
 });

@@ -3,7 +3,7 @@ import { createLogger } from '@core/logger';
 import { replySuccess } from 'shared/message/message.helper';
 import { handleError } from 'shared/error';
 import { StreamNotifyCommandContext, EnableCommandOptions } from '../stream-notify.types';
-import { StreamNotifyConfig } from '@prisma-client/client';
+import { StreamNotifyConfig } from '@discord-bot/shared';
 
 const log = createLogger('StreamNotifyEnable');
 

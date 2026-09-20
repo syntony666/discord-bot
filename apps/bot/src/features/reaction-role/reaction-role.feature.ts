@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma-client/client';
 import { Bot, InteractionTypes } from '@discordeno/bot';
 import { Subscription, concatMap, lastValueFrom, catchError, EMPTY } from 'rxjs';
-import { createReactionRoleModule, ReactionRoleModule } from './reaction-role.module';
+import { ReactionRoleModule } from './reaction-role.module';
 import { createReactionRoleService, ReactionRoleService } from './reaction-role.service';
 import { reactionAdd$, reactionRemove$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
@@ -17,11 +16,10 @@ export interface ReactionRoleFeature extends Feature {
 }
 
 export function setupReactionRoleFeature(
-  prisma: PrismaClient,
+  module: ReactionRoleModule,
   bot: Bot,
   guildModule: GuildModule
 ): ReactionRoleFeature {
-  const module = createReactionRoleModule(prisma);
   const service = createReactionRoleService(module);
 
   const subscriptions: Subscription[] = [];

@@ -4,7 +4,7 @@ import { StreamPlatformService } from './platforms/platform.interface';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap, catchError } from 'rxjs/operators';
 import { createLogger } from '@core/logger';
-import { StreamWatcher } from '@prisma-client/client';
+import { StreamWatcher } from '@discord-bot/shared';
 
 const log = createLogger('StreamNotifyService');
 

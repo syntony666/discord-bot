@@ -1,6 +1,12 @@
 import { Bot } from '@discordeno/bot';
 import { RestManager } from '@discordeno/rest';
-import { PrismaClient } from '@prisma-client/client';
+import { createRequest } from '@discord-bot/shared';
+import { appConfig } from '@core/config';
+import { createHttpGuildModule } from '@features/guild/guild.http-module';
+import { createHttpKeywordModule } from '@features/keyword/keyword.http-module';
+import { createHttpMemberNotifyModule } from '@features/member-notify/member-notify.http-module';
+import { createHttpReactionRoleModule } from '@features/reaction-role/reaction-role.http-module';
+import { createHttpStreamNotifyModule } from '@features/stream-notify/stream-notify.http-module';
 import { setupKeywordFeature } from '@features/keyword/keyword.feature';
 import { setupGuildFeature } from '@features/guild/guild.feature';
 import { registerApplicationCommands } from '@platforms/discordeno/commands-loader';
@@ -23,8 +29,10 @@ import { createSchedulerService } from '@core/scheduler';
 
 const log = createLogger('Bootstrap');
 
-export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaClient) {
+export async function bootstrapApp(bot: Bot, rest: RestManager) {
   log.info('Bootstrapping application...');
+
+  const request = createRequest(appConfig.api.url);
 
   ready$.subscribe(({ user }) => {
     log.info({ user }, 'Bot is ready');
@@ -56,14 +64,30 @@ export async function bootstrapApp(bot: Bot, rest: RestManager, prisma: PrismaCl
   });
 
   // ========== Setup Guild Feature FIRST ==========
-  const guildFeature = setupGuildFeature(prisma, bot);
+  const guildFeature = setupGuildFeature(createHttpGuildModule(request), bot);
   featureRegistry.register(guildFeature);
 
   // ========== Setup other features (pass guildModule) ==========
-  const keywordFeature = setupKeywordFeature(prisma, bot, guildFeature.module);
-  const memberNotifyFeature = setupMemberNotifyFeature(prisma, bot, guildFeature.module);
-  const reactionRoleFeature = setupReactionRoleFeature(prisma, bot, guildFeature.module);
-  const streamNotifyFeature = setupStreamNotifyFeature(prisma, bot, scheduler);
+  const keywordFeature = setupKeywordFeature(
+    createHttpKeywordModule(request),
+    bot,
+    guildFeature.module
+  );
+  const memberNotifyFeature = setupMemberNotifyFeature(
+    createHttpMemberNotifyModule(request),
+    bot,
+    guildFeature.module
+  );
+  const reactionRoleFeature = setupReactionRoleFeature(
+    createHttpReactionRoleModule(request),
+    bot,
+    guildFeature.module
+  );
+  const streamNotifyFeature = setupStreamNotifyFeature(
+    createHttpStreamNotifyModule(request),
+    bot,
+    scheduler
+  );
 
   featureRegistry.register(keywordFeature);
   featureRegistry.register(memberNotifyFeature);

@@ -19,9 +19,6 @@
       ],
       "@shared/*": [
         "shared/*"
-      ],
-      "@prisma-client/*": [
-        ".prisma/*"
       ]
     }
   },

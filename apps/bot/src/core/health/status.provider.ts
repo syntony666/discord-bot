@@ -1,4 +1,4 @@
-import { prisma } from '@platforms/database/prisma.client';
+import { appConfig } from '@core/config';
 import { ready$ } from '@core/rx/bus';
 import { StatusPayload } from './health.server';
 
@@ -12,15 +12,16 @@ export async function buildStatusPayload(): Promise<StatusPayload> {
   const checks: StatusPayload['checks'] = {};
   let status: StatusPayload['status'] = 'ok';
 
-  const dbStart = Date.now();
+  const apiStart = Date.now();
   try {
-    await prisma.$queryRaw`SELECT 1`;
-    checks.database = { ok: true, latencyMs: Date.now() - dbStart };
+    const response = await fetch(`${appConfig.api.url}/health`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    checks.api = { ok: true, latencyMs: Date.now() - apiStart };
   } catch (error) {
     status = 'error';
-    checks.database = {
+    checks.api = {
       ok: false,
-      latencyMs: Date.now() - dbStart,
+      latencyMs: Date.now() - apiStart,
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   }

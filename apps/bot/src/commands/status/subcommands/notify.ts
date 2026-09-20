@@ -4,7 +4,7 @@ import { replyTextList } from 'shared/paginator/paginator.helper';
 import { handleError } from 'shared/error';
 import { Bot } from '@discordeno/bot';
 import { BotInteraction } from '@core/rx/bus';
-import { NotificationType } from '@prisma-client/client';
+import { NotificationType } from '@discord-bot/shared';
 
 // Import feature modules
 import { MemberNotifyModule } from '@features/member-notify/member-notify.module';

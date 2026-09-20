@@ -1,6 +1,6 @@
 import { Bot, InteractionDataOption } from '@discordeno/bot';
 import { BotInteraction } from '@core/rx/bus';
-import { createStreamNotifyModule, StreamNotifyModule } from '@features/stream-notify/stream-notify.module';
+import { StreamNotifyModule } from '@features/stream-notify/stream-notify.module';
 
 import { handleStreamNotifyEnable } from './subcommands/enable';
 import { handleStreamNotifyDisable } from './subcommands/disable';

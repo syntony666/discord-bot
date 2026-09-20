@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma-client/client';
 import { Bot } from '@discordeno/bot';
 import { Subscription, mergeMap, catchError, EMPTY, lastValueFrom } from 'rxjs';
-import { createGuildModule, GuildModule } from './guild.module';
+import { GuildModule } from './guild.module';
 import { guildCreate$, guildDelete$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { Feature } from '@core/bootstrap/feature.interface';
@@ -12,8 +11,7 @@ export interface GuildFeature extends Feature {
   module: GuildModule;
 }
 
-export function setupGuildFeature(prisma: PrismaClient, bot: Bot): GuildFeature {
-  const module = createGuildModule(prisma);
+export function setupGuildFeature(module: GuildModule, bot: Bot): GuildFeature {
   const subscriptions: Subscription[] = [];
 
   // ========== Guild Create Event ==========

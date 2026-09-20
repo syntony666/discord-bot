@@ -1,4 +1,4 @@
-import { createStreamNotifyModule, StreamNotifyModule } from './stream-notify.module';
+import { StreamNotifyModule } from './stream-notify.module';
 import { StreamNotifyService, createStreamNotifyService } from './stream-notify.service';
 import { TwitchService } from './platforms/twitch.service';
 import { StreamPlatformService } from './platforms/platform.interface';
@@ -17,11 +17,10 @@ export interface StreamNotifyFeature {
 }
 
 export function setupStreamNotifyFeature(
-  prisma: any,
+  module: StreamNotifyModule,
   bot: Bot,
   scheduler: SchedulerService
 ): StreamNotifyFeature {
-  const module = createStreamNotifyModule(prisma);
   const service = createStreamNotifyService(bot);
 
   const twitchService = new TwitchService(
