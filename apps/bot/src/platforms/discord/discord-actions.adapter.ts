@@ -25,53 +25,53 @@ export function createDiscordActions(
       return botId;
     },
     sendMessage: (channelId, content) =>
-      rest.post(Routes.channelMessages(String(channelId)), {
+      rest.post(Routes.channelMessages(channelId), {
         body: content,
       }) as Promise<APIMessage>,
     sendInteractionResponse: (id, token, response) =>
-      rest.post(Routes.interactionCallback(String(id), token), { body: response }),
+      rest.post(Routes.interactionCallback(id, token), { body: response }),
     editOriginalInteractionResponse: (token, data) =>
       rest.patch(Routes.webhookMessage(applicationId, token, '@original'), { body: data }),
     editMessage: (channelId, messageId, options) =>
-      rest.patch(Routes.channelMessage(String(channelId), String(messageId)), {
+      rest.patch(Routes.channelMessage(channelId, messageId), {
         body: options,
       }),
     deleteMessage: (channelId, messageId, reason) =>
-      rest.delete(Routes.channelMessage(String(channelId), String(messageId)), { reason }),
+      rest.delete(Routes.channelMessage(channelId, messageId), { reason }),
     getGuild: (guildId) =>
-      rest.get(`${Routes.guild(String(guildId))}?with_counts=true`) as unknown as Promise<BotGuild>,
-    getUser: (userId) => rest.get(Routes.user(String(userId))) as unknown as Promise<BotUser>,
+      rest.get(`${Routes.guild(guildId)}?with_counts=true`) as Promise<BotGuild>,
+    getUser: (userId) => rest.get(Routes.user(userId)) as Promise<BotUser>,
     addRole: (guildId, userId, roleId, reason) =>
-      rest.put(Routes.guildMemberRole(String(guildId), String(userId), String(roleId)), {
+      rest.put(Routes.guildMemberRole(guildId, userId, roleId), {
         reason,
       }),
     removeRole: (guildId, userId, roleId, reason) =>
-      rest.delete(Routes.guildMemberRole(String(guildId), String(userId), String(roleId)), {
+      rest.delete(Routes.guildMemberRole(guildId, userId, roleId), {
         reason,
       }),
     addReaction: (channelId, messageId, emoji) =>
       rest.put(
         Routes.channelMessageOwnReaction(
-          String(channelId),
-          String(messageId),
+          channelId,
+          messageId,
           encodeURIComponent(emoji)
         )
       ),
     deleteOwnReaction: (channelId, messageId, emoji) =>
       rest.delete(
         Routes.channelMessageOwnReaction(
-          String(channelId),
-          String(messageId),
+          channelId,
+          messageId,
           encodeURIComponent(emoji)
         )
       ),
     deleteUserReaction: (channelId, messageId, userId, emoji) =>
       rest.delete(
         Routes.channelMessageUserReaction(
-          String(channelId),
-          String(messageId),
+          channelId,
+          messageId,
           encodeURIComponent(emoji),
-          String(userId)
+          userId
         )
       ),
   };

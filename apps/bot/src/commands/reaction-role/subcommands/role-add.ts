@@ -7,7 +7,7 @@ import { replySuccess, replyError } from 'shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError } from 'shared/error';
-import { roleMention } from 'shared/utils/discord.utils';
+import { Formatters } from '@discord-bot/discord-client';
 import { buildPanelEmbed } from '../reaction-role.helpers';
 import type { PanelMode } from '../reaction-role.types';
 import { addDiscordReaction } from '../internal/operations';
@@ -60,8 +60,8 @@ export async function handleAdd(
     ];
 
     await actions.editMessage(
-      BigInt(panel.channelId),
-      BigInt(panelId),
+      panel.channelId,
+      panelId,
       buildPanelEmbed({
         title: panel.title,
         description: panel.description || undefined,
@@ -87,7 +87,7 @@ export async function handleAdd(
     const displayEmoji = formatEmojiForDisplay(emoji);
     await replySuccess(actions, interaction, {
       title: 'Reaction Role 已添加',
-      description: `${displayEmoji} → ${roleMention(roleId)} 已添加到 Panel。`,
+      description: `${displayEmoji} → ${Formatters.roleMention(roleId)} 已添加到 Panel。`,
     });
 
     log.info({ guildId, messageId: panelId, emoji, roleId }, 'Reaction role added successfully');

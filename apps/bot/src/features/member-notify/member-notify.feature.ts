@@ -3,7 +3,7 @@ import type { DiscordActions } from '@core/discord/discord-actions';
 import { Subscription, lastValueFrom, mergeMap, catchError, EMPTY } from 'rxjs';
 import { MemberNotifyModule } from './member-notify.module';
 import { createMemberNotifyService, MemberNotifyService } from './member-notify.service';
-import { BotGuild, guildMemberAdd$, guildMemberRemove$ } from '@core/rx/bus';
+import { guildMemberAdd$, guildMemberRemove$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { notify } from '@shared/message/message.helper';
 import { handleDiscordError } from '@core/rx/operators/handle-discord-error';
@@ -46,7 +46,7 @@ export function setupMemberNotifyFeature(
 
           // Get message templates
           const templates = await lastValueFrom(module.getMessageTemplates$(guildId));
-          const guild = (await actions.getGuild(guildId)) as BotGuild;
+          const guild = await actions.getGuild(guildId);
           const memberCount = guild.approximate_member_count || 0;
 
           const message = service.formatMessage(
@@ -95,7 +95,7 @@ export function setupMemberNotifyFeature(
 
           // Get message templates
           const templates = await lastValueFrom(module.getMessageTemplates$(guildIdStr));
-          const guild = (await actions.getGuild(guildIdStr)) as BotGuild;
+          const guild = await actions.getGuild(guildIdStr);
           const memberCount = guild.approximate_member_count || 0;
 
           const message = service.formatMessage(
@@ -118,7 +118,7 @@ export function setupMemberNotifyFeature(
           log.info({ guildId: guildIdStr, userId: user.id }, 'Sent leave notification');
         } catch (error) {
           log.error(
-            { error, guildId: guildIdStr, userId: user.id.toString() },
+            { error, guildId: guildIdStr, userId: user.id },
             'Failed to send leave notification'
           );
         }

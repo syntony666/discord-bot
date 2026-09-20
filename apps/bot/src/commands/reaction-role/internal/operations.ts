@@ -13,7 +13,7 @@ export async function deleteDiscordMessage(
   context: { guildId: string; panelId?: string }
 ): Promise<void> {
   try {
-    await actions.deleteMessage(BigInt(channelId), BigInt(messageId));
+    await actions.deleteMessage(channelId, messageId);
     log.debug({ ...context, messageId }, 'Discord message deleted');
   } catch (error: any) {
     // 10008 = Unknown Message (message already deleted)
@@ -49,8 +49,8 @@ export async function updatePanelMessage(
   const finalMode = updates?.mode !== undefined ? updates.mode : (panel.mode as PanelMode);
 
   await actions.editMessage(
-    BigInt(panel.channelId),
-    BigInt(panel.messageId),
+    panel.channelId,
+    panel.messageId,
     buildPanelEmbed({
       title: finalTitle,
       description: finalDescription,
@@ -74,7 +74,7 @@ export async function deleteDiscordReaction(
   context: { guildId: string; panelId: string }
 ): Promise<void> {
   try {
-    await actions.deleteOwnReaction(BigInt(channelId), BigInt(messageId), emoji);
+    await actions.deleteOwnReaction(channelId, messageId, emoji);
     log.debug({ ...context, emoji }, 'Discord reaction deleted');
   } catch (error: any) {
     // 10008 = Unknown Message or reaction doesn't exist
@@ -92,7 +92,7 @@ export async function addDiscordReaction(
   emoji: string,
   context: { guildId: string; panelId: string }
 ): Promise<void> {
-  await actions.addReaction(BigInt(channelId), BigInt(messageId), emoji);
+  await actions.addReaction(channelId, messageId, emoji);
   log.debug({ ...context, emoji }, 'Discord reaction added');
 }
 

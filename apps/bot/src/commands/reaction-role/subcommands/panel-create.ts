@@ -3,10 +3,10 @@ import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { lastValueFrom } from 'rxjs';
 import { replySuccess, replyError } from 'shared/message/message.helper';
-import { BotInteraction, BotMessage } from '@core/rx/bus';
+import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { handleError, DiscordErrorHandler } from 'shared/error';
-import { channelMention } from 'shared/utils/discord.utils';
+import { Formatters } from '@discord-bot/discord-client';
 import { buildPanelEmbed } from '../reaction-role.helpers';
 import type { PanelMode } from '../reaction-role.types';
 
@@ -27,26 +27,26 @@ export async function handlePanelCreate(
 
   try {
     // Step 1: Send Discord message
-    const message = (await actions.sendMessage(
-      BigInt(channelId),
+    const message = await actions.sendMessage(
+      channelId,
       buildPanelEmbed({
         title,
         description,
         mode,
         roles: [],
       })
-    )) as BotMessage;
+    );
 
     // Step 2: Update message with panel ID
     await actions.editMessage(
-      BigInt(channelId),
+      channelId,
       message.id,
       buildPanelEmbed({
         title,
         description,
         mode,
         roles: [],
-        messageId: message.id.toString(),
+        messageId: message.id,
       })
     );
 
@@ -55,7 +55,7 @@ export async function handlePanelCreate(
       module.createPanel$({
         guildId,
         channelId,
-        messageId: message.id.toString(),
+        messageId: message.id,
         title,
         description,
         mode,
@@ -64,10 +64,10 @@ export async function handlePanelCreate(
 
     await replySuccess(actions, interaction, {
       title: 'Panel 已建立',
-      description: `Reaction Role Panel 已在 ${channelMention(channelId)} 建立。\n\n**Panel ID**: \`${message.id}\`\n\n使用 \`/reaction-role add\` 來添加身分組。`,
+      description: `Reaction Role Panel 已在 ${Formatters.channelMention(channelId)} 建立。\n\n**Panel ID**: \`${message.id}\`\n\n使用 \`/reaction-role add\` 來添加身分組。`,
     });
 
-    log.info({ guildId, channelId, messageId: message.id.toString() }, 'Panel created');
+    log.info({ guildId, channelId, messageId: message.id }, 'Panel created');
   } catch (error) {
     const result = DiscordErrorHandler.handle(error, {
       operation: 'reactionRolePanelCreate',

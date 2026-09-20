@@ -2,7 +2,7 @@ import { getBotVersion, getUptime } from '@core/bot-info';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import type { MessageComponents } from '@core/discord/discord.types';
 import { logger } from '@core/logger';
-import { BotInteraction, BotUser } from '@core/rx/bus';
+import { BotInteraction } from '@core/rx/bus';
 import { ComponentType, ButtonStyle } from 'discord-api-types/v10';
 import { appConfig } from '@core/config';
 import { replyInfo } from 'shared/message/message.helper';
@@ -15,7 +15,7 @@ export async function handleBotStatus(interaction: BotInteraction, actions: Disc
     const uptime = getUptime();
     const nodeVersion = process.version;
 
-    const botUser = (await actions.getUser(actions.botId)) as BotUser;
+    const botUser = await actions.getUser(actions.botId);
     const botIcon = avatarUrl(actions.botId, botUser.avatar, botUser.discriminator);
 
     const statusButtons: MessageComponents = [

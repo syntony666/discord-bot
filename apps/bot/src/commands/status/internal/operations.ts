@@ -42,8 +42,8 @@ export async function getBotStatus(actions: DiscordActions): Promise<{
 
 export async function getGuildInfo(actions: DiscordActions, guildId: string): Promise<BotGuild | null> {
   try {
-    const guild = await actions.getGuild(BigInt(guildId));
-    return guild as BotGuild;
+    const guild = await actions.getGuild(guildId);
+    return guild;
   } catch (error) {
     log.error({ error, guildId }, 'Failed to get guild info');
     return null;

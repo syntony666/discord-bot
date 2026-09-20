@@ -28,7 +28,7 @@ export interface PaginatorSession<T = any> {
   totalPages: number;
   expiresAt: number;
   messageToken: string;
-  interactionId: bigint;
+  interactionId: string;
   userId?: string;
 }
 

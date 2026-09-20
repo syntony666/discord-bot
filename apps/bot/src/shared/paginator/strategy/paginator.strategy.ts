@@ -42,8 +42,8 @@ export class PaginatorStrategy<T> {
       currentPage: 0,
       totalPages,
       expiresAt: now + this.ttlMs,
-      messageToken: String(interaction.token),
-      interactionId: BigInt(interaction.id),
+      messageToken: interaction.token,
+      interactionId: interaction.id,
     };
 
     const session: PaginatorSession<T> =

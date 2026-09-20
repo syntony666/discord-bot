@@ -10,11 +10,11 @@ import type { BotGuild, BotUser } from '@core/rx/bus';
 export interface DiscordActions {
   readonly botId: string;
   sendMessage(
-    channelId: bigint | string,
+    channelId: string,
     content: RESTPostAPIChannelMessageJSONBody
   ): Promise<APIMessage>;
   sendInteractionResponse(
-    id: bigint | string,
+    id: string,
     token: string,
     response: APIInteractionResponse
   ): Promise<unknown>;
@@ -23,43 +23,43 @@ export interface DiscordActions {
     data: APIInteractionResponseCallbackData
   ): Promise<unknown>;
   editMessage(
-    channelId: bigint | string,
-    messageId: bigint | string,
+    channelId: string,
+    messageId: string,
     options: RESTPatchAPIChannelMessageJSONBody
   ): Promise<unknown>;
   deleteMessage(
-    channelId: bigint | string,
-    messageId: bigint | string,
+    channelId: string,
+    messageId: string,
     reason?: string
   ): Promise<unknown>;
-  getGuild(guildId: bigint | string): Promise<BotGuild>;
-  getUser(userId: bigint | string): Promise<BotUser>;
+  getGuild(guildId: string): Promise<BotGuild>;
+  getUser(userId: string): Promise<BotUser>;
   addRole(
-    guildId: bigint | string,
-    userId: bigint | string,
-    roleId: bigint | string,
+    guildId: string,
+    userId: string,
+    roleId: string,
     reason?: string
   ): Promise<unknown>;
   removeRole(
-    guildId: bigint | string,
-    userId: bigint | string,
-    roleId: bigint | string,
+    guildId: string,
+    userId: string,
+    roleId: string,
     reason?: string
   ): Promise<unknown>;
   addReaction(
-    channelId: bigint | string,
-    messageId: bigint | string,
+    channelId: string,
+    messageId: string,
     emoji: string
   ): Promise<unknown>;
   deleteOwnReaction(
-    channelId: bigint | string,
-    messageId: bigint | string,
+    channelId: string,
+    messageId: string,
     emoji: string
   ): Promise<unknown>;
   deleteUserReaction(
-    channelId: bigint | string,
-    messageId: bigint | string,
-    userId: bigint | string,
+    channelId: string,
+    messageId: string,
+    userId: string,
     emoji: string
   ): Promise<unknown>;
 }

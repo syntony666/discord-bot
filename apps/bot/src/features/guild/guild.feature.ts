@@ -19,7 +19,7 @@ export function setupGuildFeature(module: GuildModule, actions: DiscordActions):
   const createSub = guildCreate$
     .pipe(
       mergeMap(async (guild) => {
-        const guildId = guild.id.toString();
+        const guildId = guild.id;
         try {
           await lastValueFrom(module.ensureGuild$(guildId, guild.name));
           log.info({ guildId, name: guild.name }, 'Guild record ensured');

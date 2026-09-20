@@ -2,8 +2,8 @@ import type { CommandOption } from '@core/discord/discord.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { createLogger } from '@core/logger';
 import { MemberNotifyMessage, NotificationType } from '@discord-bot/shared';
-import { channelMention, userMention } from 'shared/utils/discord.utils';
-import type { BotGuild, BotInteraction } from '@core/rx/bus';
+import { Formatters } from '@discord-bot/discord-client';
+import type { BotInteraction } from '@core/rx/bus';
 import { formatMessageTemplate, getDefaultTemplates } from '../member-notify.helpers';
 import { lastValueFrom } from 'rxjs';
 
@@ -95,7 +95,7 @@ export async function testMessageTemplate(
     const templates: MemberNotifyMessage = await lastValueFrom(
       module.getMessageTemplates$(guildId)
     );
-    const guild = (await actions.getGuild(interaction.guild_id!)) as BotGuild;
+    const guild = await actions.getGuild(interaction.guild_id!);
 
     const defaultTemplates = getDefaultTemplates();
     const template =
@@ -104,7 +104,7 @@ export async function testMessageTemplate(
         : templates?.leaveMessage || defaultTemplates.leave;
 
     const testMessage = service.formatMessage(template, {
-      user: userMention(interaction.user?.id || ''),
+      user: Formatters.userMention(interaction.user?.id || ''),
       username: interaction.user?.username || 'TestUser',
       server: guild.name,
       memberCount: guild.approximate_member_count || 0,
