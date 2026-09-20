@@ -1,10 +1,10 @@
 import { StreamNotifyModule } from './stream-notify.module';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { StreamNotifyService, createStreamNotifyService } from './stream-notify.service';
 import { TwitchService } from './platforms/twitch.service';
 import { StreamPlatformService } from './platforms/platform.interface';
 import { createSchedulerService, SchedulerService } from '@core/scheduler';
 import { createLogger } from '@core/logger';
-import { Bot } from '@discordeno/bot';
 import { lastValueFrom } from 'rxjs';
 
 const log = createLogger('StreamNotifyFeature');
@@ -18,10 +18,10 @@ export interface StreamNotifyFeature {
 
 export function setupStreamNotifyFeature(
   module: StreamNotifyModule,
-  bot: Bot,
+  actions: DiscordActions,
   scheduler: SchedulerService
 ): StreamNotifyFeature {
-  const service = createStreamNotifyService(bot);
+  const service = createStreamNotifyService(actions);
 
   const twitchService = new TwitchService(
     process.env.TWITCH_CLIENT_ID || '',

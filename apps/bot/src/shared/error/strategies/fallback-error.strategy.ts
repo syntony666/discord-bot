@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { replyAutoError } from 'shared/message/message.helper';
 import { BaseErrorStrategy } from './error.strategy';
@@ -11,7 +11,7 @@ export class FallbackErrorStrategy extends BaseErrorStrategy {
   }
 
   async handle(
-    bot: Bot,
+    actions: DiscordActions,
     interaction: BotInteraction,
     error: any,
     context: ErrorContext
@@ -24,6 +24,6 @@ export class FallbackErrorStrategy extends BaseErrorStrategy {
       generic: context.generic,
     };
 
-    await replyAutoError(bot, interaction, error, customMessages);
+    await replyAutoError(actions, interaction, error, customMessages);
   }
 }

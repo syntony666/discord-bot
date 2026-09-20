@@ -20,7 +20,7 @@ export async function handleStreamNotifyWatch(
     );
 
     if (existingWatcher) {
-      await replySuccess(ctx.bot, ctx.interaction, {
+      await replySuccess(ctx.actions, ctx.interaction, {
         title: '監控已存在',
         description: `已在監控此 ${platform} 頻道`,
       });
@@ -31,7 +31,7 @@ export async function handleStreamNotifyWatch(
       module.addWatcher$(guildId, platform.toUpperCase() as StreamPlatform, id, name || id)
     );
 
-    await replySuccess(ctx.bot, ctx.interaction, {
+    await replySuccess(ctx.actions, ctx.interaction, {
       title: '已新增監控',
       description: `開始監控 ${platform} 頻道 ${name || id}`,
     });
@@ -39,6 +39,6 @@ export async function handleStreamNotifyWatch(
     log.info({ guildId, platform, platformId: id }, 'Stream watcher added');
   } catch (error) {
     log.error({ error, guildId: ctx.guildId }, 'Failed to add stream watcher');
-    await handleError(ctx.bot, ctx.interaction, error, 'stream-notify-watch');
+    await handleError(ctx.actions, ctx.interaction, error, 'stream-notify-watch');
   }
 }

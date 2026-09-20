@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRolePanel, ReactionRole } from '@discord-bot/shared';
 import { createLogger } from '@core/logger';
 import { buildPanelEmbed } from '../reaction-role.helpers';
@@ -7,13 +7,13 @@ import type { PanelMode } from '../reaction-role.types';
 const log = createLogger('ReactionRoleOperations');
 
 export async function deleteDiscordMessage(
-  bot: Bot,
+  actions: DiscordActions,
   channelId: string,
   messageId: string,
   context: { guildId: string; panelId?: string }
 ): Promise<void> {
   try {
-    await bot.helpers.deleteMessage(BigInt(channelId), BigInt(messageId));
+    await actions.deleteMessage(BigInt(channelId), BigInt(messageId));
     log.debug({ ...context, messageId }, 'Discord message deleted');
   } catch (error: any) {
     // 10008 = Unknown Message (message already deleted)
@@ -26,7 +26,7 @@ export async function deleteDiscordMessage(
 }
 
 export async function updatePanelMessage(
-  bot: Bot,
+  actions: DiscordActions,
   panel: ReactionRolePanel,
   roles: ReactionRole[],
   updates?: {
@@ -48,7 +48,7 @@ export async function updatePanelMessage(
 
   const finalMode = updates?.mode !== undefined ? updates.mode : (panel.mode as PanelMode);
 
-  await bot.helpers.editMessage(
+  await actions.editMessage(
     BigInt(panel.channelId),
     BigInt(panel.messageId),
     buildPanelEmbed({
@@ -67,14 +67,14 @@ export async function updatePanelMessage(
 }
 
 export async function deleteDiscordReaction(
-  bot: Bot,
+  actions: DiscordActions,
   channelId: string,
   messageId: string,
   emoji: string,
   context: { guildId: string; panelId: string }
 ): Promise<void> {
   try {
-    await bot.helpers.deleteOwnReaction(BigInt(channelId), BigInt(messageId), emoji);
+    await actions.deleteOwnReaction(BigInt(channelId), BigInt(messageId), emoji);
     log.debug({ ...context, emoji }, 'Discord reaction deleted');
   } catch (error: any) {
     // 10008 = Unknown Message or reaction doesn't exist
@@ -86,13 +86,13 @@ export async function deleteDiscordReaction(
 }
 
 export async function addDiscordReaction(
-  bot: Bot,
+  actions: DiscordActions,
   channelId: string,
   messageId: string,
   emoji: string,
   context: { guildId: string; panelId: string }
 ): Promise<void> {
-  await bot.helpers.addReaction(BigInt(channelId), BigInt(messageId), emoji);
+  await actions.addReaction(BigInt(channelId), BigInt(messageId), emoji);
   log.debug({ ...context, emoji }, 'Discord reaction added');
 }
 

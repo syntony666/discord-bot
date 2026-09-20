@@ -1,11 +1,11 @@
 import type { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import type { KeywordRule, KeywordMatchType } from '@discord-bot/shared';
-import type { Bot } from '@discordeno/bot';
 import type { BotInteraction } from '@core/rx/bus';
 import type { KeywordModule } from '@features/keyword/keyword.module';
 
 export interface CommandContext {
-  bot: Bot;
+  actions: DiscordActions;
   interaction: BotInteraction;
   guildId: string;
   module: KeywordModule;

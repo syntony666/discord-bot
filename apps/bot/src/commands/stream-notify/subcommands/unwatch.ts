@@ -24,7 +24,7 @@ export async function handleStreamNotifyUnwatch(
     );
 
     if (!existingWatcher) {
-      await replySuccess(ctx.bot, ctx.interaction, {
+      await replySuccess(ctx.actions, ctx.interaction, {
         title: '監控不存在',
         description: `未找到此 ${platform} 頻道的監控`,
       });
@@ -35,7 +35,7 @@ export async function handleStreamNotifyUnwatch(
       module.removeWatcher$(guildId, platform.toUpperCase() as StreamPlatform, id)
     );
 
-    await replySuccess(ctx.bot, ctx.interaction, {
+    await replySuccess(ctx.actions, ctx.interaction, {
       title: '已移除監控',
       description: `已停止監控 ${platform} 頻道 ${existingWatcher.displayName}`,
     });
@@ -43,6 +43,6 @@ export async function handleStreamNotifyUnwatch(
     log.info({ guildId, platform, platformId: id }, 'Stream watcher removed');
   } catch (error) {
     log.error({ error, guildId: ctx.guildId }, 'Failed to remove stream watcher');
-    await handleError(ctx.bot, ctx.interaction, error, 'stream-notify-unwatch');
+    await handleError(ctx.actions, ctx.interaction, error, 'stream-notify-unwatch');
   }
 }

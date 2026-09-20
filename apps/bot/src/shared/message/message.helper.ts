@@ -1,7 +1,8 @@
 import { MessageFactory } from './message.factory';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { MessageType } from './message.types';
 import type { MessageOptions } from './message.types';
-import type { Bot, DiscordEmbed, MessageComponents } from '@discordeno/bot';
+import { type DiscordEmbed, MessageComponents } from '@discordeno/bot';
 import type { BotInteraction } from '@core/rx/bus';
 
 export { MessageType } from './message.types';
@@ -14,7 +15,7 @@ export async function sendMessage(options: MessageOptions): Promise<boolean> {
 // ==================== Reply convenience functions ====================
 
 export async function replySuccess(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   options: Omit<DiscordEmbed, 'type'> & {
     ephemeral?: boolean;
@@ -24,14 +25,14 @@ export async function replySuccess(
 ): Promise<boolean> {
   return sendMessage({
     type: MessageType.SUCCESS_REPLY,
-    bot,
+    actions,
     interaction,
     ...options,
   });
 }
 
 export async function replyError(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   options: Omit<DiscordEmbed, 'type'> & {
     ephemeral?: boolean;
@@ -41,14 +42,14 @@ export async function replyError(
 ): Promise<boolean> {
   return sendMessage({
     type: MessageType.ERROR_REPLY,
-    bot,
+    actions,
     interaction,
     ...options,
   });
 }
 
 export async function replyInfo(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   options: Omit<DiscordEmbed, 'type'> & {
     ephemeral?: boolean;
@@ -58,14 +59,14 @@ export async function replyInfo(
 ): Promise<boolean> {
   return sendMessage({
     type: MessageType.INFO_REPLY,
-    bot,
+    actions,
     interaction,
     ...options,
   });
 }
 
 export async function replyWarning(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   options: Omit<DiscordEmbed, 'type'> & {
     ephemeral?: boolean;
@@ -75,14 +76,14 @@ export async function replyWarning(
 ): Promise<boolean> {
   return sendMessage({
     type: MessageType.WARNING_REPLY,
-    bot,
+    actions,
     interaction,
     ...options,
   });
 }
 
 export async function replyAutoError(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   error: Error | { code?: number | string; message?: string },
   customMessages?: {
@@ -94,7 +95,7 @@ export async function replyAutoError(
 ): Promise<boolean> {
   return sendMessage({
     type: MessageType.AUTO_ERROR_REPLY,
-    bot,
+    actions,
     interaction,
     error,
     customMessages,
@@ -108,7 +109,7 @@ export interface NotifyOptions extends Omit<DiscordEmbed, 'type'> {
 }
 
 export async function notify(
-  bot: Bot,
+  actions: DiscordActions,
   channelId: bigint,
   { type, ...embedOptions }: NotifyOptions
 ): Promise<boolean> {
@@ -122,7 +123,7 @@ export async function notify(
 
   return sendMessage({
     type: typeMap[type],
-    bot,
+    actions,
     channelId,
     ...embedOptions,
   });

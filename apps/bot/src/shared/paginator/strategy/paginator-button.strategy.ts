@@ -1,4 +1,5 @@
 import { createLogger } from '@core/logger';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { PaginatorSessionRepository } from '../core/paginator.repository';
 import {
   reducePaginatorState,
@@ -9,7 +10,6 @@ import { parsePaginatorAction } from '../core/paginator.actions';
 import { buildPaginatorResponse } from '../ui/paginator.ui';
 import { replyError } from '../../message/message.helper';
 import { Timeouts } from '@core/config/constants';
-import type { Bot } from '@discordeno/bot';
 import type { BotInteraction } from '@core/rx/bus';
 import { PageRenderResult } from '../paginator.types';
 
@@ -29,7 +29,7 @@ export class PaginatorButtonStrategy {
     this.ttlMs = ttlMs;
   }
 
-  async handle(bot: Bot, interaction: BotInteraction): Promise<void> {
+  async handle(actions: DiscordActions, interaction: BotInteraction): Promise<void> {
     const customId: string | undefined = interaction.data?.customId;
     if (!customId) {
       log.warn('Button interaction without customId');
@@ -47,7 +47,7 @@ export class PaginatorButtonStrategy {
 
     // Session missing → ephemeral error
     if (!session) {
-      await replyError(bot, interaction, {
+      await replyError(actions, interaction, {
         description: '此分頁已過期，請重新執行指令。',
         ephemeral: true,
       });
@@ -59,13 +59,13 @@ export class PaginatorButtonStrategy {
     // Session expired → update original message and remove buttons
     if (session.expiresAt <= now) {
       this.repo.delete(sessionId);
-      await this.updateMessageAsExpired(bot, interaction);
+      await this.updateMessageAsExpired(actions, interaction);
       return;
     }
 
     // Permission check → only creator can control (when userId is set)
     if (session.userId && interaction.user?.id?.toString() !== session.userId) {
-      await replyError(bot, interaction, {
+      await replyError(actions, interaction, {
         description: '只有建立此分頁的使用者可以操作按鈕。',
         ephemeral: true,
       });
@@ -74,7 +74,7 @@ export class PaginatorButtonStrategy {
 
     // Handle page jump button
     if (action === 'page') {
-      await this.handlePageJump(bot, interaction, session, sessionId);
+      await this.handlePageJump(actions, interaction, session, sessionId);
       return;
     }
 
@@ -98,7 +98,7 @@ export class PaginatorButtonStrategy {
 
     if (!page) {
       log.error({ sessionId, currentPage: updatedSession.currentPage }, 'Paginator page not found');
-      await replyError(bot, interaction, {
+      await replyError(actions, interaction, {
         description: '分頁發生錯誤，請重新執行指令。',
         ephemeral: true,
       });
@@ -113,7 +113,7 @@ export class PaginatorButtonStrategy {
     });
 
     try {
-      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+      await actions.sendInteractionResponse(interaction.id, interaction.token, {
         type: 7, // UPDATE_MESSAGE
         data,
       });
@@ -123,13 +123,13 @@ export class PaginatorButtonStrategy {
   }
 
   private async handlePageJump(
-    bot: Bot,
+    actions: DiscordActions,
     interaction: BotInteraction,
     session: any,
     sessionId: string
   ): Promise<void> {
     try {
-      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+      await actions.sendInteractionResponse(interaction.id, interaction.token, {
         type: 9, // MODAL
         data: {
           customId: `pg:${sessionId}:jump`,
@@ -158,7 +158,7 @@ export class PaginatorButtonStrategy {
     }
   }
 
-  async handleModalSubmit(bot: Bot, interaction: BotInteraction): Promise<void> {
+  async handleModalSubmit(actions: DiscordActions, interaction: BotInteraction): Promise<void> {
     const customId: string | undefined = interaction.data?.customId;
     if (!customId || !customId.startsWith('pg:') || !customId.endsWith(':jump')) {
       return;
@@ -168,7 +168,7 @@ export class PaginatorButtonStrategy {
     const session = this.repo.get(sessionId);
 
     if (!session) {
-      await replyError(bot, interaction, {
+      await replyError(actions, interaction, {
         description: '此分頁已過期，請重新執行指令。',
         ephemeral: true,
       });
@@ -179,7 +179,7 @@ export class PaginatorButtonStrategy {
     const pageNumber = parseInt(pageNumberInput || '1', 10);
 
     if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > session.totalPages) {
-      await replyError(bot, interaction, {
+      await replyError(actions, interaction, {
         description: `請輸入 1 到 ${session.totalPages} 之間的有效頁碼。`,
         ephemeral: true,
       });
@@ -206,7 +206,7 @@ export class PaginatorButtonStrategy {
     });
 
     try {
-      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+      await actions.sendInteractionResponse(interaction.id, interaction.token, {
         type: 7,
         data,
       });
@@ -215,9 +215,9 @@ export class PaginatorButtonStrategy {
     }
   }
 
-  private async updateMessageAsExpired(bot: Bot, interaction: BotInteraction): Promise<void> {
+  private async updateMessageAsExpired(actions: DiscordActions, interaction: BotInteraction): Promise<void> {
     try {
-      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+      await actions.sendInteractionResponse(interaction.id, interaction.token, {
         type: 7,
         data: {
           embeds: [

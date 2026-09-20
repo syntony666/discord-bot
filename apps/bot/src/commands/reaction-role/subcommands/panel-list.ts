@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { lastValueFrom } from 'rxjs';
 import { replyInfo } from 'shared/message/message.helper';
@@ -12,7 +12,7 @@ import type { PanelMode } from '../reaction-role.types';
 const log = createLogger('ReactionRolePanel');
 
 export async function handlePanelList(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   module: ReactionRoleModule,
   guildId: string
@@ -21,7 +21,7 @@ export async function handlePanelList(
     const panels = await lastValueFrom(module.getPanelsByGuild$(guildId));
 
     if (panels.length === 0) {
-      await replyInfo(bot, interaction, {
+      await replyInfo(actions, interaction, {
         title: 'Panel 列表',
         description:
           '目前沒有任何 Reaction Role Panel。\n使用 `/reaction-role panel create` 建立新的 Panel。',
@@ -49,12 +49,12 @@ export async function handlePanelList(
       })
     );
 
-    await replyInfo(bot, interaction, {
+    await replyInfo(actions, interaction, {
       title: `Panel 列表 (${panels.length} 個)`,
       description: description.join('\n'),
     });
   } catch (error) {
     log.error({ error, guildId }, 'Failed to list panels');
-    await handleError(bot, interaction, error, 'reactionRolePanelList');
+    await handleError(actions, interaction, error, 'reactionRolePanelList');
   }
 }

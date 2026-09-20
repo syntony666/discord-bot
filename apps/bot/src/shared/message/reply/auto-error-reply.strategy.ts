@@ -16,11 +16,11 @@ export class AutoErrorReplyStrategy implements MessageStrategy {
   constructor(private readonly options: AutoErrorReplyOptions) {}
 
   async send(): Promise<boolean> {
-    const { bot, interaction, error, customMessages } = this.options;
+    const { actions, interaction, error, customMessages } = this.options;
     const description = this.parseErrorMessage(error, customMessages);
 
     const replyStrategy = new ReplyStrategy({
-      bot,
+      actions,
       interaction,
       title: '❌ 錯誤',
       description,

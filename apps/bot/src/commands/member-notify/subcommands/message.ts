@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import { replySuccess } from 'shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
@@ -11,7 +12,7 @@ import { updateMessageTemplate } from '../internal/operations';
 const log = createLogger('MemberNotifyCommand');
 
 export async function handleMessage(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   module: MemberNotifyModule,
   guildId: string,
@@ -24,14 +25,14 @@ export async function handleMessage(
 
   try {
     await createMessageTemplateConfirmation(
-      bot,
+      actions,
       interaction,
       { guildId, type, template, userId },
-      async (bot, interaction, data) => {
+      async (actions, interaction, data) => {
         try {
-          await updateMessageTemplate(bot, module, guildId, data.type, data.template);
+          await updateMessageTemplate(actions, module, guildId, data.type, data.template);
 
-          await replySuccess(bot, interaction, {
+          await replySuccess(actions, interaction, {
             title: '訊息模板已更新',
             description: `${data.type === 'join' ? '加入' : '離開'}訊息已更新為：\n\`${data.template}\``,
             isEdit: true,
@@ -40,12 +41,12 @@ export async function handleMessage(
           log.info({ guildId, type }, 'Message template updated');
         } catch (error) {
           log.error({ error, guildId, type }, 'Failed to update message');
-          await handleError(bot, interaction, error, 'memberNotifySet');
+          await handleError(actions, interaction, error, 'memberNotifySet');
         }
       }
     );
   } catch (error) {
     log.error({ error, guildId, type }, 'Failed to update message');
-    await handleError(bot, interaction, error, 'memberNotifySet');
+    await handleError(actions, interaction, error, 'memberNotifySet');
   }
 }

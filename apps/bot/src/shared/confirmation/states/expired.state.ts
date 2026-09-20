@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { BaseConfirmationState } from './confirmation.state';
 import { StoredConfirmation } from '../confirmation.types';
@@ -13,17 +13,17 @@ export class ExpiredState extends BaseConfirmationState {
     // Already expired, no action needed
   }
 
-  async confirm(confirmation: StoredConfirmation, bot: Bot, interaction: BotInteraction): Promise<void> {
-    await this.sendExpiredMessage(bot, interaction);
+  async confirm(confirmation: StoredConfirmation, actions: DiscordActions, interaction: BotInteraction): Promise<void> {
+    await this.sendExpiredMessage(actions, interaction);
   }
 
-  async cancel(confirmation: StoredConfirmation, bot: Bot, interaction: BotInteraction): Promise<void> {
-    await this.sendExpiredMessage(bot, interaction);
+  async cancel(confirmation: StoredConfirmation, actions: DiscordActions, interaction: BotInteraction): Promise<void> {
+    await this.sendExpiredMessage(actions, interaction);
   }
 
-  private async sendExpiredMessage(bot: Bot, interaction: BotInteraction): Promise<void> {
+  private async sendExpiredMessage(actions: DiscordActions, interaction: BotInteraction): Promise<void> {
     const { replyError } = await import('shared/message/message.helper');
-    await replyError(bot, interaction, {
+    await replyError(actions, interaction, {
       title: '確認已過期',
       description: '此確認請求已過期或已被處理,請重新執行指令。',
       ephemeral: true,

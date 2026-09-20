@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import { GuildModule } from '@features/guild/guild.module';
 import { replySuccess } from 'shared/message/message.helper';
@@ -11,7 +12,7 @@ import { setupMemberNotifications } from '../internal/operations';
 const log = createLogger('MemberNotifyCommand');
 
 export async function handleEnable(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   module: MemberNotifyModule,
   guildModule: GuildModule,
@@ -21,9 +22,9 @@ export async function handleEnable(
   const channelId = subGroup.options?.find((o: any) => o.name === 'channel')?.value as string;
 
   try {
-    await setupMemberNotifications(bot, module, guildModule, guildId, channelId);
+    await setupMemberNotifications(actions, module, guildModule, guildId, channelId);
 
-    await replySuccess(bot, interaction, {
+    await replySuccess(actions, interaction, {
       title: '成員通知已啟用',
       description: `通知頻道已設定為 ${channelMention(channelId)}\n加入與離開通知已自動開啟。`,
     });
@@ -31,6 +32,6 @@ export async function handleEnable(
     log.info({ guildId, channelId }, 'Member notify enabled completed');
   } catch (error) {
     log.error({ error, guildId, channelId }, 'Failed to enable member notify');
-    await handleError(bot, interaction, error, 'memberNotifyEnable');
+    await handleError(actions, interaction, error, 'memberNotifyEnable');
   }
 }

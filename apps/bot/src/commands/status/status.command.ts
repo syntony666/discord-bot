@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 
 import { handleBotStatus } from './subcommands/bot';
@@ -18,16 +19,16 @@ export interface StatusCommandModules {
 }
 
 export function setupStatusCommand(modules: StatusCommandModules) {
-  return async (interaction: BotInteraction, bot: Bot) => {
+  return async (interaction: BotInteraction, actions: DiscordActions) => {
     const subcommand = interaction.data?.options?.[0] as InteractionDataOption;
     if (!subcommand) return;
 
     if (subcommand.name === 'bot') {
-      await handleBotStatus(interaction, bot);
+      await handleBotStatus(interaction, actions);
     } else if (subcommand.name === 'guild') {
-      await handleGuildStatus(interaction, bot);
+      await handleGuildStatus(interaction, actions);
     } else if (subcommand.name === 'notify') {
-      await handleNotifyStatus(interaction, bot, modules);
+      await handleNotifyStatus(interaction, actions, modules);
     }
   };
 }

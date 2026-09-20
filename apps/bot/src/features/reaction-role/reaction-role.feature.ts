@@ -1,4 +1,5 @@
-import { Bot, InteractionTypes } from '@discordeno/bot';
+import { InteractionTypes } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { Subscription, concatMap, lastValueFrom, catchError, EMPTY } from 'rxjs';
 import { ReactionRoleModule } from './reaction-role.module';
 import { createReactionRoleService, ReactionRoleService } from './reaction-role.service';
@@ -17,7 +18,7 @@ export interface ReactionRoleFeature extends Feature {
 
 export function setupReactionRoleFeature(
   module: ReactionRoleModule,
-  bot: Bot,
+  actions: DiscordActions,
   guildModule: GuildModule
 ): ReactionRoleFeature {
   const service = createReactionRoleService(module);
@@ -27,7 +28,7 @@ export function setupReactionRoleFeature(
   const addSub = reactionAdd$
     .pipe(
       concatMap(async (reaction) => {
-        if (reaction.userId === bot.id) return;
+        if (reaction.userId === actions.botId) return;
         if (!reaction.guildId) return;
 
         const guildId = reaction.guildId.toString();
@@ -48,7 +49,7 @@ export function setupReactionRoleFeature(
           for (const role of allRoles) {
             if (role.roleId !== match.roleId) {
               // Remove other roles
-              await bot.helpers
+              await actions
                 .removeRole(reaction.guildId, reaction.userId, BigInt(role.roleId))
                 .catch((err) => {
                   log.debug(
@@ -58,7 +59,7 @@ export function setupReactionRoleFeature(
                 });
 
               // Remove other reactions
-              await bot.helpers
+              await actions
                 .deleteUserReaction(
                   reaction.channelId,
                   reaction.messageId,
@@ -81,7 +82,7 @@ export function setupReactionRoleFeature(
         }
 
         // Grant the new role
-        await bot.helpers.addRole(reaction.guildId, reaction.userId, BigInt(match.roleId));
+        await actions.addRole(reaction.guildId, reaction.userId, BigInt(match.roleId));
 
         log.info(
           {
@@ -95,7 +96,7 @@ export function setupReactionRoleFeature(
 
         // VERIFY mode: remove reaction after granting role
         if (match.mode === 'VERIFY') {
-          await bot.helpers.deleteUserReaction(
+          await actions.deleteUserReaction(
             reaction.channelId,
             reaction.messageId,
             reaction.userId.toString(),
@@ -117,7 +118,7 @@ export function setupReactionRoleFeature(
   const removeSub = reactionRemove$
     .pipe(
       concatMap(async (reaction) => {
-        if (reaction.userId === bot.id) return;
+        if (reaction.userId === actions.botId) return;
         if (!reaction.guildId) return;
 
         const guildId = reaction.guildId.toString();
@@ -133,7 +134,7 @@ export function setupReactionRoleFeature(
           return;
         }
 
-        await bot.helpers.removeRole(reaction.guildId, reaction.userId, BigInt(match.roleId));
+        await actions.removeRole(reaction.guildId, reaction.userId, BigInt(match.roleId));
 
         log.info(
           {

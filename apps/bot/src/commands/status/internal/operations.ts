@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { createLogger } from '@core/logger';
 import type { BotGuild } from '@core/rx/bus';
 
@@ -7,7 +7,7 @@ const log = createLogger('StatusOperations');
 // Global start time for the bot
 const botStartTime = new Date();
 
-export async function getBotStatus(bot: Bot): Promise<{
+export async function getBotStatus(actions: DiscordActions): Promise<{
   uptime: number;
   startTime: Date;
   guildCount: number;
@@ -35,14 +35,14 @@ export async function getBotStatus(bot: Bot): Promise<{
       memoryUsage,
     };
   } catch (error) {
-    log.error({ error }, 'Failed to get bot status');
+    log.error({ error }, 'Failed to get actions status');
     throw error;
   }
 }
 
-export async function getGuildInfo(bot: Bot, guildId: string): Promise<BotGuild | null> {
+export async function getGuildInfo(actions: DiscordActions, guildId: string): Promise<BotGuild | null> {
   try {
-    const guild = await bot.helpers.getGuild(BigInt(guildId));
+    const guild = await actions.getGuild(BigInt(guildId));
     return guild as BotGuild;
   } catch (error) {
     log.error({ error, guildId }, 'Failed to get guild info');

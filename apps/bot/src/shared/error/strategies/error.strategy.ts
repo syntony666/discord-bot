@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { replyError } from 'shared/message/message.helper';
 import { ErrorContext } from '../error-contexts';
@@ -9,7 +9,7 @@ const log = createLogger('ErrorStrategy');
 export interface ErrorStrategy {
   canHandle(error: unknown): boolean;
   handle(
-    bot: Bot,
+    actions: DiscordActions,
     interaction: BotInteraction,
     error: unknown,
     context: ErrorContext
@@ -21,17 +21,17 @@ export abstract class BaseErrorStrategy implements ErrorStrategy {
 
   abstract canHandle(error: unknown): boolean;
   abstract handle(
-    bot: Bot,
+    actions: DiscordActions,
     interaction: BotInteraction,
     error: unknown,
     context: ErrorContext
   ): Promise<void>;
 
   protected async replyError(
-    bot: Bot,
+    actions: DiscordActions,
     interaction: BotInteraction,
     description: string
   ): Promise<void> {
-    await replyError(bot, interaction, { description });
+    await replyError(actions, interaction, { description });
   }
 }

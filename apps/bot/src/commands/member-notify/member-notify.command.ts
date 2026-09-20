@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import { GuildModule } from '@features/guild/guild.module';
 import { MemberNotifyService } from '@features/member-notify/member-notify.service';
@@ -16,7 +17,7 @@ export function setupMemberNotifyCommand(
   guildModule: GuildModule,
   service: MemberNotifyService
 ) {
-  return async (interaction: BotInteraction, bot: Bot) => {
+  return async (interaction: BotInteraction, actions: DiscordActions) => {
     const guildId = interaction.guildId?.toString();
     if (!guildId) return;
 
@@ -24,17 +25,17 @@ export function setupMemberNotifyCommand(
     const subGroupName = subGroup?.name;
 
     if (subGroupName === 'enable') {
-      await handleEnable(bot, interaction, module, guildModule, guildId, subGroup);
+      await handleEnable(actions, interaction, module, guildModule, guildId, subGroup);
     } else if (subGroupName === 'status') {
-      await handleStatus(bot, interaction, module, guildId);
+      await handleStatus(actions, interaction, module, guildId);
     } else if (subGroupName === 'disable') {
-      await handleDisable(bot, interaction, module, guildId);
+      await handleDisable(actions, interaction, module, guildId);
     } else if (subGroupName === 'test') {
-      await handleTest(bot, interaction, module, service, guildId, subGroup);
+      await handleTest(actions, interaction, module, service, guildId, subGroup);
     } else if (subGroupName === 'message') {
-      await handleMessage(bot, interaction, module, guildId, subGroup);
+      await handleMessage(actions, interaction, module, guildId, subGroup);
     } else if (subGroupName === 'toggle') {
-      await handleToggle(bot, interaction, module, guildId, subGroup);
+      await handleToggle(actions, interaction, module, guildId, subGroup);
     }
   };
 }

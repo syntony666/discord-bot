@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { lastValueFrom } from 'rxjs';
 import { replyError, replyWarning, replyInfo } from 'shared/message/message.helper';
@@ -16,7 +17,7 @@ import { createStandardConfirmation } from '../internal/confirmations';
 const log = createLogger('ReactionRolePanel');
 
 export async function handlePanelDelete(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   module: ReactionRoleModule,
   guildId: string,
@@ -28,7 +29,7 @@ export async function handlePanelDelete(
   try {
     const panel = await lastValueFrom(module.getPanel$(guildId, panelId));
     if (!panel) {
-      await replyError(bot, interaction, {
+      await replyError(actions, interaction, {
         title: 'Panel 不存在',
         description: `找不到 ID 為 \`${panelId}\` 的 Panel。`,
       });
@@ -39,7 +40,7 @@ export async function handlePanelDelete(
     const messageUrl = getMessageUrl(guildId, panel.channelId, panelId);
 
     await createStandardConfirmation<PanelDeleteData>(
-      bot,
+      actions,
       CustomIdPrefixes.REACTION_ROLE_PANEL_DELETE,
       {
         interaction,
@@ -64,10 +65,10 @@ export async function handlePanelDelete(
             },
           ],
         },
-        onConfirm: async (bot, interaction, data) => {
+        onConfirm: async (actions, interaction, data) => {
           try {
             // Step 1: Delete Discord message
-            await deleteDiscordMessage(bot, data.panel.channelId, data.panelId, {
+            await deleteDiscordMessage(actions, data.panel.channelId, data.panelId, {
               guildId: data.guildId,
               panelId: data.panelId,
             });
@@ -76,7 +77,7 @@ export async function handlePanelDelete(
             await lastValueFrom(module.deletePanel$(data.guildId, data.panelId));
             log.debug({ guildId: data.guildId, panelId: data.panelId }, 'Database panel deleted');
 
-            await replyWarning(bot, interaction, {
+            await replyWarning(actions, interaction, {
               title: 'Panel 已刪除',
               description: `Panel \`${data.panelId}\` 及其 ${data.rolesCount} 個 Reaction Roles 已全部刪除。`,
               isEdit: true,
@@ -94,18 +95,18 @@ export async function handlePanelDelete(
             });
 
             if (result.handled && result.userMessage) {
-              await replyError(bot, interaction, {
+              await replyError(actions, interaction, {
                 title: '刪除 Panel 失敗',
                 description: result.userMessage,
                 isEdit: true,
               });
             } else {
-              await handleError(bot, interaction, error, 'reactionRolePanelDelete');
+              await handleError(actions, interaction, error, 'reactionRolePanelDelete');
             }
           }
         },
-        onCancel: async (bot, interaction, data) => {
-          await replyInfo(bot, interaction, {
+        onCancel: async (actions, interaction, data) => {
+          await replyInfo(actions, interaction, {
             title: '已取消',
             description: `已取消刪除 Panel \`${data.panelId}\`。`,
             isEdit: true,
@@ -117,6 +118,6 @@ export async function handlePanelDelete(
     log.info({ guildId, panelId }, 'Panel delete confirmation requested');
   } catch (error) {
     log.error({ error, guildId, panelId }, 'Failed to prepare panel delete confirmation');
-    await handleError(bot, interaction, error, 'reactionRolePanelDelete');
+    await handleError(actions, interaction, error, 'reactionRolePanelDelete');
   }
 }

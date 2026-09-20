@@ -63,7 +63,7 @@ export class MessageFactory {
       const config = MESSAGE_CONFIG[type];
       const {
         type: _,
-        bot,
+        actions,
         interaction,
         ephemeral,
         components,
@@ -72,7 +72,7 @@ export class MessageFactory {
       } = replyOptions;
 
       return new ReplyStrategy({
-        bot,
+        actions,
         interaction,
         ...embedProps,
         title: embedProps.title ?? config.defaultTitle,
@@ -86,7 +86,7 @@ export class MessageFactory {
     // Handle notification types
     if (this.isNotificationType(type)) {
       const notificationOptions = options as any;
-      const { type: _, bot, channelId, ...embedProps } = notificationOptions;
+      const { type: _, actions, channelId, ...embedProps } = notificationOptions;
 
       const color =
         type === 'CUSTOM_NOTIFICATION'
@@ -94,7 +94,7 @@ export class MessageFactory {
           : MESSAGE_CONFIG[type].color;
 
       return new NotificationStrategy({
-        bot,
+        actions,
         channelId,
         ...embedProps,
         color,
@@ -105,10 +105,10 @@ export class MessageFactory {
     if (type === 'AUTO_ERROR_REPLY') {
       const autoErrorOptions = options as any;
       const config = MESSAGE_CONFIG.AUTO_ERROR_REPLY;
-      const { type: _, bot, interaction, error, customMessages, ...embedProps } = autoErrorOptions;
+      const { type: _, actions, interaction, error, customMessages, ...embedProps } = autoErrorOptions;
 
       return new AutoErrorReplyStrategy({
-        bot,
+        actions,
         interaction,
         error,
         customMessages,

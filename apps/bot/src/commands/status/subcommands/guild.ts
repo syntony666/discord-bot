@@ -1,26 +1,27 @@
 import { logger } from '@core/logger';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotGuild, BotInteraction, BotUser } from '@core/rx/bus';
-import { Bot, guildIconUrl } from '@discordeno/bot';
+import { guildIconUrl } from '@discordeno/bot';
 import { appConfig } from '@core/config';
 import { replyInfo } from 'shared/message/message.helper';
 import { handleError } from 'shared/error';
 import { userMention, timestampShort } from 'shared/utils/discord.utils';
 
-export async function handleGuildStatus(interaction: BotInteraction, bot: Bot) {
+export async function handleGuildStatus(interaction: BotInteraction, actions: DiscordActions) {
   const guildId = interaction.guildId;
 
   if (!guildId) {
-    await handleError(bot, interaction, new Error('Guild ID missing'), 'status');
+    await handleError(actions, interaction, new Error('Guild ID missing'), 'status');
     return;
   }
 
   try {
-    const guild = (await bot.helpers.getGuild(guildId)) as BotGuild;
-    const owner = (await bot.helpers.getUser(guild.ownerId)) as BotUser;
+    const guild = (await actions.getGuild(guildId)) as BotGuild;
+    const owner = (await actions.getUser(guild.ownerId)) as BotUser;
     const createdAt = new Date(Number((guild.id >> 22n) + 1420070400000n));
     const guildIcon = guildIconUrl(guild.id, guild.icon, { size: 256 });
 
-    await replyInfo(bot, interaction, {
+    await replyInfo(actions, interaction, {
       title: guild.name,
       thumbnail: guildIcon ? { url: guildIcon } : undefined,
       fields: [
@@ -54,6 +55,6 @@ export async function handleGuildStatus(interaction: BotInteraction, bot: Bot) {
     logger.info({ guildId: guildId.toString() }, 'Guild status displayed');
   } catch (error) {
     logger.error({ error, guildId: guildId?.toString() }, 'Failed to display guild status');
-    await handleError(bot, interaction, error, 'status');
+    await handleError(actions, interaction, error, 'status');
   }
 }

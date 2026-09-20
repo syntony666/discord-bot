@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { createConfirmation } from 'shared/confirmation/confirmation.helper';
 import { replySuccess, replyInfo, replyWarning } from 'shared/message/message.helper';
@@ -8,11 +9,11 @@ import type { MemberNotifyDisableData, MessageTemplateData, ToggleData } from '.
 import { getNotificationTypeName, getNotificationTypeEmoji } from '../member-notify.helpers';
 
 async function defaultCancelHandler(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   data: any
 ): Promise<void> {
-  await replyInfo(bot, interaction, {
+  await replyInfo(actions, interaction, {
     title: '已取消',
     description: '操作已取消。',
     isEdit: true,
@@ -20,17 +21,17 @@ async function defaultCancelHandler(
 }
 
 export async function createDisableConfirmation(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   data: MemberNotifyDisableData,
-  onConfirm: (bot: Bot, interaction: BotInteraction, data: MemberNotifyDisableData) => Promise<void>
+  onConfirm: (actions: DiscordActions, interaction: BotInteraction, data: MemberNotifyDisableData) => Promise<void>
 ): Promise<void> {
   const enabledNotifications = data.channels
     .filter((ch) => ch.enabled)
     .map((ch) => `✅ ${ch.type === 'MEMBER_JOIN' ? '加入' : '離開'}通知`);
 
   await createConfirmation<MemberNotifyDisableData>(
-    bot,
+    actions,
     interaction,
     {
       confirmationType: 'member_notify_disable',
@@ -70,13 +71,13 @@ export async function createDisableConfirmation(
 }
 
 export async function createMessageTemplateConfirmation(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   data: MessageTemplateData,
-  onConfirm: (bot: Bot, interaction: BotInteraction, data: MessageTemplateData) => Promise<void>
+  onConfirm: (actions: DiscordActions, interaction: BotInteraction, data: MessageTemplateData) => Promise<void>
 ): Promise<void> {
   await createConfirmation<MessageTemplateData>(
-    bot,
+    actions,
     interaction,
     {
       confirmationType: 'member_notify_message',
@@ -109,13 +110,13 @@ export async function createMessageTemplateConfirmation(
 }
 
 export async function createToggleConfirmation(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   data: ToggleData,
-  onConfirm: (bot: Bot, interaction: BotInteraction, data: ToggleData) => Promise<void>
+  onConfirm: (actions: DiscordActions, interaction: BotInteraction, data: ToggleData) => Promise<void>
 ): Promise<void> {
   await createConfirmation<ToggleData>(
-    bot,
+    actions,
     interaction,
     {
       confirmationType: 'member_notify_toggle',

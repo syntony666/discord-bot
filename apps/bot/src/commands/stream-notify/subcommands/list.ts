@@ -18,7 +18,7 @@ export async function handleStreamNotifyList(ctx: StreamNotifyCommandContext): P
 
     if (!config && watchers.length === 0) {
       await replyTextList({
-        bot: ctx.bot,
+        actions: ctx.actions,
         interaction: ctx.interaction,
         items: [],
         title: () => '直播通知設定',
@@ -44,7 +44,7 @@ export async function handleStreamNotifyList(ctx: StreamNotifyCommandContext): P
     const allItems = [...configItems, '', '🎯 監控頻道:', ...watcherItems].filter(Boolean);
 
     await replyTextList({
-      bot: ctx.bot,
+      actions: ctx.actions,
       interaction: ctx.interaction,
       items: allItems,
       title: () => '直播通知設定',
@@ -55,6 +55,6 @@ export async function handleStreamNotifyList(ctx: StreamNotifyCommandContext): P
     log.info({ guildId }, 'Stream notify list displayed');
   } catch (error) {
     log.error({ error, guildId: ctx.guildId }, 'Failed to list stream notify');
-    await handleError(ctx.bot, ctx.interaction, error, 'stream-notify-list');
+    await handleError(ctx.actions, ctx.interaction, error, 'stream-notify-list');
   }
 }

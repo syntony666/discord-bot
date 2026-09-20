@@ -12,7 +12,7 @@ export class PaginatorFactory {
     const pageSize = this.getPageSize(options);
 
     return new PaginatorStrategy({
-      bot: options.bot,
+      actions: options.actions,
       interaction: options.interaction,
       items: options.items,
       renderer,

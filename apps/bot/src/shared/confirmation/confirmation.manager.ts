@@ -1,4 +1,5 @@
-import { Bot, MessageComponents } from '@discordeno/bot';
+import { MessageComponents } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { BaseColors } from '@core/config/colors.config';
@@ -21,7 +22,7 @@ export class ConfirmationManager {
   }
 
   async createConfirmation<TData = any>(
-    bot: Bot,
+    actions: DiscordActions,
     interaction: BotInteraction,
     config: ConfirmationConfig<TData>,
     handler: ConfirmationHandler<TData>
@@ -73,7 +74,7 @@ export class ConfirmationManager {
     ];
 
     // Use messageHelper with warning style for confirmations
-    await replyWarning(bot, interaction, {
+    await replyWarning(actions, interaction, {
       ...config.embed,
       color: config.embed.color ?? BaseColors.ORANGE,
       footer: {
@@ -91,7 +92,7 @@ export class ConfirmationManager {
     return confirmationId;
   }
 
-  async handle(bot: Bot, interaction: BotInteraction): Promise<void> {
+  async handle(actions: DiscordActions, interaction: BotInteraction): Promise<void> {
     const customId = interaction.data?.customId || '';
     const match = customId.match(/^confirm:(.+):(confirm|cancel)$/);
 
@@ -108,7 +109,7 @@ export class ConfirmationManager {
     if (!stored) {
       // Use expired state for missing confirmations
       const expiredState = new ExpiredState();
-      await expiredState.unauthorized(stored!, bot, interaction);
+      await expiredState.unauthorized(stored!, actions, interaction);
       return;
     }
 
@@ -127,7 +128,7 @@ export class ConfirmationManager {
     console.log({ currentUserId, storedUserId: stored.userId });
     if (currentUserId !== stored.userId) {
       const state = this.states.get(confirmationId);
-      await state.unauthorized(stored, bot, interaction);
+      await state.unauthorized(stored, actions, interaction);
       return;
     }
 
@@ -135,9 +136,9 @@ export class ConfirmationManager {
     const state = this.states.get(confirmationId);
 
     if (action === 'cancel') {
-      await state.cancel(stored, bot, interaction);
+      await state.cancel(stored, actions, interaction);
     } else if (action === 'confirm') {
-      await state.confirm(stored, bot, interaction);
+      await state.confirm(stored, actions, interaction);
     }
 
     // Transition to completed state

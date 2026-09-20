@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { DiscordErrorCodes, DiscordErrorMessages } from '../discord-errors';
 import { BaseErrorStrategy } from './error.strategy';
@@ -15,7 +15,7 @@ export class DiscordErrorStrategy extends BaseErrorStrategy {
   }
 
   async handle(
-    bot: Bot,
+    actions: DiscordActions,
     interaction: BotInteraction,
     error: any,
     context: ErrorContext
@@ -26,7 +26,7 @@ export class DiscordErrorStrategy extends BaseErrorStrategy {
     if (errorCode === DiscordErrorCodes.MISSING_PERMISSIONS) {
       if (context.discordMissingPermissions) {
         this.log.warn({ errorCode, contextKey: context.key }, 'Discord API: Missing permissions');
-        await this.replyError(bot, interaction, context.discordMissingPermissions);
+        await this.replyError(actions, interaction, context.discordMissingPermissions);
         return;
       }
     }
@@ -34,7 +34,7 @@ export class DiscordErrorStrategy extends BaseErrorStrategy {
     if (errorCode === DiscordErrorCodes.UNKNOWN_MESSAGE) {
       if (context.discordUnknownMessage) {
         this.log.warn({ errorCode, contextKey: context.key }, 'Discord API: Unknown message');
-        await this.replyError(bot, interaction, context.discordUnknownMessage);
+        await this.replyError(actions, interaction, context.discordUnknownMessage);
         return;
       }
     }
@@ -42,7 +42,7 @@ export class DiscordErrorStrategy extends BaseErrorStrategy {
     if (errorCode === DiscordErrorCodes.MISSING_ACCESS) {
       if (context.discordMissingAccess) {
         this.log.warn({ errorCode, contextKey: context.key }, 'Discord API: Missing access');
-        await this.replyError(bot, interaction, context.discordMissingAccess);
+        await this.replyError(actions, interaction, context.discordMissingAccess);
         return;
       }
     }
@@ -50,7 +50,7 @@ export class DiscordErrorStrategy extends BaseErrorStrategy {
     if (errorCode === DiscordErrorCodes.UNKNOWN_EMOJI) {
       if (context.discordUnknownEmoji) {
         this.log.warn({ errorCode, contextKey: context.key }, 'Discord API: Unknown emoji');
-        await this.replyError(bot, interaction, context.discordUnknownEmoji);
+        await this.replyError(actions, interaction, context.discordUnknownEmoji);
         return;
       }
     }
@@ -59,7 +59,7 @@ export class DiscordErrorStrategy extends BaseErrorStrategy {
     const discordMessage = DiscordErrorMessages[errorCode];
     if (discordMessage) {
       this.log.warn({ errorCode, contextKey: context.key }, 'Discord API error');
-      await this.replyError(bot, interaction, discordMessage);
+      await this.replyError(actions, interaction, discordMessage);
       return;
     }
   }

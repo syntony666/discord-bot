@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { ErrorStrategy } from './strategies/error.strategy';
 import { DiscordErrorStrategy } from './strategies/discord-error.strategy';
@@ -18,7 +18,7 @@ export class ErrorStrategyManager {
   }
 
   async handleError(
-    bot: Bot,
+    actions: DiscordActions,
     interaction: BotInteraction,
     error: unknown,
     contextKey: ErrorContextKey
@@ -27,7 +27,7 @@ export class ErrorStrategyManager {
 
     if (!context) {
       log.error({ contextKey, error }, 'Unknown error context key');
-      await replyError(bot, interaction, {
+      await replyError(actions, interaction, {
         description: '發生未預期的錯誤，請稍後再試。',
       });
       return;
@@ -37,7 +37,7 @@ export class ErrorStrategyManager {
     for (const strategy of this.strategies) {
       if (strategy.canHandle(error)) {
         try {
-          await strategy.handle(bot, interaction, error, context);
+          await strategy.handle(actions, interaction, error, context);
           return;
         } catch (strategyError) {
           log.error(
@@ -51,7 +51,7 @@ export class ErrorStrategyManager {
 
     // If no strategy could handle the error, fall back to generic error
     log.error({ error, contextKey }, 'No strategy could handle error');
-    await replyError(bot, interaction, {
+    await replyError(actions, interaction, {
       description: context.generic,
     });
   }

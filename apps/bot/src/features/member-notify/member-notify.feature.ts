@@ -1,5 +1,5 @@
 import { NotificationType } from '@discord-bot/shared';
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { Subscription, lastValueFrom, mergeMap, catchError, EMPTY } from 'rxjs';
 import { MemberNotifyModule } from './member-notify.module';
 import { createMemberNotifyService, MemberNotifyService } from './member-notify.service';
@@ -19,7 +19,7 @@ export interface MemberNotifyFeature extends Feature {
 
 export function setupMemberNotifyFeature(
   module: MemberNotifyModule,
-  bot: Bot,
+  actions: DiscordActions,
   guildModule: GuildModule
 ): MemberNotifyFeature {
   const service = createMemberNotifyService();
@@ -45,7 +45,7 @@ export function setupMemberNotifyFeature(
 
           // Get message templates
           const templates = await lastValueFrom(module.getMessageTemplates$(guildId));
-          const guild = (await bot.helpers.getGuild(member.guildId)) as BotGuild;
+          const guild = (await actions.getGuild(member.guildId)) as BotGuild;
           const memberCount = guild.approximateMemberCount || 0;
 
           const message = service.formatMessage(
@@ -58,7 +58,7 @@ export function setupMemberNotifyFeature(
             }
           );
 
-          await notify(bot, BigInt(joinChannel!.channelId), {
+          await notify(actions, BigInt(joinChannel!.channelId), {
             type: 'member_join',
             title: '新成員加入',
             description: message,
@@ -98,7 +98,7 @@ export function setupMemberNotifyFeature(
 
           // Get message templates
           const templates = await lastValueFrom(module.getMessageTemplates$(guildIdStr));
-          const guild = (await bot.helpers.getGuild(guildIdStr)) as BotGuild;
+          const guild = (await actions.getGuild(guildIdStr)) as BotGuild;
           const memberCount = guild.approximateMemberCount || 0;
 
           const message = service.formatMessage(
@@ -112,7 +112,7 @@ export function setupMemberNotifyFeature(
             }
           );
 
-          await notify(bot, BigInt(leaveChannel!.channelId), {
+          await notify(actions, BigInt(leaveChannel!.channelId), {
             type: 'member_leave',
             title: '成員離開',
             description: message,

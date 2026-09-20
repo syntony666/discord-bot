@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { lastValueFrom, Subscription, filter, mergeMap, catchError, EMPTY } from 'rxjs';
 import { KeywordModule } from './keyword.module';
 import { createKeywordService, KeywordService } from './keyword.service';
@@ -18,7 +18,7 @@ export interface KeywordFeature extends Feature {
 
 export function setupKeywordFeature(
   module: KeywordModule,
-  bot: Bot,
+  actions: DiscordActions,
   guildModule: GuildModule
 ): KeywordFeature {
   const service = createKeywordService(module);
@@ -34,7 +34,7 @@ export function setupKeywordFeature(
 
         if (match) {
           try {
-            await bot.helpers.sendMessage(msg.channelId, {
+            await actions.sendMessage(msg.channelId, {
               content: match.rule.response,
             });
             log.info({ guildId, pattern: match.rule.pattern }, 'Keyword matched and replied');

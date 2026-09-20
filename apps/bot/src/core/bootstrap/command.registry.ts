@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { interactionCreate$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { Subscription } from 'rxjs';
@@ -7,7 +7,7 @@ import { replyError } from '@shared/message/message.helper';
 
 const log = createLogger('CommandRegistry');
 
-export type CommandHandler = (interaction: BotInteraction, bot: Bot) => void | Promise<void>;
+export type CommandHandler = (interaction: BotInteraction, actions: DiscordActions) => void | Promise<void>;
 
 class CommandRegistry {
   private commands = new Map<string, CommandHandler>();
@@ -23,13 +23,13 @@ class CommandRegistry {
     this.customIdHandlers.set(prefix, handler);
     log.info({ prefix }, 'CustomId handler registered');
   }
-  activate(bot: Bot): void {
+  activate(actions: DiscordActions): void {
     this.subscription = interactionCreate$.subscribe(async (interaction) => {
       try {
         if (interaction.data?.customId) {
           for (const [prefix, handler] of this.customIdHandlers.entries()) {
             if (interaction.data.customId.startsWith(prefix)) {
-              await handler(interaction, bot);
+              await handler(interaction, actions);
               return;
             }
           }
@@ -38,7 +38,7 @@ class CommandRegistry {
         if (interaction.type === 2 && interaction.data?.name) {
           const handler = this.commands.get(interaction.data.name);
           if (handler) {
-            await handler(interaction, bot);
+            await handler(interaction, actions);
           } else {
             log.warn({ commandName: interaction.data.name }, 'Unknown command received');
           }
@@ -46,7 +46,7 @@ class CommandRegistry {
       } catch (error) {
         log.error({ error, interaction: interaction.data }, 'Unhandled error in command handler');
 
-        await replyError(bot, interaction, {
+        await replyError(actions, interaction, {
           description: '執行指令時發生未預期的錯誤，請稍後再試。',
           ephemeral: true,
         });

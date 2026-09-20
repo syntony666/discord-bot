@@ -1,4 +1,5 @@
-import { Bot, DiscordEmbed } from '@discordeno/bot';
+import { DiscordEmbed } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 
 export interface ConfirmationConfig<TData = any> {
@@ -25,8 +26,8 @@ export interface ConfirmationButtons {
 }
 
 export interface ConfirmationHandler<TData = any> {
-  onConfirm: (bot: Bot, interaction: BotInteraction, data: TData) => Promise<void>;
-  onCancel?: (bot: Bot, interaction: BotInteraction, data: TData) => Promise<void>;
+  onConfirm: (actions: DiscordActions, interaction: BotInteraction, data: TData) => Promise<void>;
+  onCancel?: (actions: DiscordActions, interaction: BotInteraction, data: TData) => Promise<void>;
   onExpire?: (confirmationId: string, data: TData) => void;
 }
 

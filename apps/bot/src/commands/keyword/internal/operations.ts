@@ -1,11 +1,11 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { createLogger } from '@core/logger';
 import type { KeywordRule } from '@discord-bot/shared';
 
 const log = createLogger('KeywordOperations');
 
 export async function createKeywordRule(
-  bot: Bot,
+  actions: DiscordActions,
   module: any,
   guildId: string,
   pattern: string,
@@ -29,7 +29,7 @@ export async function createKeywordRule(
 }
 
 export async function updateKeywordRule(
-  bot: Bot,
+  actions: DiscordActions,
   module: any,
   guildId: string,
   pattern: string,
@@ -52,7 +52,7 @@ export async function updateKeywordRule(
 }
 
 export async function deleteKeywordRule(
-  bot: Bot,
+  actions: DiscordActions,
   module: any,
   guildId: string,
   pattern: string
@@ -68,7 +68,7 @@ export async function deleteKeywordRule(
 }
 
 export async function getKeywordRules(
-  bot: Bot,
+  actions: DiscordActions,
   module: any,
   guildId: string
 ): Promise<KeywordRule[]> {

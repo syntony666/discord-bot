@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { createLogger } from '@core/logger';
 import { MemberNotifyMessage, NotificationType } from '@discord-bot/shared';
 import { channelMention, userMention } from 'shared/utils/discord.utils';
@@ -9,7 +10,7 @@ import { lastValueFrom } from 'rxjs';
 const log = createLogger('MemberNotifyOperations');
 
 export async function setupMemberNotifications(
-  bot: Bot,
+  actions: DiscordActions,
   module: any,
   guildModule: any,
   guildId: string,
@@ -45,7 +46,7 @@ export async function setupMemberNotifications(
 }
 
 export async function disableMemberNotifications(
-  bot: Bot,
+  actions: DiscordActions,
   module: any,
   guildId: string,
   channels: any[]
@@ -64,7 +65,7 @@ export async function disableMemberNotifications(
 }
 
 export async function getMemberNotificationStatus(
-  bot: Bot,
+  actions: DiscordActions,
   module: any,
   guildId: string
 ): Promise<any> {
@@ -83,7 +84,7 @@ export async function getMemberNotificationStatus(
 }
 
 export async function testMessageTemplate(
-  bot: Bot,
+  actions: DiscordActions,
   module: any,
   service: any,
   guildId: string,
@@ -94,7 +95,7 @@ export async function testMessageTemplate(
     const templates: MemberNotifyMessage = await lastValueFrom(
       module.getMessageTemplates$(guildId)
     );
-    const guild = (await bot.helpers.getGuild(interaction.guildId!)) as BotGuild;
+    const guild = (await actions.getGuild(interaction.guildId!)) as BotGuild;
 
     const defaultTemplates = getDefaultTemplates();
     const template =
@@ -118,7 +119,7 @@ export async function testMessageTemplate(
 }
 
 export async function updateMessageTemplate(
-  bot: Bot,
+  actions: DiscordActions,
   module: any,
   guildId: string,
   type: 'join' | 'leave',
@@ -134,7 +135,7 @@ export async function updateMessageTemplate(
 }
 
 export async function toggleNotificationType(
-  bot: Bot,
+  actions: DiscordActions,
   module: any,
   guildId: string,
   type: 'join' | 'leave',

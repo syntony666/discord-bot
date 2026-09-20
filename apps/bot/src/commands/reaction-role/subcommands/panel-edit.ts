@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { lastValueFrom } from 'rxjs';
 import { replyError, replySuccess, replyInfo } from 'shared/message/message.helper';
@@ -16,7 +17,7 @@ import { createStandardConfirmation } from '../internal/confirmations';
 const log = createLogger('ReactionRolePanel');
 
 export async function handlePanelEdit(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   module: ReactionRoleModule,
   guildId: string,
@@ -34,7 +35,7 @@ export async function handlePanelEdit(
   try {
     const panel = await lastValueFrom(module.getPanel$(guildId, panelId));
     if (!panel) {
-      await replyError(bot, interaction, {
+      await replyError(actions, interaction, {
         title: 'Panel 不存在',
         description: `找不到 ID 為 \`${panelId}\` 的 Panel。`,
       });
@@ -68,7 +69,7 @@ export async function handlePanelEdit(
     }
 
     await createStandardConfirmation<PanelEditData>(
-      bot,
+      actions,
       CustomIdPrefixes.REACTION_ROLE_PANEL_EDIT,
       {
         interaction,
@@ -93,21 +94,21 @@ export async function handlePanelEdit(
             },
           ],
         },
-        onConfirm: async (bot, interaction, data) => {
+        onConfirm: async (actions, interaction, data) => {
           try {
             const roles = await lastValueFrom(
               module.getReactionRolesByMessage$(data.guildId, data.panelId)
             );
 
             // Step 1: Update Discord message
-            await updatePanelMessage(bot, data.panel, roles, data.updates);
+            await updatePanelMessage(actions, data.panel, roles, data.updates);
 
             // Step 2: Update database record (sanitize null to undefined)
             const sanitizedUpdates = sanitizeUpdates(data.updates);
             await lastValueFrom(module.updatePanel$(data.guildId, data.panelId, sanitizedUpdates));
             log.debug({ guildId: data.guildId, panelId: data.panelId }, 'Database panel updated');
 
-            await replySuccess(bot, interaction, {
+            await replySuccess(actions, interaction, {
               title: 'Panel 已更新',
               description: `Panel \`${data.panelId}\` 已成功更新。`,
               isEdit: true,
@@ -125,18 +126,18 @@ export async function handlePanelEdit(
             });
 
             if (result.handled && result.userMessage) {
-              await replyError(bot, interaction, {
+              await replyError(actions, interaction, {
                 title: '更新 Panel 失敗',
                 description: result.userMessage,
                 isEdit: true,
               });
             } else {
-              await handleError(bot, interaction, error, 'reactionRolePanelEdit');
+              await handleError(actions, interaction, error, 'reactionRolePanelEdit');
             }
           }
         },
-        onCancel: async (bot, interaction, data) => {
-          await replyInfo(bot, interaction, {
+        onCancel: async (actions, interaction, data) => {
+          await replyInfo(actions, interaction, {
             title: '已取消',
             description: `已取消更新 Panel \`${data.panelId}\`。`,
             isEdit: true,
@@ -148,6 +149,6 @@ export async function handlePanelEdit(
     log.info({ guildId, panelId, updates }, 'Panel edit confirmation requested');
   } catch (error) {
     log.error({ error, guildId, panelId }, 'Failed to prepare panel edit confirmation');
-    await handleError(bot, interaction, error, 'reactionRolePanelEdit');
+    await handleError(actions, interaction, error, 'reactionRolePanelEdit');
   }
 }

@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { createConfirmation } from 'shared/confirmation/confirmation.helper';
 import { replySuccess, replyWarning, replyInfo } from 'shared/message/message.helper';
@@ -6,11 +6,11 @@ import { ButtonStyles, Timeouts } from '@core/config/constants';
 import type { OverwriteData, DeleteData } from '../keyword.types';
 
 async function defaultCancelHandler(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   data: any
 ): Promise<void> {
-  await replyInfo(bot, interaction, {
+  await replyInfo(actions, interaction, {
     title: '已取消',
     description: '操作已取消。',
     isEdit: true,
@@ -18,13 +18,13 @@ async function defaultCancelHandler(
 }
 
 export async function createOverwriteConfirmation(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   data: OverwriteData,
-  onConfirm: (bot: Bot, interaction: BotInteraction, data: OverwriteData) => Promise<void>
+  onConfirm: (actions: DiscordActions, interaction: BotInteraction, data: OverwriteData) => Promise<void>
 ): Promise<void> {
   await createConfirmation<OverwriteData>(
-    bot,
+    actions,
     interaction,
     {
       confirmationType: 'keyword_overwrite',
@@ -63,13 +63,13 @@ export async function createOverwriteConfirmation(
 }
 
 export async function createDeleteConfirmation(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   data: DeleteData,
-  onConfirm: (bot: Bot, interaction: BotInteraction, data: DeleteData) => Promise<void>
+  onConfirm: (actions: DiscordActions, interaction: BotInteraction, data: DeleteData) => Promise<void>
 ): Promise<void> {
   await createConfirmation<DeleteData>(
-    bot,
+    actions,
     interaction,
     {
       confirmationType: 'keyword_delete',

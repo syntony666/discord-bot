@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { lastValueFrom } from 'rxjs';
 import { replySuccess, replyError } from 'shared/message/message.helper';
@@ -12,7 +13,7 @@ import type { PanelMode } from '../reaction-role.types';
 const log = createLogger('ReactionRolePanel');
 
 export async function handlePanelCreate(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   module: ReactionRoleModule,
   guildId: string,
@@ -26,7 +27,7 @@ export async function handlePanelCreate(
 
   try {
     // Step 1: Send Discord message
-    const message = (await bot.helpers.sendMessage(
+    const message = (await actions.sendMessage(
       BigInt(channelId),
       buildPanelEmbed({
         title,
@@ -37,7 +38,7 @@ export async function handlePanelCreate(
     )) as BotMessage;
 
     // Step 2: Update message with panel ID
-    await bot.helpers.editMessage(
+    await actions.editMessage(
       BigInt(channelId),
       message.id,
       buildPanelEmbed({
@@ -61,7 +62,7 @@ export async function handlePanelCreate(
       })
     );
 
-    await replySuccess(bot, interaction, {
+    await replySuccess(actions, interaction, {
       title: 'Panel 已建立',
       description: `Reaction Role Panel 已在 ${channelMention(channelId)} 建立。\n\n**Panel ID**: \`${message.id}\`\n\n使用 \`/reaction-role add\` 來添加身分組。`,
     });
@@ -75,12 +76,12 @@ export async function handlePanelCreate(
     });
 
     if (result.handled && result.userMessage) {
-      await replyError(bot, interaction, {
+      await replyError(actions, interaction, {
         title: '建立 Panel 失敗',
         description: result.userMessage,
       });
     } else {
-      await handleError(bot, interaction, error, 'reactionRolePanelCreate');
+      await handleError(actions, interaction, error, 'reactionRolePanelCreate');
     }
   }
 }

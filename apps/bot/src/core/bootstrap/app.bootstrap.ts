@@ -1,6 +1,7 @@
-import { Bot } from '@discordeno/bot';
 import { RestManager } from '@discordeno/rest';
 import { createRequest } from '@discord-bot/shared';
+import { createBotClient } from '@platforms/discordeno/bot.client';
+import { createDiscordActions } from '@platforms/discordeno/discord-actions.adapter';
 import { appConfig } from '@core/config';
 import { createHttpGuildModule } from '@features/guild/guild.http-module';
 import { createHttpKeywordModule } from '@features/keyword/keyword.http-module';
@@ -29,10 +30,11 @@ import { createSchedulerService } from '@core/scheduler';
 
 const log = createLogger('Bootstrap');
 
-export async function bootstrapApp(bot: Bot, rest: RestManager) {
+export async function bootstrapApp(bot: ReturnType<typeof createBotClient>['bot'], rest: RestManager) {
   log.info('Bootstrapping application...');
 
   const request = createRequest(appConfig.api.url);
+  const actions = createDiscordActions(bot);
 
   ready$.subscribe(({ user }) => {
     log.info({ user }, 'Bot is ready');
@@ -50,42 +52,42 @@ export async function bootstrapApp(bot: Bot, rest: RestManager) {
 
   commandRegistry.registerCustomIdHandler(
     `${CustomIdPrefixes.PAGINATOR}:`,
-    async (interaction, bot) => {
+    async (interaction, actions) => {
       if (interaction.data?.customId?.endsWith(':jump')) {
-        await paginatorButtonStrategy.handleModalSubmit(bot, interaction);
+        await paginatorButtonStrategy.handleModalSubmit(actions, interaction);
       } else {
-        await paginatorButtonStrategy.handle(bot, interaction);
+        await paginatorButtonStrategy.handle(actions, interaction);
       }
     }
   );
 
-  commandRegistry.registerCustomIdHandler('confirm:', async (interaction, bot) => {
-    await confirmationStrategy.handle(bot, interaction);
+  commandRegistry.registerCustomIdHandler('confirm:', async (interaction, actions) => {
+    await confirmationStrategy.handle(actions, interaction);
   });
 
   // ========== Setup Guild Feature FIRST ==========
-  const guildFeature = setupGuildFeature(createHttpGuildModule(request), bot);
+  const guildFeature = setupGuildFeature(createHttpGuildModule(request), actions);
   featureRegistry.register(guildFeature);
 
   // ========== Setup other features (pass guildModule) ==========
   const keywordFeature = setupKeywordFeature(
     createHttpKeywordModule(request),
-    bot,
+    actions,
     guildFeature.module
   );
   const memberNotifyFeature = setupMemberNotifyFeature(
     createHttpMemberNotifyModule(request),
-    bot,
+    actions,
     guildFeature.module
   );
   const reactionRoleFeature = setupReactionRoleFeature(
     createHttpReactionRoleModule(request),
-    bot,
+    actions,
     guildFeature.module
   );
   const streamNotifyFeature = setupStreamNotifyFeature(
     createHttpStreamNotifyModule(request),
-    bot,
+    actions,
     scheduler
   );
 
@@ -120,7 +122,7 @@ export async function bootstrapApp(bot: Bot, rest: RestManager) {
   commandRegistry.register('stream-notify', setupStreamNotifyCommand(streamNotifyFeature.module));
 
   // Activate command registry
-  commandRegistry.activate(bot);
+  commandRegistry.activate(actions);
 
   log.info({ featureCount: featureRegistry.count() }, 'Application bootstrapped successfully');
 }

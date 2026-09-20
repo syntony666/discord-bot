@@ -1,5 +1,5 @@
 import type { DiscordEmbed } from '@discordeno/bot';
-import type { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import type { BotInteraction } from '@core/rx/bus';
 
 export enum PaginatorType {
@@ -33,7 +33,7 @@ export interface PaginatorSession<T = any> {
 }
 
 interface BasePaginatorOptions<T> {
-  bot: Bot;
+  actions: DiscordActions;
   interaction: BotInteraction;
   items: T[];
   pageSize?: number;

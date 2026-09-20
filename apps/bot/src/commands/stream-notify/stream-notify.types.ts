@@ -1,11 +1,11 @@
 import type { InteractionDataOption } from '@discordeno/bot';
-import type { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import type { BotInteraction } from '@core/rx/bus';
 import type { StreamNotifyModule } from '@features/stream-notify/stream-notify.module';
 import { StreamPlatform } from '@discord-bot/shared';
 
 export interface StreamNotifyCommandContext {
-  bot: Bot;
+  actions: DiscordActions;
   interaction: BotInteraction;
   guildId: string;
   module: StreamNotifyModule;

@@ -7,11 +7,11 @@ export class NotificationStrategy implements MessageStrategy {
   constructor(private readonly options: NotificationStrategyOptions) {}
 
   async send(): Promise<boolean> {
-    const { bot, channelId, title, description, color, fields, thumbnail, image, footer } =
+    const { actions, channelId, title, description, color, fields, thumbnail, image, footer } =
       this.options;
 
     try {
-      await bot.helpers.sendMessage(channelId, {
+      await actions.sendMessage(channelId, {
         embeds: [
           {
             title,

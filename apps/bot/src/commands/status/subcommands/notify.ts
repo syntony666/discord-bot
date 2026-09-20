@@ -1,8 +1,8 @@
 import { lastValueFrom, from } from 'rxjs';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { createLogger } from '@core/logger';
 import { replyTextList } from 'shared/paginator/paginator.helper';
 import { handleError } from 'shared/error';
-import { Bot } from '@discordeno/bot';
 import { BotInteraction } from '@core/rx/bus';
 import { NotificationType } from '@discord-bot/shared';
 
@@ -23,7 +23,7 @@ const log = createLogger('StatusNotify');
 
 export async function handleNotifyStatus(
   interaction: BotInteraction,
-  bot: Bot,
+  actions: DiscordActions,
   modules: StatusCommandModules
 ): Promise<void> {
   try {
@@ -132,7 +132,7 @@ export async function handleNotifyStatus(
     }
 
     await replyTextList({
-      bot,
+      actions,
       interaction,
       items: statusItems,
       title: () => '🔔 通知功能總覽',
@@ -143,6 +143,6 @@ export async function handleNotifyStatus(
     log.info({ guildId }, 'Notify status displayed');
   } catch (error) {
     log.error({ error, guildId: interaction.guildId }, 'Failed to display notify status');
-    await handleError(bot, interaction, error, 'status-notify');
+    await handleError(actions, interaction, error, 'status-notify');
   }
 }

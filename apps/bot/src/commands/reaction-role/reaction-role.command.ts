@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { ReactionRoleService } from '@features/reaction-role/reaction-role.service';
 import { BotInteraction } from '@core/rx/bus';
@@ -14,7 +14,7 @@ import { handleRemove } from './subcommands/role-remove';
 import { handleList } from './subcommands/role-list';
 
 export function setupReactionRoleCommand(module: ReactionRoleModule, service: ReactionRoleService) {
-  return async (interaction: BotInteraction, bot: Bot) => {
+  return async (interaction: BotInteraction, actions: DiscordActions) => {
     const guildId = interaction.guildId?.toString();
     if (!guildId) return;
 
@@ -26,20 +26,20 @@ export function setupReactionRoleCommand(module: ReactionRoleModule, service: Re
       const subCommandName = subCommand?.name;
 
       if (subCommandName === 'create') {
-        await handlePanelCreate(bot, interaction, module, guildId, subCommand);
+        await handlePanelCreate(actions, interaction, module, guildId, subCommand);
       } else if (subCommandName === 'list') {
-        await handlePanelList(bot, interaction, module, guildId);
+        await handlePanelList(actions, interaction, module, guildId);
       } else if (subCommandName === 'delete') {
-        await handlePanelDelete(bot, interaction, module, guildId, subCommand);
+        await handlePanelDelete(actions, interaction, module, guildId, subCommand);
       } else if (subCommandName === 'edit') {
-        await handlePanelEdit(bot, interaction, module, guildId, subCommand);
+        await handlePanelEdit(actions, interaction, module, guildId, subCommand);
       }
     } else if (subGroupName === 'add') {
-      await handleAdd(bot, interaction, module, service, guildId, subGroup);
+      await handleAdd(actions, interaction, module, service, guildId, subGroup);
     } else if (subGroupName === 'remove') {
-      await handleRemove(bot, interaction, module, guildId, subGroup);
+      await handleRemove(actions, interaction, module, guildId, subGroup);
     } else if (subGroupName === 'role-list') {
-      await handleList(bot, interaction, module, guildId, subGroup);
+      await handleList(actions, interaction, module, guildId, subGroup);
     }
   };
 }

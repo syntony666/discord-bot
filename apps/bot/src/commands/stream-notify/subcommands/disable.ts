@@ -13,7 +13,7 @@ export async function handleStreamNotifyDisable(ctx: StreamNotifyCommandContext)
     const existingConfig = await lastValueFrom(module.getConfig$(guildId));
     
     if (!existingConfig) {
-      await replySuccess(ctx.bot, ctx.interaction, {
+      await replySuccess(ctx.actions, ctx.interaction, {
         title: '直播通知未啟用',
         description: '此伺服器尚未啟用直播通知功能',
       });
@@ -22,7 +22,7 @@ export async function handleStreamNotifyDisable(ctx: StreamNotifyCommandContext)
 
     await lastValueFrom(module.updateConfig$(guildId, { enabled: false }));
     
-    await replySuccess(ctx.bot, ctx.interaction, {
+    await replySuccess(ctx.actions, ctx.interaction, {
       title: '直播通知已停用',
       description: '直播通知功能已暫時停用',
     });
@@ -30,6 +30,6 @@ export async function handleStreamNotifyDisable(ctx: StreamNotifyCommandContext)
     log.info({ guildId }, 'Stream notify disabled');
   } catch (error) {
     log.error({ error, guildId: ctx.guildId }, 'Failed to disable stream notify');
-    await handleError(ctx.bot, ctx.interaction, error, 'stream-notify-disable');
+    await handleError(ctx.actions, ctx.interaction, error, 'stream-notify-disable');
   }
 }

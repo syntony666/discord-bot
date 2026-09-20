@@ -1,4 +1,5 @@
 import { StreamInfo } from './stream-notify.types';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { StreamNotifyModule } from './stream-notify.module';
 import { StreamPlatformService } from './platforms/platform.interface';
 import { from, lastValueFrom } from 'rxjs';
@@ -18,7 +19,7 @@ export interface StreamNotifyService {
   ): Promise<void>;
 }
 
-export function createStreamNotifyService(bot: any): StreamNotifyService {
+export function createStreamNotifyService(actions: DiscordActions): StreamNotifyService {
   const checkAllStreams = async (
     module: StreamNotifyModule,
     services: StreamPlatformService[]
@@ -127,7 +128,7 @@ export function createStreamNotifyService(bot: any): StreamNotifyService {
 
       if (!config) return;
 
-      await bot.helpers.sendMessage(config.channelId, {
+      await actions.sendMessage(config.channelId, {
         content: message,
         embeds: streamInfo.thumbnailUrl
           ? [
@@ -148,9 +149,7 @@ export function createStreamNotifyService(bot: any): StreamNotifyService {
                       },
                     ]
                   : [],
-                footer: {
-                  timestamp: new Date().toISOString(),
-                },
+                timestamp: new Date().toISOString(),
               },
             ]
           : [
@@ -168,9 +167,7 @@ export function createStreamNotifyService(bot: any): StreamNotifyService {
                       },
                     ]
                   : [],
-                footer: {
-                  timestamp: new Date().toISOString(),
-                },
+                timestamp: new Date().toISOString(),
               },
             ],
       });

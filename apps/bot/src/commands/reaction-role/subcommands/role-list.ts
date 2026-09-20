@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { lastValueFrom } from 'rxjs';
 import { replyError, replyInfo } from 'shared/message/message.helper';
@@ -11,7 +12,7 @@ import { formatEmojiForDisplay } from '@features/reaction-role/internal/emoji.he
 const log = createLogger('ReactionRoleRole');
 
 export async function handleList(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   module: ReactionRoleModule,
   guildId: string,
@@ -22,7 +23,7 @@ export async function handleList(
   try {
     const panel = await lastValueFrom(module.getPanel$(guildId, panelId));
     if (!panel) {
-      await replyError(bot, interaction, {
+      await replyError(actions, interaction, {
         title: 'Panel 不存在',
         description: `找不到 ID 為 \`${panelId}\` 的 Panel。`,
       });
@@ -32,7 +33,7 @@ export async function handleList(
     const roles = await lastValueFrom(module.getReactionRolesByMessage$(guildId, panelId));
 
     if (roles.length === 0) {
-      await replyInfo(bot, interaction, {
+      await replyInfo(actions, interaction, {
         title: `${panel.title} - Reaction Roles`,
         description: '此 Panel 尚未添加任何 Reaction Role。\n使用 `/reaction-role add` 來添加。',
       });
@@ -52,12 +53,12 @@ export async function handleList(
       })
       .join('\n\n');
 
-    await replyInfo(bot, interaction, {
+    await replyInfo(actions, interaction, {
       title: `${panel.title} - Reaction Roles (${roles.length} 個)`,
       description: description + '\n\n**提示**: 移除時請複製上方的 `emoji:` 值使用。',
     });
   } catch (error) {
     log.error({ error, guildId, panelId }, 'Failed to list reaction roles');
-    await handleError(bot, interaction, error, 'reactionRoleList');
+    await handleError(actions, interaction, error, 'reactionRoleList');
   }
 }

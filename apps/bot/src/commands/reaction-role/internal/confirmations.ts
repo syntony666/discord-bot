@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { createConfirmation } from 'shared/confirmation/confirmation.helper';
 import { ButtonStyles, Timeouts } from '@core/config/constants';
@@ -22,16 +22,16 @@ export interface ConfirmationOptions<T> {
   embed: ConfirmationEmbedData;
   buttonStyle: 'danger' | 'primary';
   confirmLabel?: string;
-  onConfirm: (bot: Bot, interaction: BotInteraction, data: T) => Promise<void>;
-  onCancel?: (bot: Bot, interaction: BotInteraction, data: T) => Promise<void>;
+  onConfirm: (actions: DiscordActions, interaction: BotInteraction, data: T) => Promise<void>;
+  onCancel?: (actions: DiscordActions, interaction: BotInteraction, data: T) => Promise<void>;
 }
 
 async function defaultCancelHandler(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   data: any
 ): Promise<void> {
-  await replyInfo(bot, interaction, {
+  await replyInfo(actions, interaction, {
     title: '已取消',
     description: '操作已取消。',
     isEdit: true,
@@ -39,7 +39,7 @@ async function defaultCancelHandler(
 }
 
 export async function createStandardConfirmation<T>(
-  bot: Bot,
+  actions: DiscordActions,
   confirmationType: string,
   options: ConfirmationOptions<T>
 ): Promise<void> {
@@ -48,7 +48,7 @@ export async function createStandardConfirmation<T>(
   const defaultConfirmLabel = options.buttonStyle === 'danger' ? '確認刪除' : '確認';
 
   await createConfirmation<T>(
-    bot,
+    actions,
     options.interaction,
     {
       confirmationType,

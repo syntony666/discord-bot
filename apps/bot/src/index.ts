@@ -17,7 +17,7 @@ async function main() {
 
     healthServer = startHealthServer(appConfig.health.port, buildStatusPayload);
 
-    await bootstrapApp(bot as any, rest);
+    await bootstrapApp(bot, rest);
 
     await start();
 

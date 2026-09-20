@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { KeywordModule } from '@features/keyword/keyword.module';
 import { KeywordMatchType } from '@discord-bot/shared';
 import { lastValueFrom } from 'rxjs';
@@ -10,7 +11,7 @@ import { handleError } from 'shared/error';
 const log = createLogger('KeywordCommand');
 
 export async function handleEditKeyword(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   module: KeywordModule,
   guildId: string,
@@ -36,12 +37,12 @@ export async function handleEditKeyword(
       })
     );
 
-    await replySuccess(bot, interaction, {
+    await replySuccess(actions, interaction, {
       title: '關鍵字已更新',
       description: `\`${matchType}\` **${pattern}** ⭢ ${response}`,
     });
   } catch (error) {
     log.error({ error, pattern }, 'Failed to edit keyword');
-    await handleError(bot, interaction, error, 'keywordEdit');
+    await handleError(actions, interaction, error, 'keywordEdit');
   }
 }

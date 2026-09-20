@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { Subscription, mergeMap, catchError, EMPTY, lastValueFrom } from 'rxjs';
 import { GuildModule } from './guild.module';
 import { guildCreate$, guildDelete$ } from '@core/rx/bus';
@@ -11,7 +11,7 @@ export interface GuildFeature extends Feature {
   module: GuildModule;
 }
 
-export function setupGuildFeature(module: GuildModule, bot: Bot): GuildFeature {
+export function setupGuildFeature(module: GuildModule, actions: DiscordActions): GuildFeature {
   const subscriptions: Subscription[] = [];
 
   // ========== Guild Create Event ==========

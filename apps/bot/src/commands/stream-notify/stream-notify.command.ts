@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { StreamNotifyModule } from '@features/stream-notify/stream-notify.module';
 
@@ -10,7 +11,7 @@ import { handleStreamNotifyList } from './subcommands/list';
 import { StreamNotifyCommandContext } from './stream-notify.types';
 
 export function setupStreamNotifyCommand(module: StreamNotifyModule) {
-  return async (interaction: BotInteraction, bot: Bot) => {
+  return async (interaction: BotInteraction, actions: DiscordActions) => {
     const sub = interaction.data?.options?.[0] as InteractionDataOption;
     const subName = sub?.name;
     const guildId = interaction.guildId?.toString();
@@ -18,7 +19,7 @@ export function setupStreamNotifyCommand(module: StreamNotifyModule) {
     if (!guildId) return;
 
     const ctx: StreamNotifyCommandContext = {
-      bot,
+      actions,
       interaction,
       guildId,
       module,

@@ -12,7 +12,7 @@ export async function handleStreamNotifyEnable(
   options: EnableCommandOptions
 ): Promise<void> {
   try {
-    const { bot, interaction, guildId, module } = ctx;
+    const { actions, interaction, guildId, module } = ctx;
     const { channel, message } = options;
 
     const existingConfig = await lastValueFrom(
@@ -28,7 +28,7 @@ export async function handleStreamNotifyEnable(
         })
       );
 
-      await replySuccess(bot, interaction, {
+      await replySuccess(actions, interaction, {
         title: '直播通知已更新',
         description: `通知頻道已更新至 <#${channel}>`,
       });
@@ -37,7 +37,7 @@ export async function handleStreamNotifyEnable(
         module.createConfig$(guildId, channel, message) as Observable<StreamNotifyConfig>
       );
 
-      await replySuccess(bot, interaction, {
+      await replySuccess(actions, interaction, {
         title: '直播通知已啟用',
         description: `通知將發送至 <#${channel}>`,
       });
@@ -46,6 +46,6 @@ export async function handleStreamNotifyEnable(
     log.info({ guildId, channelId: channel }, 'Stream notify enabled');
   } catch (error) {
     log.error({ error, guildId: ctx.guildId }, 'Failed to enable stream notify');
-    await handleError(ctx.bot, ctx.interaction, error, 'stream-notify-enable');
+    await handleError(ctx.actions, ctx.interaction, error, 'stream-notify-enable');
   }
 }

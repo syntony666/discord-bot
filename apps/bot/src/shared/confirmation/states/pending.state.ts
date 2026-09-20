@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { BaseConfirmationState } from './confirmation.state';
 import { StoredConfirmation } from '../confirmation.types';
@@ -17,9 +17,9 @@ export class PendingState extends BaseConfirmationState {
     this.log.info({ confirmationId: this.getConfirmationId(confirmation) }, 'Confirmation expired');
   }
 
-  async confirm(confirmation: StoredConfirmation, bot: Bot, interaction: BotInteraction): Promise<void> {
+  async confirm(confirmation: StoredConfirmation, actions: DiscordActions, interaction: BotInteraction): Promise<void> {
     try {
-      await confirmation.handler.onConfirm(bot, interaction, confirmation.data);
+      await confirmation.handler.onConfirm(actions, interaction, confirmation.data);
       this.log.info({ confirmationId: this.getConfirmationId(confirmation) }, 'Confirmation confirmed');
     } catch (error) {
       this.log.error(
@@ -29,17 +29,17 @@ export class PendingState extends BaseConfirmationState {
     }
   }
 
-  async cancel(confirmation: StoredConfirmation, bot: Bot, interaction: BotInteraction): Promise<void> {
+  async cancel(confirmation: StoredConfirmation, actions: DiscordActions, interaction: BotInteraction): Promise<void> {
     if (confirmation.handler.onCancel) {
       try {
-        await confirmation.handler.onCancel(bot, interaction, confirmation.data);
+        await confirmation.handler.onCancel(actions, interaction, confirmation.data);
       } catch (error) {
         this.log.error({ error, confirmationType: confirmation.confirmationType }, 'Cancel handler failed');
       }
     } else {
       // Use replyWarning with isEdit: true for default cancel message
       const { replyWarning } = await import('shared/message/message.helper');
-      await replyWarning(bot, interaction, {
+      await replyWarning(actions, interaction, {
         title: '已取消',
         description: '操作已取消。',
         components: [],

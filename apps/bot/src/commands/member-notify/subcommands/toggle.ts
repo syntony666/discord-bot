@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import { replySuccess } from 'shared/message/message.helper';
 import { BotInteraction } from '@core/rx/bus';
@@ -11,7 +12,7 @@ import { toggleNotificationType } from '../internal/operations';
 const log = createLogger('MemberNotifyCommand');
 
 export async function handleToggle(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   module: MemberNotifyModule,
   guildId: string,
@@ -24,14 +25,14 @@ export async function handleToggle(
 
   try {
     await createToggleConfirmation(
-      bot,
+      actions,
       interaction,
       { guildId, type, enabled, userId },
-      async (bot, interaction, data) => {
+      async (actions, interaction, data) => {
         try {
-          await toggleNotificationType(bot, module, guildId, data.type, data.enabled);
+          await toggleNotificationType(actions, module, guildId, data.type, data.enabled);
 
-          await replySuccess(bot, interaction, {
+          await replySuccess(actions, interaction, {
             title: '設定已更新',
             description: `${data.type === 'join' ? '加入' : '離開'}通知已${data.enabled ? '啟用' : '停用'}。`,
             isEdit: true,
@@ -40,12 +41,12 @@ export async function handleToggle(
           log.info({ guildId, type, enabled }, 'Notification toggled');
         } catch (error) {
           log.error({ error, guildId, type, enabled }, 'Failed to toggle');
-          await handleError(bot, interaction, error, 'memberNotifySet');
+          await handleError(actions, interaction, error, 'memberNotifySet');
         }
       }
     );
   } catch (error) {
     log.error({ error, guildId, type, enabled }, 'Failed to toggle');
-    await handleError(bot, interaction, error, 'memberNotifySet');
+    await handleError(actions, interaction, error, 'memberNotifySet');
   }
 }

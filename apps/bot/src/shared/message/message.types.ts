@@ -1,4 +1,5 @@
-import type { Bot, DiscordEmbed, MessageComponents } from '@discordeno/bot';
+import { type DiscordEmbed, MessageComponents } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import type { BotInteraction } from '@core/rx/bus';
 
 export enum MessageType {
@@ -27,7 +28,7 @@ export interface ReplyOptions extends Omit<DiscordEmbed, 'type'> {
     | MessageType.ERROR_REPLY
     | MessageType.INFO_REPLY
     | MessageType.WARNING_REPLY;
-  bot: Bot;
+  actions: DiscordActions;
   interaction: BotInteraction;
   ephemeral?: boolean;
   components?: MessageComponents;
@@ -36,7 +37,7 @@ export interface ReplyOptions extends Omit<DiscordEmbed, 'type'> {
 
 export interface AutoErrorReplyOptions {
   type: MessageType.AUTO_ERROR_REPLY;
-  bot: Bot;
+  actions: DiscordActions;
   interaction: BotInteraction;
   error: Error | { code?: number | string; message?: string };
   customMessages?: {
@@ -54,14 +55,14 @@ export interface NotificationOptions extends Omit<DiscordEmbed, 'type'> {
     | MessageType.MEMBER_LEAVE_NOTIFICATION
     | MessageType.ANNOUNCEMENT_NOTIFICATION
     | MessageType.CUSTOM_NOTIFICATION;
-  bot: Bot;
+  actions: DiscordActions;
   channelId: bigint;
 }
 
 export type MessageOptions = ReplyOptions | AutoErrorReplyOptions | NotificationOptions;
 
 export interface ReplyStrategyOptions extends Omit<DiscordEmbed, 'type'> {
-  bot: Bot;
+  actions: DiscordActions;
   interaction: BotInteraction;
   color: number;
   ephemeral?: boolean;
@@ -70,7 +71,7 @@ export interface ReplyStrategyOptions extends Omit<DiscordEmbed, 'type'> {
 }
 
 export interface NotificationStrategyOptions extends Omit<DiscordEmbed, 'type'> {
-  bot: Bot;
+  actions: DiscordActions;
   channelId: bigint;
   color: number;
 }

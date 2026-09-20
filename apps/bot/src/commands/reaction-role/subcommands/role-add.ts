@@ -1,4 +1,5 @@
-import { Bot, InteractionDataOption } from '@discordeno/bot';
+import { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { ReactionRoleService } from '@features/reaction-role/reaction-role.service';
 import { lastValueFrom } from 'rxjs';
@@ -19,7 +20,7 @@ import {
 const log = createLogger('ReactionRoleRole');
 
 export async function handleAdd(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   module: ReactionRoleModule,
   service: ReactionRoleService,
@@ -37,7 +38,7 @@ export async function handleAdd(
   try {
     const panel = await lastValueFrom(module.getPanel$(guildId, panelId));
     if (!panel) {
-      await replyError(bot, interaction, {
+      await replyError(actions, interaction, {
         title: 'Panel 不存在',
         description: `找不到 ID 為 \`${panelId}\` 的 Panel。\n請先使用 \`/reaction-role panel create\` 建立 Panel。`,
       });
@@ -46,7 +47,7 @@ export async function handleAdd(
 
     // Step 1: Add Discord reaction
     const reactionEmoji = formatEmojiForReaction(emoji);
-    await addDiscordReaction(bot, panel.channelId, panelId, reactionEmoji, {
+    await addDiscordReaction(actions, panel.channelId, panelId, reactionEmoji, {
       guildId,
       panelId,
     });
@@ -58,7 +59,7 @@ export async function handleAdd(
       { emoji, roleId, description: description || null, guildId, messageId: panelId },
     ];
 
-    await bot.helpers.editMessage(
+    await actions.editMessage(
       BigInt(panel.channelId),
       BigInt(panelId),
       buildPanelEmbed({
@@ -84,7 +85,7 @@ export async function handleAdd(
     log.debug({ guildId, panelId, emoji, roleId }, 'Database reaction role created');
 
     const displayEmoji = formatEmojiForDisplay(emoji);
-    await replySuccess(bot, interaction, {
+    await replySuccess(actions, interaction, {
       title: 'Reaction Role 已添加',
       description: `${displayEmoji} → ${roleMention(roleId)} 已添加到 Panel。`,
     });
@@ -92,6 +93,6 @@ export async function handleAdd(
     log.info({ guildId, messageId: panelId, emoji, roleId }, 'Reaction role added successfully');
   } catch (error) {
     log.error({ error, guildId, panelId }, 'Failed to add reaction role');
-    await handleError(bot, interaction, error, 'reactionRoleAdd');
+    await handleError(actions, interaction, error, 'reactionRoleAdd');
   }
 }

@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { BotInteraction } from '@core/rx/bus';
 import { ConfirmationConfig, ConfirmationHandler } from './confirmation.types';
 
@@ -9,7 +9,7 @@ export function _setConfirmationStrategy(strategy: any): void {
 }
 
 export async function createConfirmation<TData = any>(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   config: ConfirmationConfig<TData>,
   handler: ConfirmationHandler<TData>
@@ -17,5 +17,5 @@ export async function createConfirmation<TData = any>(
   if (!confirmationStrategy) {
     throw new Error('ConfirmationStrategy not initialized. This should not happen.');
   }
-  return confirmationStrategy.createConfirmation(bot, interaction, config, handler);
+  return confirmationStrategy.createConfirmation(actions, interaction, config, handler);
 }

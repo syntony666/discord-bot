@@ -1,4 +1,4 @@
-import { Bot } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { KeywordModule } from '@features/keyword/keyword.module';
 import { lastValueFrom } from 'rxjs';
 import { replyTextList } from 'shared/paginator/paginator.helper';
@@ -10,7 +10,7 @@ import { userMention } from 'shared/utils/discord.utils';
 const log = createLogger('KeywordCommand');
 
 export async function handleListKeywords(
-  bot: Bot,
+  actions: DiscordActions,
   interaction: BotInteraction,
   module: KeywordModule,
   guildId: string
@@ -19,7 +19,7 @@ export async function handleListKeywords(
     const rules = await lastValueFrom(module.getRulesForList$(guildId));
 
     await replyTextList({
-      bot,
+      actions,
       interaction,
       items: rules,
       title: () => `關鍵字規則列表`,
@@ -31,6 +31,6 @@ export async function handleListKeywords(
     });
   } catch (error) {
     log.error({ error }, 'Failed to list keywords');
-    await handleError(bot, interaction, error, 'keywordList');
+    await handleError(actions, interaction, error, 'keywordList');
   }
 }

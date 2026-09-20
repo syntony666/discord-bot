@@ -1,15 +1,15 @@
 import { createLogger } from '@core/logger';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { PaginatorSessionRepository } from '../core/paginator.repository';
 import type { Renderer } from '../renderer/renderer.interface';
 import type { PageRenderResult, PaginatorSession } from '../paginator.types';
-import type { Bot } from '@discordeno/bot';
 import type { BotInteraction } from '@core/rx/bus';
 import { buildPaginatorResponse } from '../ui/paginator.ui';
 
 const log = createLogger('PaginatorStrategy');
 
 export interface PaginatorStrategyConfig<T> {
-  bot: Bot;
+  actions: DiscordActions;
   interaction: BotInteraction;
   items: T[];
   renderer: Renderer<T>;
@@ -28,7 +28,7 @@ export class PaginatorStrategy<T> {
   }
 
   async execute(): Promise<string> {
-    const { bot, interaction, items, renderer, pageSize, userId } = this.config;
+    const { actions, interaction, items, renderer, pageSize, userId } = this.config;
 
     const pages = this.buildPages(items, renderer, pageSize);
     const totalPages = pages.length;
@@ -57,7 +57,7 @@ export class PaginatorStrategy<T> {
     });
 
     try {
-      await bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+      await actions.sendInteractionResponse(interaction.id, interaction.token, {
         type: 4,
         data,
       });

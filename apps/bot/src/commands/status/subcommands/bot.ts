@@ -1,4 +1,5 @@
 import { getBotVersion, getUptime } from '@core/bot-info';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import { logger } from '@core/logger';
 import { BotInteraction, BotUser } from '@core/rx/bus';
 import {
@@ -12,14 +13,14 @@ import { appConfig } from '@core/config';
 import { replyInfo } from 'shared/message/message.helper';
 import { handleError } from 'shared/error';
 
-export async function handleBotStatus(interaction: BotInteraction, bot: Bot) {
+export async function handleBotStatus(interaction: BotInteraction, actions: DiscordActions) {
   try {
     const version = getBotVersion();
     const uptime = getUptime();
     const nodeVersion = process.version;
 
-    const botUser = (await bot.helpers.getUser(bot.id)) as BotUser;
-    const botIcon = avatarUrl(bot.id, botUser.discriminator);
+    const botUser = (await actions.getUser(actions.botId)) as BotUser;
+    const botIcon = avatarUrl(actions.botId, botUser.discriminator);
 
     const statusButtons: MessageComponents = [
       {
@@ -29,13 +30,13 @@ export async function handleBotStatus(interaction: BotInteraction, bot: Bot) {
             type: MessageComponentTypes.Button,
             style: ButtonStyles.Link,
             label: '使用說明',
-            url: 'https://github.com/syntony666/discord-bot#readme',
+            url: 'https://github.com/syntony666/discord-actions#readme',
           },
           {
             type: MessageComponentTypes.Button,
             style: ButtonStyles.Link,
             label: '邀請連結',
-            url: `https://discord.com/api/oauth2/authorize?client_id=${bot.id}&permissions=8&scope=bot%20applications.commands`,
+            url: `https://discord.com/api/oauth2/authorize?client_id=${actions.botId}&permissions=8&scope=bot%20applications.commands`,
           },
         ],
       },
@@ -66,11 +67,11 @@ export async function handleBotStatus(interaction: BotInteraction, bot: Bot) {
 
     const startTime = Date.now();
 
-    await replyInfo(bot, interaction, createStatusEmbed('計算中...'));
+    await replyInfo(actions, interaction, createStatusEmbed('計算中...'));
 
     const latency = Date.now() - startTime;
 
-    await replyInfo(bot, interaction, {
+    await replyInfo(actions, interaction, {
       ...createStatusEmbed(latency),
       isEdit: true,
     });
@@ -80,7 +81,7 @@ export async function handleBotStatus(interaction: BotInteraction, bot: Bot) {
       'Bot status displayed'
     );
   } catch (error) {
-    logger.error({ error }, 'Failed to display bot status');
-    await handleError(bot, interaction, error, 'status');
+    logger.error({ error }, 'Failed to display actions status');
+    await handleError(actions, interaction, error, 'status');
   }
 }

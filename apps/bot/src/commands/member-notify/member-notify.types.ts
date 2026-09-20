@@ -1,8 +1,9 @@
 import type { InteractionDataOption } from '@discordeno/bot';
+import type { DiscordActions } from '@core/discord/discord-actions';
 import type { NotificationChannel } from '@discord-bot/shared';
 
 export interface CommandContext {
-  bot: any;
+  actions: DiscordActions;
   interaction: any;
   guildId: string;
   module: any;
