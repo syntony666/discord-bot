@@ -1,5 +1,11 @@
 # Discord Bot
 
+[![License](https://img.shields.io/github/license/syntony666/discord-bot)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Node](https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io)
+[![Discord](https://img.shields.io/badge/Discord-Bot-5865F2?logo=discord&logoColor=white)](https://discord.com)
+
 Modular Discord bot monorepo with keyword auto-replies, reaction roles, member join/leave notifications, and Twitch/YouTube stream alerts. Built with TypeScript, RxJS, Hono, and Prisma + PostgreSQL. `apps/bot` handles Discord events; `apps/api` owns the database behind a small REST API; `packages/shared` carries the API contract (DTOs, enums, request helper, env loader).
 
 > Transitional state: the API already owns the Prisma schema, but the bot still accesses the database directly and runs on Discordeno. It will move to HTTP data access and a self-hosted Discord client (`packages/discord-client`).
