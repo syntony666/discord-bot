@@ -1,16 +1,8 @@
 import { ApiError } from '@discord-bot/shared';
+import { DiscordApiErrorCodes } from '@core/errors/discord-error-codes';
 import { ReplyStrategy } from './reply.strategy';
 import { Colors } from '@core/config';
 import type { MessageStrategy, AutoErrorReplyOptions } from '../message.types';
-
-export enum PrismaErrorCode {
-  UniqueConstraintViolation = 'P2002',
-  RecordNotFound = 'P2025',
-  ForeignKeyConstraintViolation = 'P2003',
-  RelationViolation = 'P2014',
-  ConnectionError = 'P1001',
-  Timeout = 'P1008',
-}
 
 export class AutoErrorReplyStrategy implements MessageStrategy {
   constructor(private readonly options: AutoErrorReplyOptions) {}
@@ -44,17 +36,10 @@ export class AutoErrorReplyStrategy implements MessageStrategy {
       return 'API 服務連線發生問題，請稍後再試。';
     }
 
-    if (error.code === PrismaErrorCode.UniqueConstraintViolation) {
-      return customMessages?.duplicate || '此項目已存在。';
-    }
-    if (error.code === PrismaErrorCode.RecordNotFound) {
-      return customMessages?.notFound || '找不到指定的項目。';
-    }
-    if (error.code === PrismaErrorCode.ConnectionError || error.code === PrismaErrorCode.Timeout) {
-      return '資料庫連線發生問題，請稍後再試。';
-    }
-
-    if (error.code === 50013 || error.code === 50001) {
+    if (
+      error.code === DiscordApiErrorCodes.MISSING_PERMISSIONS ||
+      error.code === DiscordApiErrorCodes.MISSING_ACCESS
+    ) {
       return customMessages?.permission || '機器人沒有執行此操作的權限，請檢查機器人的權限設定。';
     }
 
