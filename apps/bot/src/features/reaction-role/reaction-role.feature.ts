@@ -28,7 +28,7 @@ export function setupReactionRoleFeature(
   const addSub = reactionAdd$
     .pipe(
       concatMap(async (reaction) => {
-        if (reaction.userId === actions.botId) return;
+        if (reaction.userId === BigInt(actions.botId)) return;
         if (!reaction.guildId) return;
 
         const guildId = reaction.guildId.toString();
@@ -118,7 +118,7 @@ export function setupReactionRoleFeature(
   const removeSub = reactionRemove$
     .pipe(
       concatMap(async (reaction) => {
-        if (reaction.userId === actions.botId) return;
+        if (reaction.userId === BigInt(actions.botId)) return;
         if (!reaction.guildId) return;
 
         const guildId = reaction.guildId.toString();

@@ -8,7 +8,7 @@ import type {
 import type { BotGuild, BotUser } from '@core/rx/bus';
 
 export interface DiscordActions {
-  readonly botId: bigint;
+  readonly botId: string;
   sendMessage(
     channelId: bigint | string,
     content: RESTPostAPIChannelMessageJSONBody

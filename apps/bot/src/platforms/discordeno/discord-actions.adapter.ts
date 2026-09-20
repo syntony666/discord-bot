@@ -14,7 +14,7 @@ type RuntimeBot = ReturnType<typeof createBotClient>['bot'];
 export function createDiscordActions(bot: RuntimeBot): DiscordActions {
   const helpers = bot.helpers;
   return {
-    botId: bot.id,
+    botId: String(bot.id),
     sendMessage: (channelId, content) =>
       helpers.sendMessage(
         BigInt(channelId),

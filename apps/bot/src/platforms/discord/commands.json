@@ -1,0 +1,481 @@
+[
+  {
+    "name": "keyword",
+    "description": "管理關鍵字自動回覆",
+    "type": 1,
+    "options": [
+      {
+        "type": 1,
+        "name": "add",
+        "description": "新增關鍵字回覆規則",
+        "options": [
+          {
+            "type": 3,
+            "name": "pattern",
+            "description": "關鍵字文字",
+            "required": true
+          },
+          {
+            "type": 3,
+            "name": "response",
+            "description": "回覆內容",
+            "required": true
+          },
+          {
+            "type": 3,
+            "name": "match_type",
+            "description": "比對類型（預設：EXACT 精確比對）",
+            "required": false,
+            "choices": [
+              { "name": "EXACT - 精確比對", "value": "EXACT" },
+              { "name": "CONTAINS - 包含比對", "value": "CONTAINS" }
+            ]
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "edit",
+        "description": "編輯關鍵字規則",
+        "options": [
+          {
+            "type": 3,
+            "name": "pattern",
+            "description": "要編輯的關鍵字文字",
+            "required": true
+          },
+          {
+            "type": 3,
+            "name": "response",
+            "description": "新的回覆內容",
+            "required": true
+          },
+          {
+            "type": 3,
+            "name": "match_type",
+            "description": "新的比對類型（選填）",
+            "required": false,
+            "choices": [
+              { "name": "EXACT - 精確比對", "value": "EXACT" },
+              { "name": "CONTAINS - 包含比對", "value": "CONTAINS" }
+            ]
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "list",
+        "description": "列出所有關鍵字規則"
+      },
+      {
+        "type": 1,
+        "name": "delete",
+        "description": "刪除關鍵字規則",
+        "options": [
+          {
+            "type": 3,
+            "name": "pattern",
+            "description": "要刪除的關鍵字文字",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "member-notify",
+    "description": "設定成員進出通知",
+    "default_member_permissions": "32",
+    "type": 1,
+    "options": [
+      {
+        "type": 1,
+        "name": "enable",
+        "description": "啟用成員進出通知",
+        "options": [
+          {
+            "type": 7,
+            "name": "channel",
+            "description": "選擇通知頻道",
+            "required": true,
+            "channel_types": [0]
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "disable",
+        "description": "關閉成員進出通知"
+      },
+      {
+        "type": 1,
+        "name": "status",
+        "description": "查看當前設定"
+      },
+      {
+        "type": 1,
+        "name": "test",
+        "description": "測試當前訊息格式",
+        "options": [
+          {
+            "type": 3,
+            "name": "type",
+            "description": "測試類型",
+            "required": true,
+            "choices": [
+              { "name": "加入訊息", "value": "join" },
+              { "name": "離開訊息", "value": "leave" }
+            ]
+          }
+        ]
+      },
+      {
+        "type": 2,
+        "name": "message",
+        "description": "設定訊息模板",
+        "options": [
+          {
+            "type": 1,
+            "name": "join",
+            "description": "設定加入訊息模板",
+            "options": [
+              {
+                "type": 3,
+                "name": "template",
+                "description": "訊息模板 (可用變數: {user}, {username}, {server}, {memberCount})",
+                "required": true
+              }
+            ]
+          },
+          {
+            "type": 1,
+            "name": "leave",
+            "description": "設定離開訊息模板",
+            "options": [
+              {
+                "type": 3,
+                "name": "template",
+                "description": "訊息模板 (可用變數: {user}, {username}, {server}, {memberCount})",
+                "required": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": 2,
+        "name": "toggle",
+        "description": "開關特定通知",
+        "options": [
+          {
+            "type": 1,
+            "name": "join",
+            "description": "開關加入通知",
+            "options": [
+              {
+                "type": 5,
+                "name": "enabled",
+                "description": "是否啟用",
+                "required": true
+              }
+            ]
+          },
+          {
+            "type": 1,
+            "name": "leave",
+            "description": "開關離開通知",
+            "options": [
+              {
+                "type": 5,
+                "name": "enabled",
+                "description": "是否啟用",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "reaction-role",
+    "description": "管理反應身分組",
+    "type": 1,
+    "default_member_permissions": "268435456",
+    "options": [
+      {
+        "type": 2,
+        "name": "panel",
+        "description": "管理 Reaction Role Panel",
+        "options": [
+          {
+            "type": 1,
+            "name": "create",
+            "description": "建立新的 Reaction Role Panel",
+            "options": [
+              {
+                "type": 7,
+                "name": "channel",
+                "description": "選擇要發送 panel 的頻道",
+                "required": true,
+                "channel_types": [0]
+              },
+              {
+                "type": 3,
+                "name": "title",
+                "description": "Panel 標題",
+                "required": false,
+                "max_length": 256
+              },
+              {
+                "type": 3,
+                "name": "description",
+                "description": "Panel 說明文字",
+                "required": false,
+                "max_length": 2048
+              },
+              {
+                "type": 3,
+                "name": "mode",
+                "description": "選擇模式",
+                "required": false,
+                "choices": [
+                  { "name": "NORMAL - 可以選多個身分組", "value": "NORMAL" },
+                  { "name": "UNIQUE - 只能選一個身分組", "value": "UNIQUE" },
+                  { "name": "VERIFY - 驗證模式（給予後移除反應）", "value": "VERIFY" }
+                ]
+              }
+            ]
+          },
+          {
+            "type": 1,
+            "name": "list",
+            "description": "列出所有 Reaction Role Panels"
+          },
+          {
+            "type": 1,
+            "name": "delete",
+            "description": "刪除 Reaction Role Panel",
+            "options": [
+              {
+                "type": 3,
+                "name": "panel_id",
+                "description": "Panel 訊息的 ID（從 panel footer 複製）",
+                "required": true
+              }
+            ]
+          },
+          {
+            "type": 1,
+            "name": "edit",
+            "description": "編輯 Panel 設定",
+            "options": [
+              {
+                "type": 3,
+                "name": "panel_id",
+                "description": "Panel 訊息的 ID",
+                "required": true
+              },
+              {
+                "type": 3,
+                "name": "title",
+                "description": "新的標題",
+                "required": false,
+                "max_length": 256
+              },
+              {
+                "type": 3,
+                "name": "description",
+                "description": "新的說明文字",
+                "required": false,
+                "max_length": 2048
+              },
+              {
+                "type": 3,
+                "name": "mode",
+                "description": "新的模式",
+                "required": false,
+                "choices": [
+                  { "name": "NORMAL - 可以選多個身分組 (多選模式)", "value": "NORMAL" },
+                  { "name": "UNIQUE - 只能選一個身分組 (單選模式)", "value": "UNIQUE" },
+                  { "name": "VERIFY - 驗證模式", "value": "VERIFY" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "add",
+        "description": "為 Panel 添加 Reaction Role",
+        "options": [
+          {
+            "type": 3,
+            "name": "panel_id",
+            "description": "Panel 訊息的 ID",
+            "required": true
+          },
+          {
+            "type": 3,
+            "name": "emoji",
+            "description": "要使用的 emoji（直接貼上 emoji 或自訂表情符號）",
+            "required": true
+          },
+          {
+            "type": 8,
+            "name": "role",
+            "description": "要給予的身分組",
+            "required": true
+          },
+          {
+            "type": 3,
+            "name": "description",
+            "description": "身分組說明（選填）",
+            "required": false,
+            "max_length": 100
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "remove",
+        "description": "移除 Reaction Role",
+        "options": [
+          {
+            "type": 3,
+            "name": "panel_id",
+            "description": "Panel 訊息的 ID",
+            "required": true
+          },
+          {
+            "type": 3,
+            "name": "emoji",
+            "description": "要移除的 emoji",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "role-list",
+        "description": "列出 Panel 的所有 Reaction Roles",
+        "options": [
+          {
+            "type": 3,
+            "name": "panel_id",
+            "description": "Panel 訊息的 ID",
+            "required": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "stream-notify",
+    "description": "管理直播通知功能",
+    "default_member_permissions": "32",
+    "type": 1,
+    "options": [
+      {
+        "type": 1,
+        "name": "enable",
+        "description": "啟用直播通知",
+        "options": [
+          {
+            "type": 7,
+            "name": "channel",
+            "description": "選擇通知頻道",
+            "required": true,
+            "channel_types": [0]
+          },
+          {
+            "type": 3,
+            "name": "message",
+            "description": "自訂通知訊息範本 (可用變數: {user})",
+            "required": false,
+            "max_length": 1000
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "disable",
+        "description": "停用直播通知"
+      },
+      {
+        "type": 1,
+        "name": "watch",
+        "description": "新增監控頻道",
+        "options": [
+          {
+            "type": 3,
+            "name": "platform",
+            "description": "選擇平台",
+            "required": true,
+            "choices": [{ "name": "Twitch", "value": "twitch" }]
+          },
+          {
+            "type": 3,
+            "name": "id",
+            "description": "頻道 ID",
+            "required": true
+          },
+          {
+            "type": 3,
+            "name": "name",
+            "description": "顯示名稱（選填）",
+            "required": false,
+            "max_length": 100
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "unwatch",
+        "description": "移除監控頻道",
+        "options": [
+          {
+            "type": 3,
+            "name": "platform",
+            "description": "選擇平台",
+            "required": true,
+            "choices": [{ "name": "Twitch", "value": "twitch" }]
+          },
+          {
+            "type": 3,
+            "name": "id",
+            "description": "頻道 ID",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "list",
+        "description": "列出所有監控頻道和設定"
+      }
+    ]
+  },
+  {
+    "name": "status",
+    "description": "顯示狀態資訊",
+    "options": [
+      {
+        "type": 1,
+        "name": "bot",
+        "description": "顯示機器人狀態資訊"
+      },
+      {
+        "type": 1,
+        "name": "guild",
+        "description": "顯示伺服器資訊"
+      },
+      {
+        "type": 1,
+        "name": "notify",
+        "description": "顯示所有通知功能設定"
+      }
+    ]
+  }
+]
