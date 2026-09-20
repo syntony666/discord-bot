@@ -1,8 +1,12 @@
+import { Formatters } from '@discord-bot/discord-client';
+
+const { TimestampStyles } = Formatters;
+
 export class DiscordUtils {
   static mention = {
-    user: (userId: string | bigint): string => `<@${userId}>`,
-    channel: (channelId: string | bigint): string => `<#${channelId}>`,
-    role: (roleId: string | bigint): string => `<@&${roleId}>`,
+    user: (userId: string | bigint): string => Formatters.userMention(String(userId)),
+    channel: (channelId: string | bigint): string => Formatters.channelMention(String(channelId)),
+    role: (roleId: string | bigint): string => Formatters.roleMention(String(roleId)),
   };
 
   static url = {
@@ -16,14 +20,22 @@ export class DiscordUtils {
       `https://discord.com/channels/${guildId}/${channelId}`,
 
     guild: (guildId: string | bigint): string => `https://discord.com/channels/${guildId}`,
+
+    avatar: (userId: string | bigint, avatarHash?: string | null, discriminator = '0'): string =>
+      avatarHash
+        ? `https://cdn.discordapp.com/avatars/${userId}/${avatarHash}.png`
+        : `https://cdn.discordapp.com/embed/avatars/${Number(discriminator) % 5}.png`,
+
+    guildIcon: (guildId: string | bigint, iconHash?: string | null): string | undefined =>
+      iconHash ? `https://cdn.discordapp.com/icons/${guildId}/${iconHash}.png` : undefined,
   };
 
   static timestamp = {
-    relative: (date: Date): string => `<t:${Math.floor(date.getTime() / 1000)}:R>`,
-    short: (date: Date): string => `<t:${Math.floor(date.getTime() / 1000)}:f>`,
-    long: (date: Date): string => `<t:${Math.floor(date.getTime() / 1000)}:F>`,
-    date: (date: Date): string => `<t:${Math.floor(date.getTime() / 1000)}:D>`,
-    time: (date: Date): string => `<t:${Math.floor(date.getTime() / 1000)}:t>`,
+    relative: (date: Date): string => Formatters.time(date, TimestampStyles.RelativeTime),
+    short: (date: Date): string => Formatters.time(date, TimestampStyles.ShortDateTime),
+    long: (date: Date): string => Formatters.time(date, TimestampStyles.LongDateTime),
+    date: (date: Date): string => Formatters.time(date, TimestampStyles.LongDate),
+    time: (date: Date): string => Formatters.time(date, TimestampStyles.ShortTime),
   };
 
   static emoji = {
@@ -31,7 +43,11 @@ export class DiscordUtils {
     unicode: (emoji: string): string => emoji,
     parse: (emoji: { id?: bigint; name?: string; animated?: boolean }): string => {
       if (emoji.id && emoji.name) {
-        return emoji.animated ? `<a:${emoji.name}:${emoji.id}>` : `<:${emoji.name}:${emoji.id}>`;
+        return Formatters.formatEmoji({
+          id: String(emoji.id),
+          name: emoji.name,
+          animated: emoji.animated,
+        });
       }
       return emoji.name || '';
     },
@@ -39,25 +55,21 @@ export class DiscordUtils {
 
   static embed = {
     basic: (data: { title?: string; description?: string; color?: number }) => ({
-      type: 0 as const,
       title: data.title,
       description: data.description,
       color: data.color,
     }),
     error: (description: string) => ({
-      type: 0 as const,
       title: '❌ 錯誤',
       description,
       color: 0xff0000,
     }),
     success: (description: string) => ({
-      type: 0 as const,
       title: '✅ 成功',
       description,
       color: 0x00ff00,
     }),
     warning: (description: string) => ({
-      type: 0 as const,
       title: '⚠️ 警告',
       description,
       color: 0xffff00,
@@ -100,6 +112,8 @@ export const userMention = DiscordUtils.mention.user;
 export const channelMention = DiscordUtils.mention.channel;
 export const roleMention = DiscordUtils.mention.role;
 export const getMessageUrl = DiscordUtils.url.message;
+export const avatarUrl = DiscordUtils.url.avatar;
+export const guildIconUrl = DiscordUtils.url.guildIcon;
 export const timestampRelative = DiscordUtils.timestamp.relative;
 export const timestampShort = DiscordUtils.timestamp.short;
 export const timestampLong = DiscordUtils.timestamp.long;
