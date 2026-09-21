@@ -58,13 +58,26 @@ export interface PromptOptions {
 
 /** Implemented by the session store (created in sessions.ts). */
 export interface SessionApi {
-  confirm(interaction: APIInteraction, options: ConfirmOptions): Promise<boolean>;
-  paginate<T>(interaction: APIInteraction, options: PaginateOptions<T>): Promise<void>;
+  confirm(
+    interaction: APIInteraction,
+    options: ConfirmOptions,
+    responded: boolean
+  ): Promise<boolean>;
+  paginate<T>(
+    interaction: APIInteraction,
+    options: PaginateOptions<T>,
+    responded: boolean
+  ): Promise<void>;
   modal(
     interaction: APIInteraction,
-    options: ModalOptions
+    options: ModalOptions,
+    responded: boolean
   ): Promise<Record<string, string> | null>;
-  prompt(interaction: APIInteraction, options: PromptOptions): Promise<APIMessage | null>;
+  prompt(
+    interaction: APIInteraction,
+    options: PromptOptions,
+    responded: boolean
+  ): Promise<APIMessage | null>;
 }
 
 type Interaction =
@@ -132,25 +145,37 @@ function interactionUser(i: Interaction): APIUser {
 }
 
 function baseMethods(rest: REST, appId: string, sessions: SessionApi, i: Interaction) {
+  let responded = false;
+
+  const callback = (body: object) =>
+    rest.post(Routes.interactionCallback(i.id, i.token), { body }).then(() => {
+      responded = true;
+    });
+
   return {
     reply: (data: ReplyData, ephemeral = false) =>
-      rest.post(Routes.interactionCallback(i.id, i.token), {
-        body: {
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: {
-            ...normalize(data),
-            ...(ephemeral ? { flags: MessageFlags.Ephemeral } : {}),
-          },
+      callback({
+        type: InteractionResponseType.ChannelMessageWithSource,
+        data: {
+          ...normalize(data),
+          ...(ephemeral ? { flags: MessageFlags.Ephemeral } : {}),
         },
-      }) as Promise<unknown> as Promise<void>,
+      }),
 
     defer: (ephemeral = false) =>
-      rest.post(Routes.interactionCallback(i.id, i.token), {
-        body: {
-          type: InteractionResponseType.DeferredChannelMessageWithSource,
-          data: ephemeral ? { flags: MessageFlags.Ephemeral } : undefined,
-        },
-      }) as Promise<unknown> as Promise<void>,
+      callback({
+        type: InteractionResponseType.DeferredChannelMessageWithSource,
+        data: ephemeral ? { flags: MessageFlags.Ephemeral } : undefined,
+      }),
+
+    update: (data: ReplyData) =>
+      callback({
+        type: InteractionResponseType.UpdateMessage,
+        data: normalize(data),
+      }),
+
+    deferUpdate: () =>
+      callback({ type: InteractionResponseType.DeferredMessageUpdate }),
 
     followUp: (data: ReplyData) =>
       rest.post(Routes.webhook(appId, i.token), {
@@ -162,10 +187,10 @@ function baseMethods(rest: REST, appId: string, sessions: SessionApi, i: Interac
         body: normalize(data),
       }) as Promise<unknown> as Promise<void>,
 
-    confirm: (options: ConfirmOptions) => sessions.confirm(i, options),
-    paginate: <T>(options: PaginateOptions<T>) => sessions.paginate(i, options),
-    modal: (options: ModalOptions) => sessions.modal(i, options),
-    prompt: (options: PromptOptions) => sessions.prompt(i, options),
+    confirm: (options: ConfirmOptions) => sessions.confirm(i, options, responded),
+    paginate: <T>(options: PaginateOptions<T>) => sessions.paginate(i, options, responded),
+    modal: (options: ModalOptions) => sessions.modal(i, options, responded),
+    prompt: (options: PromptOptions) => sessions.prompt(i, options, responded),
   };
 }
 
@@ -219,18 +244,5 @@ export function buildComponentContext(
     guildId: interaction.guild_id,
     user: interactionUser(interaction),
     ...base,
-
-    update: (data: ReplyData) =>
-      rest.post(Routes.interactionCallback(interaction.id, interaction.token), {
-        body: {
-          type: InteractionResponseType.UpdateMessage,
-          data: normalize(data),
-        },
-      }) as Promise<unknown> as Promise<void>,
-
-    deferUpdate: () =>
-      rest.post(Routes.interactionCallback(interaction.id, interaction.token), {
-        body: { type: InteractionResponseType.DeferredMessageUpdate },
-      }) as Promise<unknown> as Promise<void>,
   };
 }

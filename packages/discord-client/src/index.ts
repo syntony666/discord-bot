@@ -11,6 +11,8 @@ export * as Formatters from '@discordjs/formatters';
 export { registerGlobalCommands } from './commands/register';
 export { defineCommand } from './commands/define';
 export { toRestBody } from './commands/serialize';
+export { createSessionStore } from './commands/sessions';
+export type { SessionStore } from './commands/sessions';
 export type {
   CommandDef,
   OptionChoiceDef,
