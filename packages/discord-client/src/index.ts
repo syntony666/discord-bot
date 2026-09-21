@@ -8,7 +8,16 @@ import type {
 export { REST, DiscordAPIError } from '@discordjs/rest';
 export { DiscordSnowflake } from '@sapphire/snowflake';
 export * as Formatters from '@discordjs/formatters';
-export { registerGlobalCommands } from './commands';
+export { registerGlobalCommands } from './commands/register';
+export { defineCommand } from './commands/define';
+export { toRestBody } from './commands/serialize';
+export type {
+  CommandDef,
+  OptionChoiceDef,
+  OptionDef,
+  SubcommandDef,
+  SubcommandGroupDef,
+} from './commands/types';
 export type { GatewayDispatchPayload } from 'discord-api-types/v10';
 
 export interface GatewayConnectOptions {
