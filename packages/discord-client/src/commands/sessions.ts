@@ -64,6 +64,8 @@ interface Waiter {
 }
 
 export interface SessionStore extends SessionApi {
+  /** Sync check: would dispatch() claim this custom_id? */
+  claims(customId: string): boolean;
   /** Returns true if the interaction was claimed by a `kit:` session. */
   dispatch(interaction: APIInteraction): Promise<boolean>;
   /** Returns true if a prompt waiter consumed the message. */
@@ -476,6 +478,9 @@ export function createSessionStore(
     });
   };
 
+  // Claims any `kit:` id — dispatch replies "expired" when the session is gone.
+  const claims = (customId: string): boolean => customId.startsWith(PREFIX);
+
   const dispatch = async (i: APIInteraction): Promise<boolean> => {
     const customId =
       i.type === InteractionType.MessageComponent ||
@@ -578,6 +583,7 @@ export function createSessionStore(
     paginate,
     modal,
     prompt,
+    claims,
     dispatch,
     tryMessage,
     close,

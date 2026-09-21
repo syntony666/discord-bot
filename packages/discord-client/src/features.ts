@@ -174,8 +174,8 @@ type FeatureSpec<Deps, C> = C extends CommandDef
       useHandlers(deps: Deps): Collected;
     };
 
-export function defineFeature<Deps>() {
-  return <C extends CommandDef | undefined = undefined>(
+export function defineFeature() {
+  return <Deps, C extends CommandDef | undefined = undefined>(
     spec: FeatureSpec<Deps, C>
   ): Feature<Deps> => ({
     name: spec.name ?? spec.command?.command ?? '',

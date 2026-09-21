@@ -92,6 +92,7 @@ export function createBot<Deps>(
 
   const handleDispatch = (payload: GatewayDispatchPayload): boolean => {
     if (payload.t === GatewayDispatchEvents.InteractionCreate) {
+      if (!router.claims(payload.d)) return false;
       void router.handle(payload.d);
       return true;
     }

@@ -27,6 +27,7 @@ interface ComponentRoute {
 }
 
 interface SessionDispatcher {
+  claims(customId: string): boolean;
   dispatch(interaction: APIInteraction): Promise<boolean>;
 }
 
@@ -120,6 +121,8 @@ const compilePattern = (pattern: string) => {
 export interface CommandRouter {
   addCommand(def: CommandDef, handlers: Record<string, CommandHandler>): void;
   addComponent(pattern: string, handler: ComponentHandler): void;
+  /** Sync check: would handle() claim this interaction? */
+  claims(interaction: APIInteraction): boolean;
   /** Returns true when the interaction was claimed by a route or session. */
   handle(interaction: APIInteraction): Promise<boolean>;
 }
@@ -198,9 +201,22 @@ export function createCommandRouter(
     return false;
   };
 
+  const claims = (i: APIInteraction): boolean => {
+    if (
+      i.type === InteractionType.MessageComponent ||
+      i.type === InteractionType.ModalSubmit
+    ) {
+      const customId = i.data.custom_id;
+      if (sessions.claims(customId)) return true;
+      return components.some((r) => r.pattern.test(customId));
+    }
+    return isChatInput(i) && commands.has(i.data.name);
+  };
+
   return {
     addCommand,
     addComponent,
+    claims,
     handle: (i) => handle(i).catch((err) => (onError(err), true)),
   };
 }
