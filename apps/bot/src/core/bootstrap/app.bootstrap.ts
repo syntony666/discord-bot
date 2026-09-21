@@ -3,6 +3,7 @@ import { createBot } from '@discord-bot/discord-client';
 import type { DiscordClient } from '@discord-bot/discord-client';
 import { statusFeature } from '@features/status/status.feature';
 import { keywordFeature } from '@features/keyword/keyword.feature';
+import { memberNotifyFeature } from '@features/member-notify/member-notify.feature';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { interactionCustomId } from '@core/discord/interaction.helpers';
 import { registerApplicationCommands } from '@platforms/discord/commands-loader';
@@ -17,10 +18,8 @@ import { commandRegistry } from '@core/bootstrap/command.registry';
 import { ready$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { PaginatorButtonStrategy } from '@shared/paginator/strategy/paginator-button.strategy';
-import { setupMemberNotifyFeature } from '@features/member-notify/member-notify.feature';
 import { setupReactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
 import { setupStreamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
-import { setupMemberNotifyCommand } from '@commands/member-notify/member-notify.command';
 import { setupReactionRoleCommand } from '@commands/reaction-role/reaction-role.command';
 import { setupStreamNotifyCommand } from '@commands/stream-notify/stream-notify.command';
 import { ConfirmationStrategy } from '@shared/confirmation/confirmation.strategy';
@@ -70,11 +69,7 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
 
   // ========== Setup other features (pass guildModule) ==========
   const keywordModule = createHttpKeywordModule(request);
-  const memberNotifyFeature = setupMemberNotifyFeature(
-    createHttpMemberNotifyModule(request),
-    actions,
-    guildFeature.module
-  );
+  const memberNotifyModule = createHttpMemberNotifyModule(request);
   const reactionRoleFeature = setupReactionRoleFeature(
     createHttpReactionRoleModule(request),
     actions,
@@ -86,7 +81,6 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     scheduler
   );
 
-  featureRegistry.register(memberNotifyFeature);
   featureRegistry.register(reactionRoleFeature);
   featureRegistry.register(streamNotifyFeature);
 
@@ -95,7 +89,7 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     modules: {
       guild: guildFeature.module,
       keyword: keywordModule,
-      memberNotify: memberNotifyFeature.module,
+      memberNotify: memberNotifyModule,
       reactionRole: reactionRoleFeature.module,
       streamNotify: streamNotifyFeature.module,
     },
@@ -107,17 +101,9 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     onError: (err) => log.error({ err }, 'Bot dispatch error'),
   });
   // bot.sync() stays off until every command in commands.json is a def.
-  bot.register(statusFeature, keywordFeature);
+  bot.register(statusFeature, keywordFeature, memberNotifyFeature);
 
   // Register commands
-  commandRegistry.register(
-    'member-notify',
-    setupMemberNotifyCommand(
-      memberNotifyFeature.module,
-      guildFeature.module,
-      memberNotifyFeature.service
-    )
-  );
   commandRegistry.register(
     'reaction-role',
     setupReactionRoleCommand(reactionRoleFeature.module, reactionRoleFeature.service)

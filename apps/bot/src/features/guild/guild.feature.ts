@@ -1,5 +1,5 @@
 import type { DiscordActions } from '@core/discord/discord-actions';
-import { Subscription, mergeMap, catchError, EMPTY, lastValueFrom } from 'rxjs';
+import { Subscription, mergeMap, catchError, EMPTY } from 'rxjs';
 import { GuildModule } from './guild.module';
 import { guildCreate$, guildDelete$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
@@ -21,7 +21,7 @@ export function setupGuildFeature(module: GuildModule, actions: DiscordActions):
       mergeMap(async (guild) => {
         const guildId = guild.id;
         try {
-          await lastValueFrom(module.ensureGuild$(guildId, guild.name));
+          await module.ensureGuild(guildId, guild.name);
           log.info({ guildId, name: guild.name }, 'Guild record ensured');
         } catch (error) {
           log.error({ error, guildId }, 'Error ensuring guild record');
@@ -41,7 +41,7 @@ export function setupGuildFeature(module: GuildModule, actions: DiscordActions):
       mergeMap(async (guildId) => {
         const guildIdStr = guildId.toString();
         try {
-          await lastValueFrom(module.deleteGuild$(guildIdStr));
+          await module.deleteGuild(guildIdStr);
           log.info({ guildId: guildIdStr }, 'Guild deleted and cleaned up');
         } catch (error) {
           log.error({ error, guildId: guildIdStr }, 'Error cleaning up guild');

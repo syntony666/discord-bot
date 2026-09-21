@@ -1,4 +1,3 @@
-import { Observable } from 'rxjs';
 import {
   CreateNotificationChannelInput,
   MemberNotifyMessage,
@@ -13,30 +12,30 @@ export type { CreateNotificationChannelInput, UpdateMessageInput, UpsertMessageI
 export interface MemberNotifyModule {
   // ========== NotificationChannel Operations ==========
 
-  getNotificationChannel$(
+  getNotificationChannel(
     guildId: string,
     type: NotificationType
-  ): Observable<NotificationChannel | null>;
+  ): Promise<NotificationChannel | null>;
 
-  setNotificationChannel$(input: CreateNotificationChannelInput): Observable<NotificationChannel>;
+  setNotificationChannel(input: CreateNotificationChannelInput): Promise<NotificationChannel>;
 
-  toggleChannelEnabled$(
+  toggleChannelEnabled(
     guildId: string,
     type: NotificationType,
     enabled: boolean
-  ): Observable<NotificationChannel>;
+  ): Promise<NotificationChannel>;
 
-  deleteNotificationChannel$(guildId: string, type: NotificationType): Observable<void>;
+  deleteNotificationChannel(guildId: string, type: NotificationType): Promise<void>;
 
-  getNotificationChannels$(guildId: string): Observable<NotificationChannel[]>;
+  getNotificationChannels(guildId: string): Promise<NotificationChannel[]>;
 
   // ========== MemberNotifyMessage Operations ==========
 
-  getMessageTemplates$(guildId: string): Observable<MemberNotifyMessage | null>;
+  getMessageTemplates(guildId: string): Promise<MemberNotifyMessage | null>;
 
-  upsertMessageTemplates$(input: UpsertMessageInput): Observable<MemberNotifyMessage>;
+  upsertMessageTemplates(input: UpsertMessageInput): Promise<MemberNotifyMessage>;
 
-  updateMessage$(input: UpdateMessageInput): Observable<MemberNotifyMessage>;
+  updateMessage(input: UpdateMessageInput): Promise<MemberNotifyMessage>;
 
-  deleteMessageTemplates$(guildId: string): Observable<void>;
+  deleteMessageTemplates(guildId: string): Promise<void>;
 }

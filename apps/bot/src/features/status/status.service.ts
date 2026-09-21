@@ -17,17 +17,9 @@ export async function buildNotifyStatusItems(
     keywordRules,
     reactionRolePanels,
   ] = await Promise.all([
-    lastValueFrom(
-      modules.memberNotify.getNotificationChannel$(guildId, NotificationType.MEMBER_JOIN),
-      { defaultValue: null }
-    ),
-    lastValueFrom(
-      modules.memberNotify.getNotificationChannel$(guildId, NotificationType.MEMBER_LEAVE),
-      { defaultValue: null }
-    ),
-    lastValueFrom(modules.memberNotify.getMessageTemplates$(guildId), {
-      defaultValue: null,
-    }),
+    modules.memberNotify.getNotificationChannel(guildId, NotificationType.MEMBER_JOIN),
+    modules.memberNotify.getNotificationChannel(guildId, NotificationType.MEMBER_LEAVE),
+    modules.memberNotify.getMessageTemplates(guildId),
     lastValueFrom(modules.streamNotify.getConfig$(guildId), { defaultValue: null }),
     lastValueFrom(modules.streamNotify.getWatchers$(guildId), { defaultValue: [] }),
     modules.keyword.getRulesForList(guildId),
