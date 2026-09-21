@@ -1,73 +1,8 @@
-import type { DiscordActions } from '@core/discord/discord-actions';
-import { lastValueFrom, Subscription, filter, mergeMap, catchError, EMPTY } from 'rxjs';
-import { KeywordModule } from './keyword.module';
-import { createKeywordService, KeywordService } from './keyword.service';
-import { messageCreate$ } from '@core/rx/bus';
-import { createLogger } from '@core/logger';
-import { notify } from '@shared/message/message.helper';
-import { handleDiscordError } from '@core/rx/operators/handle-discord-error';
-import { Feature } from '@core/bootstrap/feature.interface';
-import { GuildModule } from '@features/guild/guild.module';
+import { defineFeature } from '@discord-bot/discord-client';
+import { keywordCommand } from './keyword.command';
+import { useKeywordHandlers } from './keyword.handlers';
 
-const log = createLogger('KeywordFeature');
-
-export interface KeywordFeature extends Feature {
-  module: KeywordModule;
-  service: KeywordService;
-}
-
-export function setupKeywordFeature(
-  module: KeywordModule,
-  actions: DiscordActions,
-  guildModule: GuildModule
-): KeywordFeature {
-  const service = createKeywordService(module);
-
-  const subscriptions: Subscription[] = [];
-
-  const messageCreateSub = messageCreate$
-    .pipe(
-      filter((msg) => !!msg.guild_id && !msg.author.bot), // Ignore DMs and bot messages
-      mergeMap(async (msg) => {
-        const guildId = msg.guild_id!;
-        const match = await lastValueFrom(service.findMatch$(guildId, msg.content));
-
-        if (match) {
-          try {
-            await actions.sendMessage(msg.channel_id, {
-              content: match.rule.response,
-            });
-            log.info({ guildId, pattern: match.rule.pattern }, 'Keyword matched and replied');
-          } catch (error: any) {
-            if (error?.code === 50013) {
-              log.warn({ guildId, error: error.message }, 'Missing permissions to send message');
-            } else {
-              log.error({ error, guildId }, 'Failed to send keyword response');
-            }
-          }
-        }
-      }),
-      handleDiscordError({
-        operation: 'keywordMatch',
-      }),
-      catchError((error) => {
-        log.error({ error }, 'Critical error in keyword stream (outer catchError)');
-        return EMPTY;
-      })
-    )
-    .subscribe();
-
-  subscriptions.push(messageCreateSub);
-
-  log.info('Keyword feature activated');
-
-  return {
-    name: 'Keyword',
-    module,
-    service,
-    cleanup: () => {
-      subscriptions.forEach((sub) => sub.unsubscribe());
-      log.info('Keyword feature cleaned up');
-    },
-  };
-}
+export const keywordFeature = defineFeature()({
+  command: keywordCommand,
+  useHandlers: useKeywordHandlers,
+});

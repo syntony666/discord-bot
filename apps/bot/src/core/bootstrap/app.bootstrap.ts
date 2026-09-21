@@ -2,6 +2,7 @@ import { createRequest } from '@discord-bot/shared';
 import { createBot } from '@discord-bot/discord-client';
 import type { DiscordClient } from '@discord-bot/discord-client';
 import { statusFeature } from '@features/status/status.feature';
+import { keywordFeature } from '@features/keyword/keyword.feature';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { interactionCustomId } from '@core/discord/interaction.helpers';
 import { registerApplicationCommands } from '@platforms/discord/commands-loader';
@@ -11,7 +12,6 @@ import { createHttpKeywordModule } from '@features/keyword/keyword.http-module';
 import { createHttpMemberNotifyModule } from '@features/member-notify/member-notify.http-module';
 import { createHttpReactionRoleModule } from '@features/reaction-role/reaction-role.http-module';
 import { createHttpStreamNotifyModule } from '@features/stream-notify/stream-notify.http-module';
-import { setupKeywordFeature } from '@features/keyword/keyword.feature';
 import { setupGuildFeature } from '@features/guild/guild.feature';
 import { commandRegistry } from '@core/bootstrap/command.registry';
 import { ready$ } from '@core/rx/bus';
@@ -20,7 +20,6 @@ import { PaginatorButtonStrategy } from '@shared/paginator/strategy/paginator-bu
 import { setupMemberNotifyFeature } from '@features/member-notify/member-notify.feature';
 import { setupReactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
 import { setupStreamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
-import { setupKeywordCommand } from '@commands/keyword/keyword.command';
 import { setupMemberNotifyCommand } from '@commands/member-notify/member-notify.command';
 import { setupReactionRoleCommand } from '@commands/reaction-role/reaction-role.command';
 import { setupStreamNotifyCommand } from '@commands/stream-notify/stream-notify.command';
@@ -70,11 +69,7 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
   featureRegistry.register(guildFeature);
 
   // ========== Setup other features (pass guildModule) ==========
-  const keywordFeature = setupKeywordFeature(
-    createHttpKeywordModule(request),
-    actions,
-    guildFeature.module
-  );
+  const keywordModule = createHttpKeywordModule(request);
   const memberNotifyFeature = setupMemberNotifyFeature(
     createHttpMemberNotifyModule(request),
     actions,
@@ -91,7 +86,6 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     scheduler
   );
 
-  featureRegistry.register(keywordFeature);
   featureRegistry.register(memberNotifyFeature);
   featureRegistry.register(reactionRoleFeature);
   featureRegistry.register(streamNotifyFeature);
@@ -100,7 +94,7 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     actions,
     modules: {
       guild: guildFeature.module,
-      keyword: keywordFeature.module,
+      keyword: keywordModule,
       memberNotify: memberNotifyFeature.module,
       reactionRole: reactionRoleFeature.module,
       streamNotify: streamNotifyFeature.module,
@@ -113,10 +107,9 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     onError: (err) => log.error({ err }, 'Bot dispatch error'),
   });
   // bot.sync() stays off until every command in commands.json is a def.
-  bot.register(statusFeature);
+  bot.register(statusFeature, keywordFeature);
 
   // Register commands
-  commandRegistry.register('keyword', setupKeywordCommand(keywordFeature.module));
   commandRegistry.register(
     'member-notify',
     setupMemberNotifyCommand(
