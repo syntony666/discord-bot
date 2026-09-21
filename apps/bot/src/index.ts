@@ -12,6 +12,7 @@ import { emitReady } from '@core/rx/bus';
 
 let healthServer: HealthServer | null = null;
 let gatewaySession: GatewaySession | null = null;
+let appScheduler: { stop(): void } | null = null;
 
 async function main() {
   logger.info({ env: appConfig.nodeEnv }, 'Starting bot');
@@ -22,7 +23,8 @@ async function main() {
 
     healthServer = startHealthServer(appConfig.health.port, buildStatusPayload);
 
-    const { bot } = await bootstrapApp(actions, client);
+    const { bot, scheduler } = await bootstrapApp(actions, client);
+    appScheduler = scheduler;
 
     gatewaySession = await client.connect({
       intents: botIntents,
@@ -47,6 +49,7 @@ async function gracefulShutdown(signal: string) {
   logger.info({ signal }, 'Received shutdown signal, shutting down gracefully...');
 
   try {
+    appScheduler?.stop();
     featureRegistry.cleanup();
     gatewaySession?.close();
     gatewaySession = null;
