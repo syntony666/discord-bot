@@ -13,7 +13,7 @@ import { createKeywordModule } from '@features/keyword/keyword.module';
 import { createMemberNotifyModule } from '@features/member-notify/member-notify.module';
 import { createReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { createStreamNotifyModule } from '@features/stream-notify/stream-notify.module';
-import { setupGuildFeature } from '@features/guild/guild.feature';
+import { guildFeature } from '@features/guild/guild.feature';
 import { commandRegistry } from '@core/bootstrap/command.registry';
 import { ready$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
@@ -63,17 +63,14 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     await confirmationStrategy.handle(actions, interaction);
   });
 
-  // ========== Setup Guild Feature FIRST ==========
-  const guildFeature = setupGuildFeature(createGuildModule(request), actions);
-  featureRegistry.register(guildFeature);
-
-  // ========== Setup other features (pass guildModule) ==========
+  // ========== Modules ==========
+  const guildModule = createGuildModule(request);
   const keywordModule = createKeywordModule(request);
   const memberNotifyModule = createMemberNotifyModule(request);
   const reactionRoleFeature = setupReactionRoleFeature(
     createReactionRoleModule(request),
     actions,
-    guildFeature.module
+    guildModule
   );
   const streamNotifyFeature = setupStreamNotifyFeature(
     createStreamNotifyModule(request),
@@ -87,7 +84,7 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
   const deps = {
     actions,
     modules: {
-      guild: guildFeature.module,
+      guild: guildModule,
       keyword: keywordModule,
       memberNotify: memberNotifyModule,
       reactionRole: reactionRoleFeature.module,
@@ -101,7 +98,12 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     onError: (err) => log.error({ err }, 'Bot dispatch error'),
   });
   // bot.sync() stays off until every command in commands.json is a def.
-  bot.register(statusFeature, keywordFeature, memberNotifyFeature);
+  bot.register(
+    statusFeature,
+    keywordFeature,
+    memberNotifyFeature,
+    guildFeature
+  );
 
   // Register commands
   commandRegistry.register(
