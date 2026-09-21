@@ -13,6 +13,13 @@ export { defineCommand } from './commands/define';
 export { toRestBody } from './commands/serialize';
 export { createSessionStore } from './commands/sessions';
 export type { SessionStore } from './commands/sessions';
+export { createCommandRouter } from './commands/router';
+export type {
+  CommandHandler,
+  CommandRouter,
+  ComponentHandler,
+} from './commands/router';
+export type { CommandRoute, SessionApi } from './commands/context';
 export type {
   CommandDef,
   OptionChoiceDef,
