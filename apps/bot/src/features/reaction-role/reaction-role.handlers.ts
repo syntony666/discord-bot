@@ -537,7 +537,6 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     data$.pipe(
       concatMap(async (reaction) => {
         try {
-          if (reaction.user_id === actions.botId) return;
           if (!reaction.guild_id) return;
 
           const guildId = reaction.guild_id;
@@ -612,7 +611,6 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     data$.pipe(
       concatMap(async (reaction) => {
         try {
-          if (reaction.user_id === actions.botId) return;
           if (!reaction.guild_id) return;
 
           const guildId = reaction.guild_id;

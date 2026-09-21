@@ -23,7 +23,8 @@ const eventKey = (t: string) =>
   t.toLowerCase().replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
 
 export function createEventHub(
-  onError: (err: unknown) => void
+  onError: (err: unknown) => void,
+  getSelfId: () => string = () => ''
 ): EventHub {
   const subjects = new Map<string, Subject<unknown>>();
 
@@ -66,6 +67,11 @@ export function createEventHub(
   const dispatch = (payload: GatewayDispatchPayload) => {
     const s = subjects.get(eventKey(payload.t));
     if (!s) return false;
+    // Drop self-originated events (e.g. the bot's own reactions). `user_id`
+    // only appears on reaction/typing payloads, so this can't misfire on
+    // member or message events.
+    const d = payload.d as { user_id?: string };
+    if (d.user_id !== undefined && d.user_id === getSelfId()) return true;
     s.next(payload.d);
     return true;
   };

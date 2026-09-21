@@ -1,6 +1,7 @@
 import { REST } from '@discordjs/rest';
 import { WebSocketManager, WebSocketShardEvents } from '@discordjs/ws';
 import type {
+  APIUser,
   GatewayDispatchPayload,
   GatewayReadyDispatchData,
 } from 'discord-api-types/v10';
@@ -28,19 +29,19 @@ export function createDiscordClient(options: {
   token: string;
 }): DiscordClient {
   const rest = new REST({ version: '10' }).setToken(options.token);
-  let botId = '';
-  const actions = createDiscordActions(rest, () => botId);
+  let botUser: APIUser | null = null;
+  const actions = createDiscordActions(rest, () => botUser);
   return {
     rest,
     actions,
     get botId() {
-      return botId;
+      return botUser?.id ?? '';
     },
     async connect({ intents, onDispatch, onReady, onLog }) {
       const manager = new WebSocketManager({ token: options.token, intents, rest });
       manager.on(WebSocketShardEvents.Dispatch, (payload) => onDispatch(payload));
       manager.on(WebSocketShardEvents.Ready, (data, shardId) => {
-        botId = data.user.id;
+        botUser = data.user;
         onReady?.(data, shardId);
       });
       manager.on(WebSocketShardEvents.Debug, (message, shardId) => onLog?.(message, { shardId }));

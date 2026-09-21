@@ -26,7 +26,7 @@ export interface Bot<Deps = unknown> {
 }
 
 export function createBot<Deps>(
-  client: { rest: REST },
+  client: { rest: REST; readonly botId: string },
   options: BotOptions<Deps>
 ): Bot {
   const { appId, deps } = options;
@@ -34,7 +34,7 @@ export function createBot<Deps>(
 
   const sessions = createSessionStore(client.rest, appId, onError);
   const router = createCommandRouter(client.rest, appId, sessions, onError);
-  const hub = createEventHub(onError);
+  const hub = createEventHub(onError, () => client.botId);
   const defs: CommandDef[] = [];
   const seen = new Set<string>();
 

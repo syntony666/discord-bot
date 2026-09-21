@@ -10,6 +10,7 @@ import type {
 
 export interface DiscordActions {
   readonly botId: string;
+  readonly botUser: APIUser | null;
   sendMessage(
     channelId: string,
     content: RESTPostAPIChannelMessageJSONBody
@@ -70,11 +71,14 @@ const userReactionRoute = (
 
 export function createDiscordActions(
   rest: REST,
-  getBotId: () => string
+  getBotUser: () => APIUser | null
 ): DiscordActions {
   return {
     get botId() {
-      return getBotId();
+      return getBotUser()?.id ?? '';
+    },
+    get botUser() {
+      return getBotUser();
     },
     sendMessage: (channelId, content) =>
       rest.post(Routes.channelMessages(channelId), {

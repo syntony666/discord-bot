@@ -40,8 +40,11 @@ export function useStatusHandlers(deps: StatusDeps) {
 
   h.handler('bot', async (ctx) => {
     const version = getBotVersion();
-    const botUser = await actions.getUser(actions.botId);
-    const botIcon = avatarUrl(actions.botId, botUser.avatar, botUser.discriminator);
+    const botUser = actions.botUser;
+    if (!botUser) {
+      return ctx.error('Bot 尚未就緒');
+    }
+    const botIcon = avatarUrl(botUser.id, botUser.avatar, botUser.discriminator);
 
     const components: APIActionRowComponent<APIButtonComponentWithURL>[] = [
       {
