@@ -17,8 +17,8 @@ import type { StreamNotifyModule } from '@features/stream-notify/stream-notify.m
 import { getBotVersion, getUptime } from '@core/bot-info';
 import { appConfig } from '@core/config';
 import { createLogger } from '@core/logger';
-import { avatarUrl, guildIconUrl } from '@shared/utils/discord.utils';
 import { statusCommand } from './status.command';
+import { avatarUrl, guildIconUrl } from './status.utils';
 import { buildNotifyStatusItems } from './status.service';
 
 const log = createLogger('Status');
