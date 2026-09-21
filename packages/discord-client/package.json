@@ -19,7 +19,8 @@
     "@discordjs/rest": "^2.6.3",
     "@discordjs/ws": "^2.0.4",
     "@sapphire/snowflake": "^3.5.5",
-    "discord-api-types": "0.38.55"
+    "discord-api-types": "0.38.55",
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "@types/node": "^25.0.3"

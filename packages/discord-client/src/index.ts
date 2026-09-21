@@ -20,6 +20,9 @@ export type {
   ComponentHandler,
 } from './commands/router';
 export type { CommandRoute, SessionApi } from './commands/context';
+export { createEventHub } from './events/hub';
+export type { EventHandler, EventHub, StreamBuilder } from './events/hub';
+export type { EventMap, EventName } from './events/types';
 export type {
   CommandDef,
   OptionChoiceDef,
