@@ -1,3 +1,5 @@
+import { Formatters } from '@discord-bot/discord-client';
+
 export interface ParsedEmoji {
   id: string | null;
   name: string;
@@ -8,66 +10,32 @@ export interface ParsedEmoji {
 export function parseEmoji(input: string): ParsedEmoji {
   const trimmed = input.trim();
 
-  // Format 1: Full custom emoji <:name:id> or <a:name:id>
-  const fullCustomMatch = trimmed.match(/<(a)?:(\w+):(\d+)>/);
-  if (fullCustomMatch) {
-    const animated = !!fullCustomMatch[1];
-    const name = fullCustomMatch[2];
-    const id = fullCustomMatch[3];
-
+  // Custom emoji: <:name:id>, <a:name:id>, name:id, a:name:id
+  const custom = trimmed.replace(/^</, '').replace(/>$/, '').match(/^(?:(a):)?(\w+):(\d+)$/);
+  if (custom) {
+    const [, a, name, id] = custom;
     return {
-      id: id as string,
-      name: name as string,
-      animated,
-      formatted: `${animated ? 'a:' : ''}${name}:${id}`,
+      id: id!,
+      name: name!,
+      animated: !!a,
+      formatted: `${a ? 'a:' : ''}${name}:${id}`,
     };
   }
 
-  // Format 2: Already formatted name:id or a:name:id
-  const formattedMatch = trimmed.match(/^(a:)?(\w+):(\d+)$/);
-  if (formattedMatch) {
-    const animated = !!formattedMatch[1];
-    const name = formattedMatch[2];
-    const id = formattedMatch[3];
-
-    return {
-      id: id as string,
-      name: name as string,
-      animated,
-      formatted: `${animated ? 'a:' : ''}${name}:${id}`,
-    };
-  }
-
-  // Format 3: Just ID (legacy format, needs migration)
+  // Legacy bare-id format
   if (/^\d+$/.test(trimmed)) {
     return {
       id: trimmed,
       name: 'emoji',
       animated: false,
-      formatted: `emoji:${trimmed}`, // Best effort formatting
+      formatted: `emoji:${trimmed}`,
     };
   }
 
-  // Format 4: Shortcode :name: (can't be fully resolved without emoji ID)
-  const shortcodeMatch = trimmed.match(/^:(\w+):$/);
-  if (shortcodeMatch) {
-    const name = shortcodeMatch[1];
-    // We can't know the ID from just the name, so treat as Unicode
-    return {
-      id: null,
-      name: name as string,
-      animated: false,
-      formatted: name as string, // Use name as-is
-    };
-  }
-
-  // Format 5: Unicode emoji
-  return {
-    id: null,
-    name: trimmed,
-    animated: false,
-    formatted: trimmed,
-  };
+  // :shortcode: or unicode emoji — stored as-is
+  const shortcode = trimmed.match(/^:(\w+):$/);
+  const name = shortcode ? shortcode[1]! : trimmed;
+  return { id: null, name, animated: false, formatted: name };
 }
 
 export function normalizeEmojiForStorage(input: string): string {
@@ -92,20 +60,9 @@ export function formatEmojiForReaction(stored: string): string {
 
 export function formatEmojiForDisplay(stored: string): string {
   const trimmed = stored.trim();
-  const fullMatch = trimmed.match(/^<a?:\w+:\d+>$/);
-  if (fullMatch) {
-    return trimmed;
-  }
+  const custom = trimmed.replace(/^</, '').replace(/>$/, '').match(/^(?:(a):)?(\w+):(\d+)$/);
+  if (!custom) return trimmed;
 
-  // Check if it's custom emoji format (name:id or a:name:id)
-  const customMatch = trimmed.match(/^(a:)?(\w+):(\d+)$/);
-  if (customMatch) {
-    const animated = !!customMatch[1];
-    const name = customMatch[2];
-    const id = customMatch[3];
-    return `<${animated ? 'a' : ''}:${name}:${id}>`;
-  }
-
-  // Unicode emoji or other format
-  return trimmed;
+  const [, a, name, id] = custom;
+  return Formatters.formatEmoji({ id: id!, name: name!, animated: !!a });
 }
