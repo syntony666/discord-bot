@@ -1,7 +1,7 @@
 import '@discord-bot/shared';
 import { createDiscordClient, type GatewaySession } from '@discord-bot/discord-client';
 import { appConfig, botIntents } from '@core/config';
-import { logger } from '@core/logger';
+import { logger } from '@discord-bot/shared';
 import { bootstrapApp } from '@core/bootstrap/app.bootstrap';
 import { startHealthServer, HealthServer } from '@core/health/health.server';
 import { buildStatusPayload, markDiscordReady } from '@core/health/status.provider';

@@ -2,7 +2,7 @@ import { StreamInfo } from './stream-notify.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { StreamNotifyModule } from './stream-notify.module';
 import { StreamPlatformService } from './platforms/platform.interface';
-import { createLogger } from '@core/logger';
+import { createLogger } from '@discord-bot/shared';
 import { StreamWatcher } from '@discord-bot/shared';
 
 const log = createLogger('StreamNotifyService');

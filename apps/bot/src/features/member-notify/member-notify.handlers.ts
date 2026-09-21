@@ -3,7 +3,7 @@ import type { CommandContext } from '@discord-bot/discord-client';
 import { NotificationType } from '@discord-bot/shared';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { Colors } from '@core/config/colors.config';
-import { createLogger } from '@core/logger';
+import { createLogger } from '@discord-bot/shared';
 import type { GuildModule } from '@features/guild/guild.module';
 import type { MemberNotifyModule } from './member-notify.module';
 import { createMemberNotifyService } from './member-notify.service';

@@ -3,7 +3,7 @@ import { StreamPlatform } from '@discord-bot/shared';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import type { SchedulerService } from '@core/scheduler';
 import { Colors } from '@core/config/colors.config';
-import { createLogger } from '@core/logger';
+import { createLogger } from '@discord-bot/shared';
 import type { StreamNotifyModule } from './stream-notify.module';
 import { createStreamNotifyService } from './stream-notify.service';
 import { TwitchService } from './platforms/twitch.service';

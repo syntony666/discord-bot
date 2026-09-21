@@ -1,5 +1,5 @@
 import { useHandlers } from '@discord-bot/discord-client';
-import { createLogger } from '@core/logger';
+import { createLogger } from '@discord-bot/shared';
 import type { GuildModule } from './guild.module';
 
 const log = createLogger('Guild');

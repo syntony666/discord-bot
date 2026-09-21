@@ -2,7 +2,7 @@ import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import { KeywordMatchType } from '@discord-bot/shared';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { Colors } from '@core/config/colors.config';
-import { createLogger } from '@core/logger';
+import { createLogger } from '@discord-bot/shared';
 import type { KeywordModule } from './keyword.module';
 import { createKeywordService } from './keyword.service';
 import { keywordCommand } from './keyword.command';

@@ -1,6 +1,6 @@
 import { ReactionRoleModule, ReactionRoleMatch } from './reaction-role.module';
 import { normalizeEmojiFromReaction } from './internal/emoji.helper';
-import { createLogger } from '@core/logger';
+import { createLogger } from '@discord-bot/shared';
 
 const log = createLogger('ReactionRoleService');
 

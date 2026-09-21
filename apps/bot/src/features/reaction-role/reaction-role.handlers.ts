@@ -3,7 +3,7 @@ import type { CommandContext } from '@discord-bot/discord-client';
 import { concatMap } from 'rxjs';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { Colors } from '@core/config/colors.config';
-import { createLogger } from '@core/logger';
+import { createLogger } from '@discord-bot/shared';
 import type { ReactionRoleModule } from './reaction-role.module';
 import { createReactionRoleService } from './reaction-role.service';
 import { reactionRoleCommand } from './reaction-role.command';

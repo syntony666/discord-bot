@@ -12,7 +12,7 @@ import { createMemberNotifyModule } from '@features/member-notify/member-notify.
 import { createReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { createStreamNotifyModule } from '@features/stream-notify/stream-notify.module';
 import { guildFeature } from '@features/guild/guild.feature';
-import { createLogger } from '@core/logger';
+import { createLogger } from '@discord-bot/shared';
 import { reactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
 import { streamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
 import { createSchedulerService } from '@core/scheduler';

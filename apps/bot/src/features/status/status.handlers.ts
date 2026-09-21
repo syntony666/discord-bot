@@ -16,7 +16,7 @@ import type { ReactionRoleModule } from '@features/reaction-role/reaction-role.m
 import type { StreamNotifyModule } from '@features/stream-notify/stream-notify.module';
 import { getBotVersion, getUptime } from '@core/bot-info';
 import { appConfig } from '@core/config';
-import { createLogger } from '@core/logger';
+import { createLogger } from '@discord-bot/shared';
 import { statusCommand } from './status.command';
 import { avatarUrl, guildIconUrl } from './status.utils';
 import { buildNotifyStatusItems } from './status.service';
