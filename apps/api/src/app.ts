@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { logger } from '@discord-bot/shared';
 import { Prisma } from './.prisma/client';
 import { prisma } from './db/client';
 import { createGuildModule } from './modules/guild.module';
@@ -38,6 +39,9 @@ app.onError((error, c) => {
       return c.json({ error: { code: 'CONFLICT', message: 'Resource already exists' } }, 409);
     }
   }
-  console.error(error);
+  logger.error(
+    { error, method: c.req.method, path: c.req.path },
+    'Unhandled request error'
+  );
   return c.json({ error: { code: 'INTERNAL', message: 'Internal server error' } }, 500);
 });

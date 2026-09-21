@@ -1,8 +1,8 @@
 import { PrismaClient } from '../.prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-import pino from 'pino';
+import { createLogger } from '@discord-bot/shared';
 
-const log = pino({ name: 'Prisma' });
+const log = createLogger('Prisma');
 
 export const prisma = new PrismaClient({
   adapter: new PrismaPg({

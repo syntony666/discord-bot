@@ -1,4 +1,4 @@
-import '@discord-bot/shared';
+import { logger } from '@discord-bot/shared';
 import { serve } from '@hono/node-server';
 import { app } from './app';
 import { connectPrisma, disconnectPrisma } from './db/client';
@@ -8,7 +8,7 @@ const port = Number(process.env.API_PORT ?? 3001);
 async function main() {
   await connectPrisma();
   serve({ fetch: app.fetch, port });
-  console.log(`API listening on :${port}`);
+  logger.info(`API listening on :${port}`);
 }
 
 async function shutdown() {
@@ -20,6 +20,6 @@ process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
 main().catch((error) => {
-  console.error('Failed to start API', error);
+  logger.error({ error }, 'Failed to start API');
   process.exit(1);
 });
