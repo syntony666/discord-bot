@@ -5,7 +5,6 @@ import { statusFeature } from '@features/status/status.feature';
 import { keywordFeature } from '@features/keyword/keyword.feature';
 import { memberNotifyFeature } from '@features/member-notify/member-notify.feature';
 import type { DiscordActions } from '@core/discord/discord-actions';
-import { interactionCustomId } from '@core/discord/interaction.helpers';
 import { appConfig } from '@core/config';
 import { createGuildModule } from '@features/guild/guild.module';
 import { createKeywordModule } from '@features/keyword/keyword.module';
@@ -13,14 +12,10 @@ import { createMemberNotifyModule } from '@features/member-notify/member-notify.
 import { createReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { createStreamNotifyModule } from '@features/stream-notify/stream-notify.module';
 import { guildFeature } from '@features/guild/guild.feature';
-import { commandRegistry } from '@core/bootstrap/command.registry';
 import { ready$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
-import { PaginatorButtonStrategy } from '@shared/paginator/strategy/paginator-button.strategy';
 import { reactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
 import { streamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
-import { ConfirmationStrategy } from '@shared/confirmation/confirmation.strategy';
-import { CustomIdPrefixes } from '@core/config/constants';
 import { featureRegistry } from './feature.registry';
 import { createSchedulerService } from '@core/scheduler';
 
@@ -38,25 +33,6 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
   // Create and start scheduler
   const scheduler = createSchedulerService();
   scheduler.start();
-
-  // Register interaction strategies
-  const paginatorButtonStrategy = new PaginatorButtonStrategy();
-  const confirmationStrategy = new ConfirmationStrategy();
-
-  commandRegistry.registerCustomIdHandler(
-    `${CustomIdPrefixes.PAGINATOR}:`,
-    async (interaction, actions) => {
-      if (interactionCustomId(interaction)?.endsWith(':jump')) {
-        await paginatorButtonStrategy.handleModalSubmit(actions, interaction);
-      } else {
-        await paginatorButtonStrategy.handle(actions, interaction);
-      }
-    }
-  );
-
-  commandRegistry.registerCustomIdHandler('confirm:', async (interaction, actions) => {
-    await confirmationStrategy.handle(actions, interaction);
-  });
 
   // ========== Modules ==========
   const guildModule = createGuildModule(request);
@@ -91,9 +67,6 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     reactionRoleFeature
   );
   await bot.sync();
-
-  // Activate command registry
-  commandRegistry.activate(actions);
 
   log.info({ featureCount: featureRegistry.count() }, 'Application bootstrapped successfully');
 
