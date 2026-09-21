@@ -1,6 +1,5 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import { KeywordMatchType } from '@discord-bot/shared';
-import { lastValueFrom } from 'rxjs';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@core/logger';
@@ -36,14 +35,10 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const matchType = ctx.options.match_type ?? KeywordMatchType.EXACT;
     const editorId = ctx.user.id;
 
-    const existing = await lastValueFrom(
-      module.getRuleByPattern$(guildId, pattern)
-    );
+    const existing = await module.getRuleByPattern(guildId, pattern);
 
     if (!existing) {
-      await lastValueFrom(
-        module.createRule$({ guildId, pattern, matchType, response, editorId })
-      );
+      await module.createRule({ guildId, pattern, matchType, response, editorId });
       await ctx.reply({
         embeds: [
           {
@@ -76,9 +71,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     });
     if (!ok) return ctx.editReply(cancelled);
 
-    await lastValueFrom(
-      module.updateRule$({ guildId, pattern, response, matchType, editorId })
-    );
+    await module.updateRule({ guildId, pattern, response, matchType, editorId });
     await ctx.editReply({
       embeds: [
         {
@@ -104,20 +97,16 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const { pattern, response } = ctx.options;
     const matchType = ctx.options.match_type ?? KeywordMatchType.EXACT;
 
-    const existing = await lastValueFrom(
-      module.getRuleByPattern$(guildId, pattern)
-    );
+    const existing = await module.getRuleByPattern(guildId, pattern);
     if (!existing) return ctx.error('找不到此關鍵字。');
 
-    await lastValueFrom(
-      module.updateRule$({
-        guildId,
-        pattern,
-        response,
-        matchType,
-        editorId: ctx.user.id,
-      })
-    );
+    await module.updateRule({
+      guildId,
+      pattern,
+      response,
+      matchType,
+      editorId: ctx.user.id,
+    });
     await ctx.reply({
       embeds: [
         {
@@ -133,7 +122,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   h.handler('list', async (ctx) => {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
 
-    const rules = await lastValueFrom(module.getRulesForList$(ctx.guildId));
+    const rules = await module.getRulesForList(ctx.guildId);
     await ctx.paginate({
       items: rules,
       pageSize: 10,
@@ -157,9 +146,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const { pattern } = ctx.options;
     const editorId = ctx.user.id;
 
-    const rule = await lastValueFrom(
-      module.getRuleByPattern$(guildId, pattern)
-    );
+    const rule = await module.getRuleByPattern(guildId, pattern);
     if (!rule) return ctx.error('找不到此關鍵字，可能已被其他人刪除。');
 
     const ok = await ctx.confirm({
@@ -177,7 +164,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     });
     if (!ok) return ctx.editReply(cancelled);
 
-    await lastValueFrom(module.deleteRule$(guildId, pattern));
+    await module.deleteRule(guildId, pattern);
     await ctx.editReply({
       embeds: [
         {
@@ -200,9 +187,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   h.event('messageCreate', async (msg) => {
     if (!msg.guild_id || msg.author.bot) return;
 
-    const match = await lastValueFrom(
-      service.findMatch$(msg.guild_id, msg.content)
-    );
+    const match = await service.findMatch(msg.guild_id, msg.content);
     if (!match) return;
 
     try {

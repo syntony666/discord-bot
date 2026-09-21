@@ -30,7 +30,7 @@ export async function buildNotifyStatusItems(
     }),
     lastValueFrom(modules.streamNotify.getConfig$(guildId), { defaultValue: null }),
     lastValueFrom(modules.streamNotify.getWatchers$(guildId), { defaultValue: [] }),
-    lastValueFrom(modules.keyword.getRulesForList$(guildId), { defaultValue: [] }),
+    modules.keyword.getRulesForList(guildId),
     lastValueFrom(modules.reactionRole.getPanelsByGuild$(guildId), {
       defaultValue: [],
     }),
