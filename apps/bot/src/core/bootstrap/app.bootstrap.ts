@@ -8,11 +8,11 @@ import type { DiscordActions } from '@core/discord/discord-actions';
 import { interactionCustomId } from '@core/discord/interaction.helpers';
 import { registerApplicationCommands } from '@platforms/discord/commands-loader';
 import { appConfig } from '@core/config';
-import { createHttpGuildModule } from '@features/guild/guild.http-module';
-import { createHttpKeywordModule } from '@features/keyword/keyword.http-module';
-import { createHttpMemberNotifyModule } from '@features/member-notify/member-notify.http-module';
-import { createHttpReactionRoleModule } from '@features/reaction-role/reaction-role.http-module';
-import { createHttpStreamNotifyModule } from '@features/stream-notify/stream-notify.http-module';
+import { createGuildModule } from '@features/guild/guild.module';
+import { createKeywordModule } from '@features/keyword/keyword.module';
+import { createMemberNotifyModule } from '@features/member-notify/member-notify.module';
+import { createReactionRoleModule } from '@features/reaction-role/reaction-role.module';
+import { createStreamNotifyModule } from '@features/stream-notify/stream-notify.module';
 import { setupGuildFeature } from '@features/guild/guild.feature';
 import { commandRegistry } from '@core/bootstrap/command.registry';
 import { ready$ } from '@core/rx/bus';
@@ -64,19 +64,19 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
   });
 
   // ========== Setup Guild Feature FIRST ==========
-  const guildFeature = setupGuildFeature(createHttpGuildModule(request), actions);
+  const guildFeature = setupGuildFeature(createGuildModule(request), actions);
   featureRegistry.register(guildFeature);
 
   // ========== Setup other features (pass guildModule) ==========
-  const keywordModule = createHttpKeywordModule(request);
-  const memberNotifyModule = createHttpMemberNotifyModule(request);
+  const keywordModule = createKeywordModule(request);
+  const memberNotifyModule = createMemberNotifyModule(request);
   const reactionRoleFeature = setupReactionRoleFeature(
-    createHttpReactionRoleModule(request),
+    createReactionRoleModule(request),
     actions,
     guildFeature.module
   );
   const streamNotifyFeature = setupStreamNotifyFeature(
-    createHttpStreamNotifyModule(request),
+    createStreamNotifyModule(request),
     actions,
     scheduler
   );
