@@ -35,6 +35,8 @@ export type {
   PromptOptions,
 } from './commands/context';
 export type { GatewayDispatchPayload } from 'discord-api-types/v10';
+export { createDiscordActions } from './actions';
+export type { DiscordActions } from './actions';
 export { createDiscordClient } from './client';
 export type {
   DiscordClient,
