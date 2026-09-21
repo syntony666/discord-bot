@@ -3,7 +3,6 @@ import { createDiscordClient, type GatewaySession } from '@discord-bot/discord-c
 import { appConfig, botIntents } from '@core/config';
 import { logger } from '@core/logger';
 import { bootstrapApp } from '@core/bootstrap/app.bootstrap';
-import { featureRegistry } from '@core/bootstrap/feature.registry';
 import { startHealthServer, HealthServer } from '@core/health/health.server';
 import { buildStatusPayload } from '@core/health/status.provider';
 import { createDiscordActions } from '@platforms/discord/discord-actions.adapter';
@@ -50,7 +49,6 @@ async function gracefulShutdown(signal: string) {
 
   try {
     appScheduler?.stop();
-    featureRegistry.cleanup();
     gatewaySession?.close();
     gatewaySession = null;
 

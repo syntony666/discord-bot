@@ -16,7 +16,6 @@ import { ready$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { reactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
 import { streamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
-import { featureRegistry } from './feature.registry';
 import { createSchedulerService } from '@core/scheduler';
 
 const log = createLogger('Bootstrap');
@@ -68,7 +67,7 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
   );
   await bot.sync();
 
-  log.info({ featureCount: featureRegistry.count() }, 'Application bootstrapped successfully');
+  log.info('Application bootstrapped successfully');
 
   return { bot, scheduler };
 }
