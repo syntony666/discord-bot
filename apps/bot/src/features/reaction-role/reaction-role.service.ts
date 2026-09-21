@@ -10,7 +10,11 @@ export interface ReactionRoleService {
     messageId: string,
     emoji: string
   ): Promise<ReactionRoleMatch | null>;
-  normalizeEmoji(emoji: { id?: string | null; name?: string | null }): string;
+  normalizeEmoji(emoji: {
+    id?: string | null;
+    name?: string | null;
+    animated?: boolean | null;
+  }): string;
 }
 
 export function createReactionRoleService(module: ReactionRoleModule): ReactionRoleService {
@@ -18,7 +22,12 @@ export function createReactionRoleService(module: ReactionRoleModule): ReactionR
     async findMatch(guildId: string, messageId: string, emoji: string) {
       log.debug({ guildId, messageId, emoji }, 'Finding reaction role match');
 
-      const reactionRole = await module.getReactionRole(guildId, messageId, emoji);
+      // Legacy rows store `name:id` without the animated prefix
+      const reactionRole =
+        (await module.getReactionRole(guildId, messageId, emoji)) ??
+        (emoji.startsWith('a:')
+          ? await module.getReactionRole(guildId, messageId, emoji.slice(2))
+          : null);
       log.debug(
         { guildId, messageId, emoji, reactionRole: !!reactionRole },
         'Reaction role query result'
@@ -39,7 +48,11 @@ export function createReactionRoleService(module: ReactionRoleModule): ReactionR
       };
     },
 
-    normalizeEmoji(emoji: { id?: string | null; name?: string | null }): string {
+    normalizeEmoji(emoji: {
+      id?: string | null;
+      name?: string | null;
+      animated?: boolean | null;
+    }): string {
       const normalized = normalizeEmojiFromReaction(emoji);
       log.debug({ input: emoji, normalized }, 'Emoji normalized');
       return normalized;
