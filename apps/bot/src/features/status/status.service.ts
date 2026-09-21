@@ -1,4 +1,3 @@
-import { lastValueFrom } from 'rxjs';
 import { NotificationType } from '@discord-bot/shared';
 import type { StatusDeps } from './status.handlers';
 
@@ -23,9 +22,7 @@ export async function buildNotifyStatusItems(
     modules.streamNotify.getConfig(guildId),
     modules.streamNotify.getWatchers(guildId),
     modules.keyword.getRulesForList(guildId),
-    lastValueFrom(modules.reactionRole.getPanelsByGuild$(guildId), {
-      defaultValue: [],
-    }),
+    modules.reactionRole.getPanelsByGuild(guildId),
   ]);
 
   const items: string[] = [];

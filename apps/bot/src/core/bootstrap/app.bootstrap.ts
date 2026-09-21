@@ -18,9 +18,8 @@ import { commandRegistry } from '@core/bootstrap/command.registry';
 import { ready$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { PaginatorButtonStrategy } from '@shared/paginator/strategy/paginator-button.strategy';
-import { setupReactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
+import { reactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
 import { streamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
-import { setupReactionRoleCommand } from '@commands/reaction-role/reaction-role.command';
 import { ConfirmationStrategy } from '@shared/confirmation/confirmation.strategy';
 import { CustomIdPrefixes } from '@core/config/constants';
 import { featureRegistry } from './feature.registry';
@@ -66,14 +65,8 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
   const guildModule = createGuildModule(request);
   const keywordModule = createKeywordModule(request);
   const memberNotifyModule = createMemberNotifyModule(request);
-  const reactionRoleFeature = setupReactionRoleFeature(
-    createReactionRoleModule(request),
-    actions,
-    guildModule
-  );
+  const reactionRoleModule = createReactionRoleModule(request);
   const streamNotifyModule = createStreamNotifyModule(request);
-
-  featureRegistry.register(reactionRoleFeature);
 
   const deps = {
     actions,
@@ -81,7 +74,7 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
       guild: guildModule,
       keyword: keywordModule,
       memberNotify: memberNotifyModule,
-      reactionRole: reactionRoleFeature.module,
+      reactionRole: reactionRoleModule,
       streamNotify: streamNotifyModule,
     },
     scheduler,
@@ -98,13 +91,8 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     keywordFeature,
     memberNotifyFeature,
     guildFeature,
-    streamNotifyFeature
-  );
-
-  // Register commands
-  commandRegistry.register(
-    'reaction-role',
-    setupReactionRoleCommand(reactionRoleFeature.module, reactionRoleFeature.service)
+    streamNotifyFeature,
+    reactionRoleFeature
   );
 
   // Activate command registry

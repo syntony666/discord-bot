@@ -1,4 +1,3 @@
-import { from } from 'rxjs';
 import {
   ApiRequest,
   CreateReactionRoleInput,
@@ -15,65 +14,53 @@ const base = (guildId: string) => `/api/v1/guilds/${guildId}`;
 
 export function createReactionRoleModule(request: ApiRequest) {
   return {
-    getPanel$(guildId: string, messageId: string) {
-      return from(
-        orNull(request<ReactionRolePanel>(`${base(guildId)}/reaction-role-panels/${messageId}`))
+    getPanel(guildId: string, messageId: string) {
+      return orNull(
+        request<ReactionRolePanel>(`${base(guildId)}/reaction-role-panels/${messageId}`)
       );
     },
-    getPanelsByGuild$(guildId: string) {
-      return from(request<ReactionRolePanel[]>(`${base(guildId)}/reaction-role-panels`));
+    getPanelsByGuild(guildId: string) {
+      return request<ReactionRolePanel[]>(`${base(guildId)}/reaction-role-panels`);
     },
-    createPanel$(input: CreateReactionRolePanelInput) {
+    createPanel(input: CreateReactionRolePanelInput) {
       const { guildId, ...body } = input;
-      return from(
-        request<ReactionRolePanel>(`${base(guildId)}/reaction-role-panels`, {
-          method: 'POST',
-          body: JSON.stringify(body),
-        })
-      );
+      return request<ReactionRolePanel>(`${base(guildId)}/reaction-role-panels`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
     },
-    updatePanel$(guildId: string, messageId: string, updates: UpdateReactionRolePanelInput) {
-      return from(
-        request<ReactionRolePanel>(`${base(guildId)}/reaction-role-panels/${messageId}`, {
-          method: 'PATCH',
-          body: JSON.stringify(updates),
-        })
-      );
+    updatePanel(guildId: string, messageId: string, updates: UpdateReactionRolePanelInput) {
+      return request<ReactionRolePanel>(`${base(guildId)}/reaction-role-panels/${messageId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+      });
     },
-    deletePanel$(guildId: string, messageId: string) {
-      return from(
-        request<void>(`${base(guildId)}/reaction-role-panels/${messageId}`, { method: 'DELETE' })
-      );
+    deletePanel(guildId: string, messageId: string) {
+      return request<void>(`${base(guildId)}/reaction-role-panels/${messageId}`, {
+        method: 'DELETE',
+      });
     },
-    getReactionRole$(guildId: string, messageId: string, emoji: string) {
-      return from(
-        orNull(
-          request<ReactionRole>(
-            `${base(guildId)}/reaction-roles/${messageId}/${encodeURIComponent(emoji)}`
-          )
+    getReactionRole(guildId: string, messageId: string, emoji: string) {
+      return orNull(
+        request<ReactionRole>(
+          `${base(guildId)}/reaction-roles/${messageId}/${encodeURIComponent(emoji)}`
         )
       );
     },
-    getReactionRolesByMessage$(guildId: string, messageId: string) {
-      return from(
-        request<ReactionRole[]>(`${base(guildId)}/reaction-roles?messageId=${messageId}`)
-      );
+    getReactionRolesByMessage(guildId: string, messageId: string) {
+      return request<ReactionRole[]>(`${base(guildId)}/reaction-roles?messageId=${messageId}`);
     },
-    createReactionRole$(input: CreateReactionRoleInput) {
+    createReactionRole(input: CreateReactionRoleInput) {
       const { guildId, ...body } = input;
-      return from(
-        request<ReactionRole>(`${base(guildId)}/reaction-roles`, {
-          method: 'POST',
-          body: JSON.stringify(body),
-        })
-      );
+      return request<ReactionRole>(`${base(guildId)}/reaction-roles`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
     },
-    deleteReactionRole$(guildId: string, messageId: string, emoji: string) {
-      return from(
-        request<void>(
-          `${base(guildId)}/reaction-roles/${messageId}/${encodeURIComponent(emoji)}`,
-          { method: 'DELETE' }
-        )
+    deleteReactionRole(guildId: string, messageId: string, emoji: string) {
+      return request<void>(
+        `${base(guildId)}/reaction-roles/${messageId}/${encodeURIComponent(emoji)}`,
+        { method: 'DELETE' }
       );
     },
   };

@@ -1,8 +1,8 @@
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { ReactionRolePanel, ReactionRole } from '@discord-bot/shared';
 import { createLogger } from '@core/logger';
-import { buildPanelEmbed } from '../reaction-role.helpers';
-import type { PanelMode } from '../reaction-role.types';
+import { buildPanelEmbed } from './panel.helpers';
+import type { PanelMode } from './panel.helpers';
 
 const log = createLogger('ReactionRoleOperations');
 

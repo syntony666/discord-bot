@@ -1,6 +1,16 @@
 import { Colors } from '@core/config/colors.config';
-import type { BuildPanelEmbedOptions, PanelMode } from './reaction-role.types';
-import { formatEmojiForDisplay } from '@features/reaction-role/internal/emoji.helper';
+import type { ReactionRole } from '@discord-bot/shared';
+import { formatEmojiForDisplay } from './emoji.helper';
+
+export type PanelMode = 'NORMAL' | 'UNIQUE' | 'VERIFY';
+
+export interface BuildPanelEmbedOptions {
+  title?: string;
+  description?: string;
+  mode: PanelMode;
+  roles: Array<Pick<ReactionRole, 'emoji' | 'roleId' | 'description'>>;
+  messageId?: string;
+}
 
 export function buildPanelEmbed(options: BuildPanelEmbedOptions) {
   const { title, description, mode, roles, messageId } = options;
