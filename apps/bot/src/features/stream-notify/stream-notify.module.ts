@@ -1,4 +1,3 @@
-import { from } from 'rxjs';
 import {
   ApiRequest,
   orNull,
@@ -12,82 +11,66 @@ const WATCHERS = '/api/v1/stream-watchers';
 
 export function createStreamNotifyModule(request: ApiRequest) {
   return {
-    getConfig$(guildId: string) {
-      return from(orNull(request<StreamNotifyConfig>(`${base(guildId)}/stream-notify-config`)));
+    getConfig(guildId: string) {
+      return orNull(request<StreamNotifyConfig>(`${base(guildId)}/stream-notify-config`));
     },
-    createConfig$(guildId: string, channelId: string, message?: string) {
-      return from(
-        request<StreamNotifyConfig>(`${base(guildId)}/stream-notify-config`, {
-          method: 'POST',
-          body: JSON.stringify({ channelId, message }),
-        })
-      );
+    createConfig(guildId: string, channelId: string, message?: string) {
+      return request<StreamNotifyConfig>(`${base(guildId)}/stream-notify-config`, {
+        method: 'POST',
+        body: JSON.stringify({ channelId, message }),
+      });
     },
-    updateConfig$(guildId: string, data: Partial<StreamNotifyConfig>) {
-      return from(
-        request<StreamNotifyConfig>(`${base(guildId)}/stream-notify-config`, {
-          method: 'PATCH',
-          body: JSON.stringify(data),
-        })
-      );
+    updateConfig(guildId: string, data: Partial<StreamNotifyConfig>) {
+      return request<StreamNotifyConfig>(`${base(guildId)}/stream-notify-config`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      });
     },
-    deleteConfig$(guildId: string) {
-      return from(request<void>(`${base(guildId)}/stream-notify-config`, { method: 'DELETE' }));
+    deleteConfig(guildId: string) {
+      return request<void>(`${base(guildId)}/stream-notify-config`, { method: 'DELETE' });
     },
-    getWatchers$(guildId: string) {
-      return from(request<StreamWatcher[]>(`${base(guildId)}/stream-watchers`));
+    getWatchers(guildId: string) {
+      return request<StreamWatcher[]>(`${base(guildId)}/stream-watchers`);
     },
-    getAllWatchers$() {
-      return from(request<StreamWatcher[]>(WATCHERS));
+    getAllWatchers() {
+      return request<StreamWatcher[]>(WATCHERS);
     },
-    getWatcher$(guildId: string, platform: StreamPlatform, platformId: string) {
-      return from(
-        orNull(
-          request<StreamWatcher>(
-            `${base(guildId)}/stream-watchers/${platform}/${encodeURIComponent(platformId)}`
-          )
+    getWatcher(guildId: string, platform: StreamPlatform, platformId: string) {
+      return orNull(
+        request<StreamWatcher>(
+          `${base(guildId)}/stream-watchers/${platform}/${encodeURIComponent(platformId)}`
         )
       );
     },
-    addWatcher$(guildId: string, platform: StreamPlatform, platformId: string, displayName: string) {
-      return from(
-        request<StreamWatcher>(`${base(guildId)}/stream-watchers`, {
-          method: 'POST',
-          body: JSON.stringify({ platform, platformId, displayName }),
-        })
+    addWatcher(guildId: string, platform: StreamPlatform, platformId: string, displayName: string) {
+      return request<StreamWatcher>(`${base(guildId)}/stream-watchers`, {
+        method: 'POST',
+        body: JSON.stringify({ platform, platformId, displayName }),
+      });
+    },
+    removeWatcher(guildId: string, platform: StreamPlatform, platformId: string) {
+      return request<void>(
+        `${base(guildId)}/stream-watchers/${platform}/${encodeURIComponent(platformId)}`,
+        { method: 'DELETE' }
       );
     },
-    removeWatcher$(guildId: string, platform: StreamPlatform, platformId: string) {
-      return from(
-        request<void>(
-          `${base(guildId)}/stream-watchers/${platform}/${encodeURIComponent(platformId)}`,
-          { method: 'DELETE' }
-        )
-      );
+    updateWatcherStatus(id: string, isLive: boolean) {
+      return request<StreamWatcher>(`${WATCHERS}/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ isLive }),
+      });
     },
-    updateWatcherStatus$(id: string, isLive: boolean) {
-      return from(
-        request<StreamWatcher>(`${WATCHERS}/${id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ isLive }),
-        })
-      );
+    updateWatcherUserId(id: string, platformUserId: string) {
+      return request<StreamWatcher>(`${WATCHERS}/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ platformUserId }),
+      });
     },
-    updateWatcherUserId$(id: string, platformUserId: string) {
-      return from(
-        request<StreamWatcher>(`${WATCHERS}/${id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ platformUserId }),
-        })
-      );
-    },
-    updateLastChecked$(id: string) {
-      return from(
-        request<StreamWatcher>(`${WATCHERS}/${id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ touch: true }),
-        })
-      );
+    updateLastChecked(id: string) {
+      return request<StreamWatcher>(`${WATCHERS}/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ touch: true }),
+      });
     },
   };
 }

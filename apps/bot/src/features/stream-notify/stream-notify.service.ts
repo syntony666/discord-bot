@@ -2,8 +2,6 @@ import { StreamInfo } from './stream-notify.types';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { StreamNotifyModule } from './stream-notify.module';
 import { StreamPlatformService } from './platforms/platform.interface';
-import { from, lastValueFrom } from 'rxjs';
-import { mergeMap, catchError } from 'rxjs/operators';
 import { createLogger } from '@core/logger';
 import { StreamWatcher } from '@discord-bot/shared';
 
@@ -26,7 +24,7 @@ export function createStreamNotifyService(actions: DiscordActions): StreamNotify
   ): Promise<void> => {
     try {
       // Get all watchers across all guilds
-      const allWatchers: StreamWatcher[] = await lastValueFrom(module.getAllWatchers$());
+      const allWatchers: StreamWatcher[] = await module.getAllWatchers();
 
       // Handle ID conversion for Twitch watchers that don't have platformUserId yet
       const twitchWatchersNeedingConversion = allWatchers.filter(
@@ -43,7 +41,7 @@ export function createStreamNotifyService(actions: DiscordActions): StreamNotify
           for (const watcher of twitchWatchersNeedingConversion) {
             const userId = usernameToIdMap.get(watcher.platformId.toLowerCase());
             if (userId) {
-              await lastValueFrom(module.updateWatcherUserId$(watcher.id, userId));
+              await module.updateWatcherUserId(watcher.id, userId);
             } else {
             }
           }
@@ -51,7 +49,7 @@ export function createStreamNotifyService(actions: DiscordActions): StreamNotify
       }
 
       // Get updated list after conversions
-      const updatedWatchers: StreamWatcher[] = await lastValueFrom(module.getAllWatchers$());
+      const updatedWatchers: StreamWatcher[] = await module.getAllWatchers();
 
       const watchersByPlatform = new Map<string, string[]>();
 
@@ -85,9 +83,9 @@ export function createStreamNotifyService(actions: DiscordActions): StreamNotify
             });
 
             if (watcher && !watcher.isLive) {
-              await lastValueFrom(module.updateWatcherStatus$(watcher.id, true));
+              await module.updateWatcherStatus(watcher.id, true);
 
-              const config = await lastValueFrom(module.getConfig$(watcher.guildId));
+              const config = await module.getConfig(watcher.guildId);
               if (config && config.enabled) {
                 await sendNotification(watcher.guildId, streamInfo, config.message, module);
               }
@@ -101,10 +99,10 @@ export function createStreamNotifyService(actions: DiscordActions): StreamNotify
             const isStillLive = liveStreams.some((s) => s.platformId === watcherId);
 
             if (watcher.isLive && !isStillLive) {
-              await lastValueFrom(module.updateWatcherStatus$(watcher.id, false));
+              await module.updateWatcherStatus(watcher.id, false);
             }
 
-            await lastValueFrom(module.updateLastChecked$(watcher.id));
+            await module.updateLastChecked(watcher.id);
           }
         } catch (error) {
           log.error({ error, platform: platformName }, 'Failed to check stream status');
@@ -124,7 +122,7 @@ export function createStreamNotifyService(actions: DiscordActions): StreamNotify
     try {
       const message = messageTemplate.replace(/{user}/g, streamInfo.displayName);
 
-      const config = await lastValueFrom(module.getConfig$(guildId));
+      const config = await module.getConfig(guildId);
 
       if (!config) return;
 

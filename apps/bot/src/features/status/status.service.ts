@@ -20,8 +20,8 @@ export async function buildNotifyStatusItems(
     modules.memberNotify.getNotificationChannel(guildId, NotificationType.MEMBER_JOIN),
     modules.memberNotify.getNotificationChannel(guildId, NotificationType.MEMBER_LEAVE),
     modules.memberNotify.getMessageTemplates(guildId),
-    lastValueFrom(modules.streamNotify.getConfig$(guildId), { defaultValue: null }),
-    lastValueFrom(modules.streamNotify.getWatchers$(guildId), { defaultValue: [] }),
+    modules.streamNotify.getConfig(guildId),
+    modules.streamNotify.getWatchers(guildId),
     modules.keyword.getRulesForList(guildId),
     lastValueFrom(modules.reactionRole.getPanelsByGuild$(guildId), {
       defaultValue: [],

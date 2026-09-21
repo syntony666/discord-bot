@@ -19,9 +19,8 @@ import { ready$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { PaginatorButtonStrategy } from '@shared/paginator/strategy/paginator-button.strategy';
 import { setupReactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
-import { setupStreamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
+import { streamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
 import { setupReactionRoleCommand } from '@commands/reaction-role/reaction-role.command';
-import { setupStreamNotifyCommand } from '@commands/stream-notify/stream-notify.command';
 import { ConfirmationStrategy } from '@shared/confirmation/confirmation.strategy';
 import { CustomIdPrefixes } from '@core/config/constants';
 import { featureRegistry } from './feature.registry';
@@ -72,14 +71,9 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     actions,
     guildModule
   );
-  const streamNotifyFeature = setupStreamNotifyFeature(
-    createStreamNotifyModule(request),
-    actions,
-    scheduler
-  );
+  const streamNotifyModule = createStreamNotifyModule(request);
 
   featureRegistry.register(reactionRoleFeature);
-  featureRegistry.register(streamNotifyFeature);
 
   const deps = {
     actions,
@@ -88,8 +82,9 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
       keyword: keywordModule,
       memberNotify: memberNotifyModule,
       reactionRole: reactionRoleFeature.module,
-      streamNotify: streamNotifyFeature.module,
+      streamNotify: streamNotifyModule,
     },
+    scheduler,
   };
 
   const bot = createBot(client, {
@@ -102,7 +97,8 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     statusFeature,
     keywordFeature,
     memberNotifyFeature,
-    guildFeature
+    guildFeature,
+    streamNotifyFeature
   );
 
   // Register commands
@@ -110,12 +106,11 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     'reaction-role',
     setupReactionRoleCommand(reactionRoleFeature.module, reactionRoleFeature.service)
   );
-  commandRegistry.register('stream-notify', setupStreamNotifyCommand(streamNotifyFeature.module));
 
   // Activate command registry
   commandRegistry.activate(actions);
 
   log.info({ featureCount: featureRegistry.count() }, 'Application bootstrapped successfully');
 
-  return { bot };
+  return { bot, scheduler };
 }
