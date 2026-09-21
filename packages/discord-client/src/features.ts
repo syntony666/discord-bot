@@ -33,9 +33,16 @@ interface OptionValueMap {
   [ApplicationCommandOptionType.Attachment]: APIAttachment;
 }
 
-type OptionValue<T> = T extends keyof OptionValueMap
-  ? OptionValueMap[T]
-  : unknown;
+type MapValue<T> = T extends keyof OptionValueMap ? OptionValueMap[T] : unknown;
+type ChoiceValue<P> = P extends { choices: readonly { value: infer V }[] }
+  ? V
+  : never;
+type TypeOf<P> = P extends { type: infer T } ? T : never;
+
+/** Choice values narrow to their literal union when declared. */
+type OptionValue<P> =
+  | ChoiceValue<P>
+  | ([ChoiceValue<P>] extends [never] ? MapValue<TypeOf<P>> : never);
 
 type RequiredOption<T> = T extends { required: true } ? T : never;
 type OptionalOption<T> = T extends { required: true } ? never : T;
@@ -43,9 +50,9 @@ type OptionalOption<T> = T extends { required: true } ? never : T;
 /** OptionDef[] → `{ pattern: string; note?: string }` */
 type OptionsOf<O> = O extends readonly OptionDef[]
   ? {
-      [P in RequiredOption<O[number]> as P['name']]: OptionValue<P['type']>;
+      [P in RequiredOption<O[number]> as P['name']]: OptionValue<P>;
     } & {
-      [P in OptionalOption<O[number]> as P['name']]?: OptionValue<P['type']>;
+      [P in OptionalOption<O[number]> as P['name']]?: OptionValue<P>;
     }
   : Record<string, unknown>;
 
