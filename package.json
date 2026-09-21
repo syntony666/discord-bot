@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "prepare": "npm run build -w @discord-bot/shared",
+    "dev": "npm run dev:api & npm run dev:bot",
     "dev:bot": "npm run dev --workspace=@discord-bot/bot",
     "dev:api": "npm run dev --workspace=@discord-bot/api",
     "build": "npm run build --workspaces --if-present",
