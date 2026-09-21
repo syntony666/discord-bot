@@ -6,7 +6,6 @@ import { keywordFeature } from '@features/keyword/keyword.feature';
 import { memberNotifyFeature } from '@features/member-notify/member-notify.feature';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { interactionCustomId } from '@core/discord/interaction.helpers';
-import { registerApplicationCommands } from '@platforms/discord/commands-loader';
 import { appConfig } from '@core/config';
 import { createGuildModule } from '@features/guild/guild.module';
 import { createKeywordModule } from '@features/keyword/keyword.module';
@@ -35,8 +34,6 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
   ready$.subscribe(({ user }) => {
     log.info({ user }, 'Bot is ready');
   });
-
-  await registerApplicationCommands(client);
 
   // Create and start scheduler
   const scheduler = createSchedulerService();
@@ -85,7 +82,6 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     deps,
     onError: (err) => log.error({ err }, 'Bot dispatch error'),
   });
-  // bot.sync() stays off until every command in commands.json is a def.
   bot.register(
     statusFeature,
     keywordFeature,
@@ -94,6 +90,7 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
     streamNotifyFeature,
     reactionRoleFeature
   );
+  await bot.sync();
 
   // Activate command registry
   commandRegistry.activate(actions);
