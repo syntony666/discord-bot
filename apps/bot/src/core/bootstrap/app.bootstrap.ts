@@ -1,5 +1,7 @@
 import { createRequest } from '@discord-bot/shared';
+import { createBot } from '@discord-bot/discord-client';
 import type { DiscordClient } from '@discord-bot/discord-client';
+import { statusFeature } from '@features/status/status.feature';
 import type { DiscordActions } from '@core/discord/discord-actions';
 import { interactionCustomId } from '@core/discord/interaction.helpers';
 import { registerApplicationCommands } from '@platforms/discord/commands-loader';
@@ -18,7 +20,6 @@ import { PaginatorButtonStrategy } from '@shared/paginator/strategy/paginator-bu
 import { setupMemberNotifyFeature } from '@features/member-notify/member-notify.feature';
 import { setupReactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
 import { setupStreamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
-import { setupStatusCommand } from '@commands/status/status.command';
 import { setupKeywordCommand } from '@commands/keyword/keyword.command';
 import { setupMemberNotifyCommand } from '@commands/member-notify/member-notify.command';
 import { setupReactionRoleCommand } from '@commands/reaction-role/reaction-role.command';
@@ -95,16 +96,26 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
   featureRegistry.register(reactionRoleFeature);
   featureRegistry.register(streamNotifyFeature);
 
-  // Register commands
-  commandRegistry.register(
-    'status',
-    setupStatusCommand({
-      memberNotify: memberNotifyFeature.module,
-      streamNotify: streamNotifyFeature.module,
+  const deps = {
+    actions,
+    modules: {
+      guild: guildFeature.module,
       keyword: keywordFeature.module,
+      memberNotify: memberNotifyFeature.module,
       reactionRole: reactionRoleFeature.module,
-    })
-  );
+      streamNotify: streamNotifyFeature.module,
+    },
+  };
+
+  const bot = createBot(client, {
+    appId: appConfig.discord.appId,
+    deps,
+    onError: (err) => log.error({ err }, 'Bot dispatch error'),
+  });
+  // bot.sync() stays off until every command in commands.json is a def.
+  bot.register(statusFeature);
+
+  // Register commands
   commandRegistry.register('keyword', setupKeywordCommand(keywordFeature.module));
   commandRegistry.register(
     'member-notify',
@@ -124,4 +135,6 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
   commandRegistry.activate(actions);
 
   log.info({ featureCount: featureRegistry.count() }, 'Application bootstrapped successfully');
+
+  return { bot };
 }

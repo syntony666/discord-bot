@@ -22,11 +22,13 @@ async function main() {
 
     healthServer = startHealthServer(appConfig.health.port, buildStatusPayload);
 
-    await bootstrapApp(actions, client);
+    const { bot } = await bootstrapApp(actions, client);
 
     gatewaySession = await client.connect({
       intents: botIntents,
-      onDispatch: handleGatewayDispatch,
+      onDispatch: (payload) => {
+        if (!bot.handleDispatch(payload)) handleGatewayDispatch(payload);
+      },
       onReady: (data) => {
         setBotId(data.user.id);
         emitReady({ user: data.user, shardId: 0 });
