@@ -18,6 +18,15 @@ export type {
   SubcommandDef,
   SubcommandGroupDef,
 } from './commands/types';
+export type {
+  CommandContext,
+  ComponentContext,
+  ConfirmOptions,
+  ModalField,
+  ModalOptions,
+  PaginateOptions,
+  PromptOptions,
+} from './commands/context';
 export type { GatewayDispatchPayload } from 'discord-api-types/v10';
 
 export interface GatewayConnectOptions {
