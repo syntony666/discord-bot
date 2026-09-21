@@ -13,12 +13,6 @@
       ],
       "@platforms/*": [
         "platforms/*"
-      ],
-      "@commands/*": [
-        "commands/*"
-      ],
-      "@shared/*": [
-        "shared/*"
       ]
     }
   },
