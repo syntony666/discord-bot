@@ -4,7 +4,6 @@ import type { DiscordClient } from '@discord-bot/discord-client';
 import { statusFeature } from '@features/status/status.feature';
 import { keywordFeature } from '@features/keyword/keyword.feature';
 import { memberNotifyFeature } from '@features/member-notify/member-notify.feature';
-import type { DiscordActions } from '@core/discord/discord-actions';
 import { appConfig } from '@core/config';
 import { createGuildModule } from '@features/guild/guild.module';
 import { createKeywordModule } from '@features/keyword/keyword.module';
@@ -19,7 +18,7 @@ import { createSchedulerService } from '@core/scheduler';
 
 const log = createLogger('Bootstrap');
 
-export async function bootstrapApp(actions: DiscordActions, client: DiscordClient) {
+export async function bootstrapApp(client: DiscordClient) {
   log.info('Bootstrapping application...');
 
   const request = createRequest(appConfig.api.url);
@@ -36,7 +35,7 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
   const streamNotifyModule = createStreamNotifyModule(request);
 
   const deps = {
-    actions,
+    actions: client.actions,
     modules: {
       guild: guildModule,
       keyword: keywordModule,

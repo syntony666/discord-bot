@@ -1,4 +1,4 @@
-import type { DiscordActions } from '@core/discord/discord-actions';
+import type { DiscordActions } from '@discord-bot/discord-client';
 import { ReactionRolePanel, ReactionRole } from '@discord-bot/shared';
 import { createLogger } from '@discord-bot/shared';
 import { buildPanelEmbed } from './panel.helpers';

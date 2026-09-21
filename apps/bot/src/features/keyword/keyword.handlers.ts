@@ -1,6 +1,6 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import { KeywordMatchType } from '@discord-bot/shared';
-import type { DiscordActions } from '@core/discord/discord-actions';
+import type { DiscordActions } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import type { KeywordModule } from './keyword.module';

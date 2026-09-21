@@ -9,7 +9,7 @@ import type {
   APIButtonComponentWithURL,
   APIEmbed,
 } from 'discord-api-types/v10';
-import type { DiscordActions } from '@core/discord/discord-actions';
+import type { DiscordActions } from '@discord-bot/discord-client';
 import type { KeywordModule } from '@features/keyword/keyword.module';
 import type { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import type { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';

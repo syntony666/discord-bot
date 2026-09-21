@@ -5,7 +5,6 @@ import { logger } from '@discord-bot/shared';
 import { bootstrapApp } from '@core/bootstrap/app.bootstrap';
 import { startHealthServer, HealthServer } from '@core/health/health.server';
 import { buildStatusPayload, markDiscordReady } from '@core/health/status.provider';
-import { createDiscordActions } from '@platforms/discord/discord-actions.adapter';
 
 let healthServer: HealthServer | null = null;
 let gatewaySession: GatewaySession | null = null;
@@ -16,11 +15,10 @@ async function main() {
 
   try {
     const client = createDiscordClient({ token: appConfig.discord.token });
-    const { actions, setBotId } = createDiscordActions(client, appConfig.discord.appId);
 
     healthServer = startHealthServer(appConfig.health.port, buildStatusPayload);
 
-    const { bot, scheduler } = await bootstrapApp(actions, client);
+    const { bot, scheduler } = await bootstrapApp(client);
     appScheduler = scheduler;
 
     gatewaySession = await client.connect({
@@ -29,7 +27,6 @@ async function main() {
         bot.handleDispatch(payload);
       },
       onReady: (data) => {
-        setBotId(data.user.id);
         markDiscordReady();
         logger.info({ user: data.user }, 'Bot is ready');
       },

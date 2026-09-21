@@ -1,5 +1,5 @@
 import { StreamInfo } from './stream-notify.types';
-import type { DiscordActions } from '@core/discord/discord-actions';
+import type { DiscordActions } from '@discord-bot/discord-client';
 import { StreamNotifyModule } from './stream-notify.module';
 import { StreamPlatformService } from './platforms/platform.interface';
 import { createLogger } from '@discord-bot/shared';
