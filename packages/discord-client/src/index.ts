@@ -23,6 +23,8 @@ export type { CommandRoute, SessionApi } from './commands/context';
 export { createEventHub } from './events/hub';
 export type { EventHandler, EventHub, StreamBuilder } from './events/hub';
 export type { EventMap, EventName } from './events/types';
+export { defineFeature, useHandlers } from './features';
+export type { Collected, Feature, HandlerKeyOf } from './features';
 export type {
   CommandDef,
   OptionChoiceDef,
