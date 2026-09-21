@@ -1,12 +1,11 @@
 import { appConfig } from '@core/config';
-import { ready$ } from '@core/rx/bus';
 import { StatusPayload } from './health.server';
 
 let discordReady = false;
 
-ready$.subscribe(() => {
+export function markDiscordReady(): void {
   discordReady = true;
-});
+}
 
 export async function buildStatusPayload(): Promise<StatusPayload> {
   const checks: StatusPayload['checks'] = {};

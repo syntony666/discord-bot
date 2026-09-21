@@ -12,7 +12,6 @@ import { createMemberNotifyModule } from '@features/member-notify/member-notify.
 import { createReactionRoleModule } from '@features/reaction-role/reaction-role.module';
 import { createStreamNotifyModule } from '@features/stream-notify/stream-notify.module';
 import { guildFeature } from '@features/guild/guild.feature';
-import { ready$ } from '@core/rx/bus';
 import { createLogger } from '@core/logger';
 import { reactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
 import { streamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
@@ -24,10 +23,6 @@ export async function bootstrapApp(actions: DiscordActions, client: DiscordClien
   log.info('Bootstrapping application...');
 
   const request = createRequest(appConfig.api.url);
-
-  ready$.subscribe(({ user }) => {
-    log.info({ user }, 'Bot is ready');
-  });
 
   // Create and start scheduler
   const scheduler = createSchedulerService();

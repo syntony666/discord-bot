@@ -4,10 +4,8 @@ import { appConfig, botIntents } from '@core/config';
 import { logger } from '@core/logger';
 import { bootstrapApp } from '@core/bootstrap/app.bootstrap';
 import { startHealthServer, HealthServer } from '@core/health/health.server';
-import { buildStatusPayload } from '@core/health/status.provider';
+import { buildStatusPayload, markDiscordReady } from '@core/health/status.provider';
 import { createDiscordActions } from '@platforms/discord/discord-actions.adapter';
-import { handleGatewayDispatch } from '@platforms/discord/gateway.events';
-import { emitReady } from '@core/rx/bus';
 
 let healthServer: HealthServer | null = null;
 let gatewaySession: GatewaySession | null = null;
@@ -28,11 +26,12 @@ async function main() {
     gatewaySession = await client.connect({
       intents: botIntents,
       onDispatch: (payload) => {
-        if (!bot.handleDispatch(payload)) handleGatewayDispatch(payload);
+        bot.handleDispatch(payload);
       },
       onReady: (data) => {
         setBotId(data.user.id);
-        emitReady({ user: data.user, shardId: 0 });
+        markDiscordReady();
+        logger.info({ user: data.user }, 'Bot is ready');
       },
       onLog: (message, meta) => logger.info(meta ?? {}, `[Gateway] ${message}`),
     });

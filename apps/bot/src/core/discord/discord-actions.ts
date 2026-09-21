@@ -1,11 +1,12 @@
 import type {
+  APIGuild,
   APIInteractionResponse,
   APIInteractionResponseCallbackData,
   APIMessage,
+  APIUser,
   RESTPatchAPIChannelMessageJSONBody,
   RESTPostAPIChannelMessageJSONBody,
 } from 'discord-api-types/v10';
-import type { BotGuild, BotUser } from '@core/rx/bus';
 
 export interface DiscordActions {
   readonly botId: string;
@@ -32,8 +33,8 @@ export interface DiscordActions {
     messageId: string,
     reason?: string
   ): Promise<unknown>;
-  getGuild(guildId: string): Promise<BotGuild>;
-  getUser(userId: string): Promise<BotUser>;
+  getGuild(guildId: string): Promise<APIGuild>;
+  getUser(userId: string): Promise<APIUser>;
   addRole(
     guildId: string,
     userId: string,

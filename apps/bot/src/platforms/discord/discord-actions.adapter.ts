@@ -6,7 +6,6 @@ import type {
 import { Routes } from 'discord-api-types/v10';
 import type { DiscordClient } from '@discord-bot/discord-client';
 import type { DiscordActions } from '@core/discord/discord-actions';
-import type { BotGuild, BotUser } from '@core/rx/bus';
 
 export interface DiscordActionsHandle {
   actions: DiscordActions;
@@ -39,8 +38,8 @@ export function createDiscordActions(
     deleteMessage: (channelId, messageId, reason) =>
       rest.delete(Routes.channelMessage(channelId, messageId), { reason }),
     getGuild: (guildId) =>
-      rest.get(`${Routes.guild(guildId)}?with_counts=true`) as Promise<BotGuild>,
-    getUser: (userId) => rest.get(Routes.user(userId)) as Promise<BotUser>,
+      rest.get(`${Routes.guild(guildId)}?with_counts=true`) as Promise<APIGuild>,
+    getUser: (userId) => rest.get(Routes.user(userId)) as Promise<APIUser>,
     addRole: (guildId, userId, roleId, reason) =>
       rest.put(Routes.guildMemberRole(guildId, userId, roleId), {
         reason,
