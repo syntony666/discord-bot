@@ -1,6 +1,6 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import { KeywordMatchType } from '@discord-bot/shared';
-import type { DiscordApi } from '@discord-bot/discord-client';
+import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import type { KeywordModule } from './keyword.module';
@@ -11,7 +11,7 @@ const log = createLogger('Keyword');
 
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface KeywordDeps {
-  discord: DiscordApi;
+  discord: DiscordHelpers;
   modules: { keyword: KeywordModule };
 }
 

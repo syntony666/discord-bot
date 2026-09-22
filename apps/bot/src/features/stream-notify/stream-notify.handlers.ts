@@ -1,6 +1,6 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import { StreamPlatform } from '@discord-bot/shared';
-import type { DiscordApi } from '@discord-bot/discord-client';
+import type { DiscordHelpers } from '@discord-bot/discord-client';
 import type { SchedulerService } from '@core/scheduler';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
@@ -13,7 +13,7 @@ const log = createLogger('StreamNotify');
 
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface StreamNotifyDeps {
-  discord: DiscordApi;
+  discord: DiscordHelpers;
   modules: { streamNotify: StreamNotifyModule };
   scheduler: SchedulerService;
 }

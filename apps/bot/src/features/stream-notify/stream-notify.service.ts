@@ -1,5 +1,5 @@
 import { StreamInfo } from './stream-notify.types';
-import type { DiscordApi } from '@discord-bot/discord-client';
+import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { StreamNotifyModule } from './stream-notify.module';
 import { StreamPlatformService } from './platforms/platform.interface';
 import { createLogger } from '@discord-bot/shared';
@@ -17,7 +17,7 @@ export interface StreamNotifyService {
   ): Promise<void>;
 }
 
-export function createStreamNotifyService(discord: DiscordApi): StreamNotifyService {
+export function createStreamNotifyService(discord: DiscordHelpers): StreamNotifyService {
   const checkAllStreams = async (
     module: StreamNotifyModule,
     services: StreamPlatformService[]

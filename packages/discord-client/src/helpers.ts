@@ -4,7 +4,7 @@ import type {
 } from 'discord-api-types/v10';
 import type { Resources } from './internal/resources';
 
-export function createApi(resources: Resources) {
+export function createHelpers(resources: Resources) {
   return {
     get botId() {
       return resources.botId;
@@ -59,4 +59,4 @@ export function createApi(resources: Resources) {
   };
 }
 
-export type DiscordApi = ReturnType<typeof createApi>;
+export type DiscordHelpers = ReturnType<typeof createHelpers>;

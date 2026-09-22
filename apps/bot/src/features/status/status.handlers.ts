@@ -9,7 +9,7 @@ import type {
   APIButtonComponentWithURL,
   APIEmbed,
 } from 'discord-api-types/v10';
-import type { DiscordApi } from '@discord-bot/discord-client';
+import type { DiscordHelpers } from '@discord-bot/discord-client';
 import type { KeywordModule } from '@features/keyword/keyword.module';
 import type { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import type { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
@@ -25,7 +25,7 @@ const log = createLogger('Status');
 
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface StatusDeps {
-  discord: DiscordApi;
+  discord: DiscordHelpers;
   modules: {
     memberNotify: MemberNotifyModule;
     streamNotify: StreamNotifyModule;

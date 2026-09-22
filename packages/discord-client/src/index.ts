@@ -35,7 +35,7 @@ export type {
   PromptOptions,
 } from './internal/context';
 export type { GatewayDispatchPayload } from 'discord-api-types/v10';
-export type { DiscordApi } from './api';
+export type { DiscordHelpers } from './helpers';
 export { createDiscordClient } from './client';
 export type {
   DiscordClient,

@@ -1,7 +1,7 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import type { CommandContext } from '@discord-bot/discord-client';
 import { NotificationType } from '@discord-bot/shared';
-import type { DiscordApi } from '@discord-bot/discord-client';
+import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import type { GuildModule } from '@features/guild/guild.module';
@@ -13,7 +13,7 @@ const log = createLogger('MemberNotify');
 
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface MemberNotifyDeps {
-  discord: DiscordApi;
+  discord: DiscordHelpers;
   modules: { memberNotify: MemberNotifyModule; guild: GuildModule };
 }
 

@@ -1,7 +1,7 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import type { CommandContext } from '@discord-bot/discord-client';
 import { concatMap } from 'rxjs';
-import type { DiscordApi } from '@discord-bot/discord-client';
+import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import type { ReactionRoleModule } from './reaction-role.module';
@@ -26,7 +26,7 @@ const log = createLogger('ReactionRole');
 
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface ReactionRoleDeps {
-  discord: DiscordApi;
+  discord: DiscordHelpers;
   modules: { reactionRole: ReactionRoleModule };
 }
 
