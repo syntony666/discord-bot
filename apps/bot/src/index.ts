@@ -1,8 +1,7 @@
 import '@discord-bot/shared';
-import { type GatewaySession } from '@discord-bot/discord-client';
+import { createDiscordClient, type GatewaySession } from '@discord-bot/discord-client';
 import { appConfig, botIntents } from '@core/config';
 import { logger } from '@discord-bot/shared';
-import { client } from '@core/client';
 import { bootstrapApp } from '@core/bootstrap';
 import { scheduler } from '@core/scheduler';
 import { startHealthServer, HealthServer } from '@core/health/health.server';
@@ -17,7 +16,8 @@ async function main() {
   try {
     healthServer = startHealthServer(appConfig.health.port, buildStatusPayload);
 
-    const bot = await bootstrapApp();
+    const client = createDiscordClient({ token: appConfig.discord.token });
+    const bot = await bootstrapApp(client);
 
     gatewaySession = await client.connect({
       intents: botIntents,

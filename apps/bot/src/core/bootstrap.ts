@@ -4,13 +4,13 @@ import { memberNotifyFeature } from '@features/member-notify/member-notify.featu
 import { guildFeature } from '@features/guild/guild.feature';
 import { reactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
 import { streamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
-import { client } from '@core/client';
+import type { DiscordClient } from '@discord-bot/discord-client';
 import { appConfig } from '@core/config';
 import { createLogger } from '@discord-bot/shared';
 
 const log = createLogger('Bootstrap');
 
-export async function bootstrapApp() {
+export async function bootstrapApp(client: DiscordClient) {
   log.info('Bootstrapping application...');
 
   const bot = client.createBot({
