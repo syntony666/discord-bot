@@ -10,14 +10,6 @@ export type StreamBuilder<K extends EventName> = (
   data$: Observable<EventMap[K]>
 ) => Observable<unknown>;
 
-export interface EventHub {
-  on<K extends EventName>(name: K, handler: EventHandler<K>): void;
-  stream<K extends EventName>(name: K, build: StreamBuilder<K>): void;
-  /** Routes a gateway dispatch to subscribers. Returns true if anyone listened. */
-  dispatch(payload: GatewayDispatchPayload): boolean;
-  close(): void;
-}
-
 /** 'MESSAGE_CREATE' → 'messageCreate' */
 const eventKey = (t: string) =>
   t.toLowerCase().replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
@@ -25,7 +17,7 @@ const eventKey = (t: string) =>
 export function createEventHub(
   onError: (err: unknown) => void,
   getSelfId: () => string = () => ''
-): EventHub {
+) {
   const subjects = new Map<string, Subject<unknown>>();
 
   const subjectFor = (key: string) => {
@@ -37,7 +29,7 @@ export function createEventHub(
     return s;
   };
 
-  const on: EventHub['on'] = (name, handler) => {
+  const on = <K extends EventName>(name: K, handler: EventHandler<K>) => {
     subjectFor(name).subscribe({
       next: (data) => {
         try {
@@ -51,7 +43,7 @@ export function createEventHub(
     });
   };
 
-  const stream: EventHub['stream'] = (name, build) => {
+  const stream = <K extends EventName>(name: K, build: StreamBuilder<K>) => {
     const source = subjectFor(name).asObservable() as Observable<never>;
     build(source)
       .pipe(
@@ -83,3 +75,5 @@ export function createEventHub(
 
   return { on, stream, dispatch, close };
 }
+
+export type EventHub = ReturnType<typeof createEventHub>;

@@ -63,21 +63,11 @@ interface Waiter {
   timer: NodeJS.Timeout;
 }
 
-export interface SessionStore extends SessionApi {
-  /** Sync check: would dispatch() claim this custom_id? */
-  claims(customId: string): boolean;
-  /** Returns true if the interaction was claimed by a `kit:` session. */
-  dispatch(interaction: APIInteraction): Promise<boolean>;
-  /** Returns true if a prompt waiter consumed the message. */
-  tryMessage(message: APIMessage): boolean;
-  close(): void;
-}
-
 export function createSessionStore(
   rest: REST,
   appId: string,
   onError?: (err: unknown) => void
-): SessionStore {
+) {
   const pending = new Map<string, Pending>();
   const waiters = new Map<string, Waiter>();
 
@@ -589,3 +579,5 @@ export function createSessionStore(
     close,
   };
 }
+
+export type SessionStore = ReturnType<typeof createSessionStore>;

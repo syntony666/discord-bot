@@ -19,16 +19,9 @@ export interface GatewaySession {
   close(): void;
 }
 
-export interface DiscordClient {
-  rest: REST;
-  helpers: DiscordHelpers;
-  readonly botId: string;
-  connect(options: GatewayConnectOptions): Promise<GatewaySession>;
-}
-
 export function createDiscordClient(options: {
   token: string;
-}): DiscordClient {
+}) {
   const rest = new REST({ version: '10' }).setToken(options.token);
   let botUser: APIUser | null = null;
   const helpers = createHelpers(createResources(rest, () => botUser));
@@ -38,7 +31,7 @@ export function createDiscordClient(options: {
     get botId() {
       return botUser?.id ?? '';
     },
-    async connect({ intents, onDispatch, onReady, onLog }) {
+    async connect({ intents, onDispatch, onReady, onLog }: GatewayConnectOptions) {
       const manager = new WebSocketManager({ token: options.token, intents, rest });
       manager.on(WebSocketShardEvents.Dispatch, (payload) => onDispatch(payload));
       manager.on(WebSocketShardEvents.Ready, (data, shardId) => {
@@ -51,3 +44,5 @@ export function createDiscordClient(options: {
     },
   };
 }
+
+export type DiscordClient = Readonly<ReturnType<typeof createDiscordClient>>;

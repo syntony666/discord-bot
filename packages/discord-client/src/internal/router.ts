@@ -118,21 +118,12 @@ const compilePattern = (pattern: string) => {
   return { pattern: new RegExp(`^${source}$`), params };
 };
 
-export interface CommandRouter {
-  addCommand(def: CommandDef, handlers: Record<string, CommandHandler>): void;
-  addComponent(pattern: string, handler: ComponentHandler): void;
-  /** Sync check: would handle() claim this interaction? */
-  claims(interaction: APIInteraction): boolean;
-  /** Returns true when the interaction was claimed by a route or session. */
-  handle(interaction: APIInteraction): Promise<boolean>;
-}
-
 export function createCommandRouter(
   rest: REST,
   appId: string,
   sessions: SessionApi & SessionDispatcher,
   onError: (err: unknown) => void
-): CommandRouter {
+) {
   const commands = new Map<
     string,
     { def: CommandDef; handlers: Record<string, CommandHandler> }
@@ -217,6 +208,8 @@ export function createCommandRouter(
     addCommand,
     addComponent,
     claims,
-    handle: (i) => handle(i).catch((err) => (onError(err), true)),
+    handle: (i: APIInteraction) => handle(i).catch((err) => (onError(err), true)),
   };
 }
+
+export type CommandRouter = ReturnType<typeof createCommandRouter>;
