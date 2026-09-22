@@ -24,3 +24,5 @@ export function createScheduler() {
 }
 
 export type Scheduler = ReturnType<typeof createScheduler>;
+
+export const scheduler = createScheduler();

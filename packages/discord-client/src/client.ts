@@ -27,8 +27,7 @@ export function createDiscordClient(options: {
       await manager.connect();
       return { close: () => void manager.destroy() };
     },
-    createBot: <Deps>(botOptions: BotOptions<Deps>) =>
-      createBot(resources, botOptions),
+    createBot: (botOptions: BotOptions) => createBot(resources, botOptions),
   };
 }
 
