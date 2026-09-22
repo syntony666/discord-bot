@@ -3,7 +3,7 @@ import { KeywordMatchType } from '@discord-bot/shared';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
-import type { KeywordModule } from './keyword.module';
+import type { KeywordApi } from './keyword.api';
 import { createKeywordService } from './keyword.service';
 import { keywordCommand } from './keyword.command';
 
@@ -12,13 +12,13 @@ const log = createLogger('Keyword');
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface KeywordDeps {
   discord: DiscordHelpers;
-  modules: { keyword: KeywordModule };
+  api: { keyword: KeywordApi };
 }
 
 export function useKeywordHandlers(deps: KeywordDeps) {
   const { discord } = deps;
-  const module = deps.modules.keyword;
-  const service = createKeywordService(module);
+  const api = deps.api.keyword;
+  const service = createKeywordService(api);
   const h = useHandlers(keywordCommand);
 
   const cancelled = {
@@ -35,10 +35,10 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const matchType = ctx.options.match_type ?? KeywordMatchType.EXACT;
     const editorId = ctx.user.id;
 
-    const existing = await module.getRuleByPattern(guildId, pattern);
+    const existing = await api.getRuleByPattern(guildId, pattern);
 
     if (!existing) {
-      await module.createRule({ guildId, pattern, matchType, response, editorId });
+      await api.createRule({ guildId, pattern, matchType, response, editorId });
       await ctx.reply({
         embeds: [
           {
@@ -71,7 +71,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     });
     if (!ok) return ctx.editReply(cancelled);
 
-    await module.updateRule({ guildId, pattern, response, matchType, editorId });
+    await api.updateRule({ guildId, pattern, response, matchType, editorId });
     await ctx.editReply({
       embeds: [
         {
@@ -97,10 +97,10 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const { pattern, response } = ctx.options;
     const matchType = ctx.options.match_type ?? KeywordMatchType.EXACT;
 
-    const existing = await module.getRuleByPattern(guildId, pattern);
+    const existing = await api.getRuleByPattern(guildId, pattern);
     if (!existing) return ctx.error('找不到此關鍵字。');
 
-    await module.updateRule({
+    await api.updateRule({
       guildId,
       pattern,
       response,
@@ -122,7 +122,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   h.handler('list', async (ctx) => {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
 
-    const rules = await module.getRulesForList(ctx.guildId);
+    const rules = await api.getRulesForList(ctx.guildId);
     await ctx.paginate({
       items: rules,
       pageSize: 10,
@@ -146,7 +146,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const { pattern } = ctx.options;
     const editorId = ctx.user.id;
 
-    const rule = await module.getRuleByPattern(guildId, pattern);
+    const rule = await api.getRuleByPattern(guildId, pattern);
     if (!rule) return ctx.error('找不到此關鍵字，可能已被其他人刪除。');
 
     const ok = await ctx.confirm({
@@ -164,7 +164,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     });
     if (!ok) return ctx.editReply(cancelled);
 
-    await module.deleteRule(guildId, pattern);
+    await api.deleteRule(guildId, pattern);
     await ctx.editReply({
       embeds: [
         {

@@ -1,5 +1,5 @@
 import type { KeywordRuntime } from '@discord-bot/shared';
-import type { KeywordModule } from './keyword.module';
+import type { KeywordApi } from './keyword.api';
 
 export interface KeywordMatchResult {
   rule: KeywordRuntime;
@@ -24,11 +24,11 @@ function applyMatch(rule: KeywordRuntime, content: string): boolean {
   return false;
 }
 
-export function createKeywordService(module: KeywordModule): KeywordService {
+export function createKeywordService(api: KeywordApi): KeywordService {
   return {
     async findMatch(guildId: string, content: string) {
       if (!guildId) return null;
-      const rules = await module.getRulesByGuild(guildId);
+      const rules = await api.getRulesByGuild(guildId);
       const matched = rules.find((rule) => applyMatch(rule, content));
       return matched ? { rule: matched } : null;
     },

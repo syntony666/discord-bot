@@ -4,8 +4,8 @@ import { NotificationType } from '@discord-bot/shared';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
-import type { GuildModule } from '@features/guild/guild.module';
-import type { MemberNotifyModule } from './member-notify.module';
+import type { GuildApi } from '@features/guild/guild.api';
+import type { MemberNotifyApi } from './member-notify.api';
 import { createMemberNotifyService } from './member-notify.service';
 import { memberNotifyCommand } from './member-notify.command';
 
@@ -14,7 +14,7 @@ const log = createLogger('MemberNotify');
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface MemberNotifyDeps {
   discord: DiscordHelpers;
-  modules: { memberNotify: MemberNotifyModule; guild: GuildModule };
+  api: { memberNotify: MemberNotifyApi; guild: GuildApi };
 }
 
 const typeName = (type: 'join' | 'leave') =>
@@ -29,8 +29,8 @@ const DEFAULT_TEMPLATES = {
 
 export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
   const { discord } = deps;
-  const module = deps.modules.memberNotify;
-  const guildModule = deps.modules.guild;
+  const api = deps.api.memberNotify;
+  const guildApi = deps.api.guild;
   const service = createMemberNotifyService();
   const h = useHandlers(memberNotifyCommand);
 
@@ -46,14 +46,14 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     const guildId = ctx.guildId;
     const channelId = ctx.options.channel.id;
 
-    await guildModule.ensureGuild(guildId);
+    await guildApi.ensureGuild(guildId);
     await Promise.all([
-      module.setNotificationChannel({
+      api.setNotificationChannel({
         guildId,
         type: NotificationType.MEMBER_JOIN,
         channelId,
       }),
-      module.setNotificationChannel({
+      api.setNotificationChannel({
         guildId,
         type: NotificationType.MEMBER_LEAVE,
         channelId,
@@ -76,7 +76,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
 
-    const channels = await module.getNotificationChannels(guildId);
+    const channels = await api.getNotificationChannels(guildId);
     if (channels.length === 0) {
       return ctx.reply({
         embeds: [
@@ -118,7 +118,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     if (!ok) return ctx.editReply(cancelled);
 
     await Promise.all(
-      channels.map((ch) => module.toggleChannelEnabled(guildId, ch.type, false))
+      channels.map((ch) => api.toggleChannelEnabled(guildId, ch.type, false))
     );
     await ctx.editReply({
       embeds: [
@@ -139,9 +139,9 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     const guildId = ctx.guildId;
 
     const [joinChannel, leaveChannel, templates] = await Promise.all([
-      module.getNotificationChannel(guildId, NotificationType.MEMBER_JOIN),
-      module.getNotificationChannel(guildId, NotificationType.MEMBER_LEAVE),
-      module.getMessageTemplates(guildId),
+      api.getNotificationChannel(guildId, NotificationType.MEMBER_JOIN),
+      api.getNotificationChannel(guildId, NotificationType.MEMBER_LEAVE),
+      api.getMessageTemplates(guildId),
     ]);
 
     if (!joinChannel && !leaveChannel) {
@@ -184,7 +184,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const type = ctx.options.type; // 'join' | 'leave'
 
-    const templates = await module.getMessageTemplates(ctx.guildId);
+    const templates = await api.getMessageTemplates(ctx.guildId);
     const guild = await discord.getGuild(ctx.guildId);
     const template =
       type === 'join'
@@ -226,7 +226,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     });
     if (!ok) return ctx.editReply(cancelled);
 
-    await module.updateMessage({ guildId, type, message: template });
+    await api.updateMessage({ guildId, type, message: template });
     await ctx.editReply({
       embeds: [
         {
@@ -264,7 +264,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
       type === 'join'
         ? NotificationType.MEMBER_JOIN
         : NotificationType.MEMBER_LEAVE;
-    await module.toggleChannelEnabled(guildId, notifyType, enabled);
+    await api.toggleChannelEnabled(guildId, notifyType, enabled);
     await ctx.editReply({
       embeds: [
         {
@@ -284,15 +284,15 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
   h.event('guildMemberAdd', async ({ user, guild_id: guildId }) => {
     if (!user) return;
     try {
-      await guildModule.ensureGuild(guildId);
+      await guildApi.ensureGuild(guildId);
 
-      const joinChannel = await module.getNotificationChannel(
+      const joinChannel = await api.getNotificationChannel(
         guildId,
         NotificationType.MEMBER_JOIN
       );
       if (!service.shouldSendJoin(joinChannel)) return;
 
-      const templates = await module.getMessageTemplates(guildId);
+      const templates = await api.getMessageTemplates(guildId);
       const guild = await discord.getGuild(guildId);
       const message = service.formatMessage(
         templates?.joinMessage || DEFAULT_TEMPLATES.join,
@@ -324,13 +324,13 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
 
   h.event('guildMemberRemove', async ({ user, guild_id: guildId }) => {
     try {
-      const leaveChannel = await module.getNotificationChannel(
+      const leaveChannel = await api.getNotificationChannel(
         guildId,
         NotificationType.MEMBER_LEAVE
       );
       if (!service.shouldSendLeave(leaveChannel)) return;
 
-      const templates = await module.getMessageTemplates(guildId);
+      const templates = await api.getMessageTemplates(guildId);
       const guild = await discord.getGuild(guildId);
       const message = service.formatMessage(
         templates?.leaveMessage || DEFAULT_TEMPLATES.leave,

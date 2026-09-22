@@ -9,7 +9,7 @@ import {
 
 const base = (guildId: string) => `/api/v1/guilds/${guildId}/keyword-rules`;
 
-export function createKeywordModule(request: ApiRequest) {
+export function createKeywordApi(request: ApiRequest) {
   return {
     // For service (high-frequency)
     getRulesByGuild(guildId: string) {
@@ -46,4 +46,4 @@ export function createKeywordModule(request: ApiRequest) {
   };
 }
 
-export type KeywordModule = ReturnType<typeof createKeywordModule>;
+export type KeywordApi = ReturnType<typeof createKeywordApi>;

@@ -4,7 +4,7 @@ import { concatMap } from 'rxjs';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
-import type { ReactionRoleModule } from './reaction-role.module';
+import type { ReactionRoleApi } from './reaction-role.api';
 import { createReactionRoleService } from './reaction-role.service';
 import { reactionRoleCommand } from './reaction-role.command';
 import { buildPanelEmbed, getModeText } from './internal/panel.helpers';
@@ -27,7 +27,7 @@ const log = createLogger('ReactionRole');
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface ReactionRoleDeps {
   discord: DiscordHelpers;
-  modules: { reactionRole: ReactionRoleModule };
+  api: { reactionRole: ReactionRoleApi };
 }
 
 const cancelled = {
@@ -37,8 +37,8 @@ const cancelled = {
 
 export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
   const { discord } = deps;
-  const module = deps.modules.reactionRole;
-  const service = createReactionRoleService(module);
+  const api = deps.api.reactionRole;
+  const service = createReactionRoleService(api);
   const h = useHandlers(reactionRoleCommand);
 
   h.handler('panel.create', async (ctx) => {
@@ -61,7 +61,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         buildPanelEmbed({ title, description, mode, roles: [], messageId: message.id })
       );
 
-      await module.createPanel({
+      await api.createPanel({
         guildId,
         channelId,
         messageId: message.id,
@@ -98,7 +98,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
 
-    const panels = await module.getPanelsByGuild(guildId);
+    const panels = await api.getPanelsByGuild(guildId);
 
     if (panels.length === 0) {
       return ctx.reply({
@@ -115,7 +115,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
 
     const description = await Promise.all(
       panels.map(async (panel) => {
-        const roles = await module.getReactionRolesByMessage(guildId, panel.messageId);
+        const roles = await api.getReactionRolesByMessage(guildId, panel.messageId);
         const messageUrl = Formatters.messageLink(panel.channelId, panel.messageId, guildId);
 
         return [
@@ -146,7 +146,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     const guildId = ctx.guildId;
     const panelId = ctx.options.panel_id;
 
-    const panel = await module.getPanel(guildId, panelId);
+    const panel = await api.getPanel(guildId, panelId);
     if (!panel) {
       return ctx.reply({
         embeds: [
@@ -159,7 +159,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       });
     }
 
-    const roles = await module.getReactionRolesByMessage(guildId, panelId);
+    const roles = await api.getReactionRolesByMessage(guildId, panelId);
     const messageUrl = Formatters.messageLink(panel.channelId, panelId, guildId);
 
     const ok = await ctx.confirm({
@@ -186,7 +186,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
 
     try {
       await deleteDiscordMessage(discord, panel.channelId, panelId, { guildId, panelId });
-      await module.deletePanel(guildId, panelId);
+      await api.deletePanel(guildId, panelId);
 
       await ctx.editReply({
         embeds: [
@@ -222,7 +222,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     const description = ctx.options.description;
     const mode = ctx.options.mode;
 
-    const panel = await module.getPanel(guildId, panelId);
+    const panel = await api.getPanel(guildId, panelId);
     if (!panel) {
       return ctx.reply({
         embeds: [
@@ -270,9 +270,9 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     if (!ok) return ctx.editReply(cancelled);
 
     try {
-      const roles = await module.getReactionRolesByMessage(guildId, panelId);
+      const roles = await api.getReactionRolesByMessage(guildId, panelId);
       await updatePanelMessage(discord, panel, roles, updates);
-      await module.updatePanel(guildId, panelId, sanitizeUpdates(updates));
+      await api.updatePanel(guildId, panelId, sanitizeUpdates(updates));
 
       await ctx.editReply({
         embeds: [
@@ -308,7 +308,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     const description = ctx.options.description;
     const emoji = normalizeEmojiForStorage(ctx.options.emoji);
 
-    const panel = await module.getPanel(guildId, panelId);
+    const panel = await api.getPanel(guildId, panelId);
     if (!panel) {
       return ctx.reply({
         embeds: [
@@ -328,7 +328,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         panelId,
       });
 
-      const currentRoles = await module.getReactionRolesByMessage(guildId, panelId);
+      const currentRoles = await api.getReactionRolesByMessage(guildId, panelId);
       const rolesWithNew = [
         ...currentRoles,
         { emoji, roleId, description: description || null, guildId, messageId: panelId },
@@ -346,7 +346,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         })
       );
 
-      await module.createReactionRole({
+      await api.createReactionRole({
         guildId,
         messageId: panelId,
         emoji: normalizeEmojiForStorage(emoji),
@@ -386,7 +386,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     const emoji = normalizeEmojiForStorage(ctx.options.emoji);
     const emojiInput = ctx.options.emoji;
 
-    const reactionRole = await module.getReactionRole(guildId, panelId, emoji);
+    const reactionRole = await api.getReactionRole(guildId, panelId, emoji);
     if (!reactionRole) {
       return ctx.reply({
         embeds: [
@@ -399,7 +399,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       });
     }
 
-    const panel = await module.getPanel(guildId, panelId);
+    const panel = await api.getPanel(guildId, panelId);
     if (!panel) {
       return ctx.reply({
         embeds: [
@@ -442,14 +442,14 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         panelId,
       });
 
-      const currentRoles = await module.getReactionRolesByMessage(guildId, panelId);
+      const currentRoles = await api.getReactionRolesByMessage(guildId, panelId);
       await updatePanelMessage(
         discord,
         panel,
         currentRoles.filter((r) => r.emoji !== emoji)
       );
 
-      await module.deleteReactionRole(guildId, panelId, emoji);
+      await api.deleteReactionRole(guildId, panelId, emoji);
 
       await ctx.editReply({
         embeds: [
@@ -482,7 +482,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     const guildId = ctx.guildId;
     const panelId = ctx.options.panel_id;
 
-    const panel = await module.getPanel(guildId, panelId);
+    const panel = await api.getPanel(guildId, panelId);
     if (!panel) {
       return ctx.reply({
         embeds: [
@@ -495,7 +495,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       });
     }
 
-    const roles = await module.getReactionRolesByMessage(guildId, panelId);
+    const roles = await api.getReactionRolesByMessage(guildId, panelId);
 
     if (roles.length === 0) {
       return ctx.reply({
@@ -548,7 +548,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
 
           // UNIQUE mode: remove other roles and reactions FIRST
           if (match.mode === 'UNIQUE') {
-            const allRoles = await module.getReactionRolesByMessage(guildId, messageId);
+            const allRoles = await api.getReactionRolesByMessage(guildId, messageId);
 
             for (const role of allRoles) {
               if (role.roleId !== match.roleId) {
