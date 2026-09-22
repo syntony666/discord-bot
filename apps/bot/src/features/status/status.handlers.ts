@@ -14,7 +14,7 @@ import type { KeywordApi } from '@features/keyword/keyword.api';
 import type { MemberNotifyApi } from '@features/member-notify/member-notify.api';
 import type { ReactionRoleApi } from '@features/reaction-role/reaction-role.api';
 import type { StreamNotifyApi } from '@features/stream-notify/stream-notify.api';
-import { getBotVersion, getUptime } from '@core/bot-info';
+import { getBotVersion, getUptime } from './bot-info';
 import { appConfig } from '@core/config';
 import { createLogger } from '@discord-bot/shared';
 import { statusCommand } from './status.command';
