@@ -54,5 +54,6 @@ export function defineFeature() {
     name: spec.name ?? spec.command?.command ?? '',
     command: spec.command,
     useHandlers: spec.useHandlers,
+    deps: spec.deps,
   });
 }

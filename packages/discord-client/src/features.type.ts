@@ -130,18 +130,21 @@ export interface Collected {
 export interface Feature<Deps = unknown> {
   name: string;
   command?: CommandDef;
+  deps: Omit<Deps, 'discord'>;
   useHandlers(deps: Deps): Collected;
 }
 
-export type FeatureSpec<Deps, C> = C extends CommandDef
+/** `discord` is injected by the bot — declaring it in deps is a type error. */
+export type FeatureSpec<Deps, C> = (C extends CommandDef
   ? {
       /** Defaults to `command.command`; if given it must equal it. */
       name?: C['command'];
       command: C;
-      useHandlers(deps: Deps): Collected;
     }
   : {
       name: string;
       command?: undefined;
-      useHandlers(deps: Deps): Collected;
-    };
+    }) & {
+  useHandlers(deps: Deps): Collected;
+  deps: Omit<Deps, 'discord'>;
+};

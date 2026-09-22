@@ -5,24 +5,23 @@ import type { Resources } from './internal/resources';
 import { toRestBody } from './internal/serialize';
 import { createSessionStore } from './internal/sessions/store';
 import { createEventHub } from './internal/events/hub';
+import { createHelpers } from './helpers';
 import type { Bot, BotOptions } from './bot.type';
 import type { Collected, Feature } from './features.type';
 import type { CommandDef } from './commands.type';
 
-export function createBot<Deps>(
-  resources: Resources,
-  options: BotOptions<Deps>
-): Bot {
-  const { appId, deps } = options;
+export function createBot(resources: Resources, options: BotOptions): Bot {
+  const { appId } = options;
   const onError = options.onError ?? ((err) => console.error(err));
 
   const sessions = createSessionStore(resources, appId, onError);
   const router = createCommandRouter(resources, appId, sessions, onError);
   const hub = createEventHub(onError, () => resources.botId);
+  const discord = createHelpers(resources);
   const defs: CommandDef[] = [];
   const seen = new Set<string>();
 
-  const validate = (feature: Feature<Deps>, collected: Collected) => {
+  const validate = (feature: Feature, collected: Collected) => {
     const handlers = Object.keys(collected.handler ?? {});
     if (!feature.command) {
       if (handlers.length) {
@@ -42,7 +41,7 @@ export function createBot<Deps>(
     }
   };
 
-  const register = (...features: Feature<Deps>[]) => {
+  const register = (...features: Feature[]) => {
     for (const f of features) {
       if (f.command) {
         if (seen.has(f.command.command)) {
@@ -50,7 +49,7 @@ export function createBot<Deps>(
         }
         seen.add(f.command.command);
       }
-      const collected = f.useHandlers(deps);
+      const collected = f.useHandlers({ ...f.deps, discord });
       validate(f, collected);
 
       if (f.command) {

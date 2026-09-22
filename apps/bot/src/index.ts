@@ -1,25 +1,23 @@
 import '@discord-bot/shared';
-import { createDiscordClient, type GatewaySession } from '@discord-bot/discord-client';
+import { type GatewaySession } from '@discord-bot/discord-client';
 import { appConfig, botIntents } from '@core/config';
 import { logger } from '@discord-bot/shared';
+import { client } from '@core/client';
 import { bootstrapApp } from '@core/bootstrap';
+import { scheduler } from '@core/scheduler';
 import { startHealthServer, HealthServer } from '@core/health/health.server';
 import { buildStatusPayload, markDiscordReady } from '@core/health/status.provider';
 
 let healthServer: HealthServer | null = null;
 let gatewaySession: GatewaySession | null = null;
-let appScheduler: { stop(): void } | null = null;
 
 async function main() {
   logger.info({ env: appConfig.nodeEnv }, 'Starting bot');
 
   try {
-    const client = createDiscordClient({ token: appConfig.discord.token });
-
     healthServer = startHealthServer(appConfig.health.port, buildStatusPayload);
 
-    const { bot, scheduler } = await bootstrapApp(client);
-    appScheduler = scheduler;
+    const bot = await bootstrapApp();
 
     gatewaySession = await client.connect({
       intents: botIntents,
@@ -44,7 +42,7 @@ async function gracefulShutdown(signal: string) {
   logger.info({ signal }, 'Received shutdown signal, shutting down gracefully...');
 
   try {
-    appScheduler?.stop();
+    scheduler.stop();
     gatewaySession?.close();
     gatewaySession = null;
 
