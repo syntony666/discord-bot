@@ -1,14 +1,11 @@
 import { Observable, Subject, catchError } from 'rxjs';
 import type { GatewayDispatchPayload } from 'discord-api-types/v10';
-import type { EventMap, EventName } from './types';
-
-export type EventHandler<K extends EventName> = (
-  data: EventMap[K]
-) => void | Promise<void>;
-
-export type StreamBuilder<K extends EventName> = (
-  data$: Observable<EventMap[K]>
-) => Observable<unknown>;
+import type {
+  EventHandler,
+  EventMap,
+  EventName,
+  StreamBuilder,
+} from './hub.type';
 
 /** 'MESSAGE_CREATE' → 'messageCreate' */
 const eventKey = (t: string) =>

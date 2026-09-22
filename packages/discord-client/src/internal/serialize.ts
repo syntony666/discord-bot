@@ -12,7 +12,7 @@ import type {
   OptionDef,
   SubcommandDef,
   SubcommandGroupDef,
-} from '../commands';
+} from '../commands.type';
 
 const OPTION_PASSTHROUGH = [
   'autocomplete',
