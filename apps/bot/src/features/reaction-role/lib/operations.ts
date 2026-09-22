@@ -1,8 +1,7 @@
 import type { DiscordHelpers } from '@discord-bot/discord-client';
-import { ReactionRolePanel, ReactionRole } from '@discord-bot/shared';
+import { ReactionRolePanel, ReactionRole, ReactionRoleMode } from '@discord-bot/shared';
 import { createLogger } from '@discord-bot/shared';
 import { buildPanelEmbed } from './panel.helpers';
-import type { PanelMode } from './panel.helpers';
 
 const log = createLogger('ReactionRoleOperations');
 
@@ -15,9 +14,9 @@ export async function deleteDiscordMessage(
   try {
     await discord.deleteMessage(channelId, messageId);
     log.debug({ ...context, messageId }, 'Discord message deleted');
-  } catch (error: any) {
+  } catch (error) {
     // 10008 = Unknown Message (message already deleted)
-    if (error.code === 10008) {
+    if ((error as { code?: number }).code === 10008) {
       log.warn({ ...context, messageId }, 'Message already deleted, continuing with cleanup');
     } else {
       throw error;
@@ -32,7 +31,7 @@ export async function updatePanelMessage(
   updates?: {
     title?: string;
     description?: string | null;
-    mode?: PanelMode;
+    mode?: ReactionRoleMode;
   }
 ): Promise<void> {
   // Sanitize values: convert null to undefined for buildPanelEmbed
@@ -46,7 +45,7 @@ export async function updatePanelMessage(
     finalDescription = panel.description === null ? undefined : panel.description;
   }
 
-  const finalMode = updates?.mode !== undefined ? updates.mode : (panel.mode as PanelMode);
+  const finalMode = updates?.mode !== undefined ? updates.mode : panel.mode;
 
   await discord.editMessage(
     panel.channelId,
@@ -76,9 +75,9 @@ export async function deleteDiscordReaction(
   try {
     await discord.removeReaction(channelId, messageId, emoji);
     log.debug({ ...context, emoji }, 'Discord reaction deleted');
-  } catch (error: any) {
+  } catch (error) {
     // 10008 = Unknown Message or reaction doesn't exist
-    if (error.code !== 10008) {
+    if ((error as { code?: number }).code !== 10008) {
       throw error;
     }
     log.warn({ ...context, emoji }, 'Reaction already removed, continuing');
@@ -96,14 +95,10 @@ export async function addDiscordReaction(
   log.debug({ ...context, emoji }, 'Discord reaction added');
 }
 
-export function sanitizeUpdates<T extends Record<string, any>>(updates: T): T {
-  const sanitized: any = {};
+export function sanitizeUpdates<T extends Record<string, unknown>>(updates: T): T {
+  const entries = Object.entries(updates)
+    .filter(([, value]) => value !== undefined)
+    .map(([key, value]) => [key, value === null ? undefined : value]);
 
-  for (const [key, value] of Object.entries(updates)) {
-    if (value !== undefined) {
-      sanitized[key] = value === null ? undefined : value;
-    }
-  }
-
-  return sanitized;
+  return Object.fromEntries(entries) as T;
 }

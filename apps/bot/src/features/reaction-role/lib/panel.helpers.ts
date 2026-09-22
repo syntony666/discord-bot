@@ -1,13 +1,11 @@
 import { Colors } from '@core/config/colors.config';
-import type { ReactionRole } from '@discord-bot/shared';
+import type { ReactionRole, ReactionRoleMode } from '@discord-bot/shared';
 import { formatEmojiForDisplay } from './emoji.helper';
-
-export type PanelMode = 'NORMAL' | 'UNIQUE' | 'VERIFY';
 
 export interface BuildPanelEmbedOptions {
   title?: string;
   description?: string;
-  mode: PanelMode;
+  mode: ReactionRoleMode;
   roles: Array<Pick<ReactionRole, 'emoji' | 'roleId' | 'description'>>;
   messageId?: string;
 }
@@ -52,7 +50,7 @@ export function buildPanelEmbed(options: BuildPanelEmbedOptions) {
   };
 }
 
-export function getModeText(mode: PanelMode): string {
+export function getModeText(mode: ReactionRoleMode): string {
   switch (mode) {
     case 'NORMAL':
       return '📋 多選模式';

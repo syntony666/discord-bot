@@ -8,7 +8,7 @@ import type { ReactionRoleApi } from './reaction-role.api';
 import { createReactionRoleService } from './reaction-role.service';
 import { reactionRoleCommand } from './reaction-role.command';
 import { buildPanelEmbed, getModeText } from './lib/panel.helpers';
-import type { PanelMode } from './lib/panel.helpers';
+import { ReactionRoleMode } from '@discord-bot/shared';
 import {
   addDiscordReaction,
   deleteDiscordMessage,
@@ -122,7 +122,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
           `**${panel.title}**`,
           `ID: \`${panel.messageId}\``,
           `頻道: ${Formatters.channelMention(panel.channelId)}`,
-          `模式: ${getModeText(panel.mode as PanelMode)}`,
+          `模式: ${getModeText(panel.mode)}`,
           `身分組數量: ${roles.length} 個`,
           `[跳轉至訊息](${messageUrl})`,
           '',
@@ -172,7 +172,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
             `**標題**: ${panel.title}`,
             `**ID**: \`${panelId}\``,
             `**頻道**: ${Formatters.channelMention(panel.channelId)}`,
-            `**模式**: ${getModeText(panel.mode as PanelMode)}`,
+            `**模式**: ${getModeText(panel.mode)}`,
             `**身分組數量**: ${roles.length} 個`,
             `[跳轉至訊息](${messageUrl})`,
           ].join('\n'),
@@ -235,7 +235,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       });
     }
 
-    const updates: { title?: string; description?: string; mode?: PanelMode } = {};
+    const updates: { title?: string; description?: string; mode?: ReactionRoleMode } = {};
     if (title !== undefined) updates.title = title;
     if (description !== undefined) updates.description = description;
     if (mode !== undefined) updates.mode = mode;
@@ -253,7 +253,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       newFields.push(`**說明**: ${description || '*(無)*'}`);
     }
     if (mode !== undefined) {
-      currentFields.push(`**模式**: ${getModeText(panel.mode as PanelMode)}`);
+      currentFields.push(`**模式**: ${getModeText(panel.mode)}`);
       newFields.push(`**模式**: ${getModeText(mode)}`);
     }
 
@@ -340,7 +340,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         buildPanelEmbed({
           title: panel.title,
           description: panel.description || undefined,
-          mode: panel.mode as PanelMode,
+          mode: panel.mode,
           roles: rolesWithNew,
           messageId: panelId,
         })

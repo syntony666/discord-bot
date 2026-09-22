@@ -198,10 +198,10 @@ export function useKeywordHandlers(deps: KeywordDeps) {
         { guildId: msg.guild_id, pattern: match.rule.pattern },
         'Keyword matched and replied'
       );
-    } catch (error: any) {
-      if (error?.code === 50013) {
+    } catch (error) {
+      if ((error as { code?: number }).code === 50013) {
         log.warn(
-          { guildId: msg.guild_id, error: error.message },
+          { guildId: msg.guild_id, error: (error as Error).message },
           'Missing permissions to send message'
         );
       } else {

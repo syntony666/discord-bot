@@ -133,7 +133,7 @@ export function createSessionStore(
     return new Promise<boolean>((resolve) => {
       arm(
         id,
-        { kind: 'confirm', ownerId, resolve, timer: undefined as never },
+        { kind: 'confirm', ownerId, resolve,  },
         options.timeoutMs ?? DEFAULT_CONFIRM_TIMEOUT,
         () => resolve(false)
       );
@@ -195,7 +195,7 @@ export function createSessionStore(
       timeoutMs,
       token,
       messageId,
-      timer: undefined as never,
+      
     };
     pending.set(id, session);
     expirePaginate(id, session);
@@ -239,7 +239,7 @@ export function createSessionStore(
     return new Promise((resolve) => {
       arm(
         id,
-        { kind: 'modal', resolve, timer: undefined as never },
+        { kind: 'modal', resolve,  },
         options.timeoutMs ?? DEFAULT_MODAL_TIMEOUT,
         () => resolve(null)
       );

@@ -6,7 +6,7 @@ export type Pending =
       kind: 'confirm';
       ownerId: string;
       resolve: (ok: boolean) => void;
-      timer: NodeJS.Timeout;
+      timer?: NodeJS.Timeout;
     }
   | {
       kind: 'paginate';
@@ -18,12 +18,12 @@ export type Pending =
       timeoutMs: number;
       token: string;
       messageId: string;
-      timer: NodeJS.Timeout;
+      timer?: NodeJS.Timeout;
     }
   | {
       kind: 'modal';
       resolve: (values: Record<string, string> | null) => void;
-      timer: NodeJS.Timeout;
+      timer?: NodeJS.Timeout;
     };
 
 export type PaginatePending = Extract<Pending, { kind: 'paginate' }>;
@@ -31,5 +31,5 @@ export type PaginatePending = Extract<Pending, { kind: 'paginate' }>;
 export interface Waiter {
   resolve: (msg: APIMessage | null) => void;
   filter?: (msg: APIMessage) => boolean;
-  timer: NodeJS.Timeout;
+  timer?: NodeJS.Timeout;
 }
