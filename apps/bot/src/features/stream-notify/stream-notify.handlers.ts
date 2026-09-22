@@ -1,7 +1,7 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import { StreamPlatform } from '@discord-bot/shared';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
-import type { SchedulerService } from '@core/scheduler';
+import type { Scheduler } from '@core/scheduler';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import type { StreamNotifyApi } from './stream-notify.api';
@@ -15,7 +15,7 @@ const log = createLogger('StreamNotify');
 export interface StreamNotifyDeps {
   discord: DiscordHelpers;
   api: { streamNotify: StreamNotifyApi };
-  scheduler: SchedulerService;
+  scheduler: Scheduler;
 }
 
 const TWITCH_TASK_ID = 'twitch-stream-check';
@@ -31,18 +31,12 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     process.env.TWITCH_CLIENT_SECRET || ''
   );
 
-  scheduler.addTask({
-    id: TWITCH_TASK_ID,
-    name: 'Twitch Stream Check',
-    schedule: '*/1 * * * *',
-    handler: async () => {
-      try {
-        await service.checkAllStreams(api, [twitchService]);
-      } catch (error) {
-        log.error({ error }, 'Twitch stream check failed');
-      }
-    },
-    isActive: true,
+  scheduler.every(TWITCH_TASK_ID, 60_000, async () => {
+    try {
+      await service.checkAllStreams(api, [twitchService]);
+    } catch (error) {
+      log.error({ error }, 'Twitch stream check failed');
+    }
   });
 
   const toPlatform = (platform: string) => platform.toUpperCase() as StreamPlatform;
