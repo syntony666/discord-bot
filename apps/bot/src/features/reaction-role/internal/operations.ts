@@ -1,4 +1,4 @@
-import type { DiscordActions } from '@discord-bot/discord-client';
+import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { ReactionRolePanel, ReactionRole } from '@discord-bot/shared';
 import { createLogger } from '@discord-bot/shared';
 import { buildPanelEmbed } from './panel.helpers';
@@ -7,13 +7,13 @@ import type { PanelMode } from './panel.helpers';
 const log = createLogger('ReactionRoleOperations');
 
 export async function deleteDiscordMessage(
-  actions: DiscordActions,
+  discord: DiscordHelpers,
   channelId: string,
   messageId: string,
   context: { guildId: string; panelId?: string }
 ): Promise<void> {
   try {
-    await actions.deleteMessage(channelId, messageId);
+    await discord.deleteMessage(channelId, messageId);
     log.debug({ ...context, messageId }, 'Discord message deleted');
   } catch (error: any) {
     // 10008 = Unknown Message (message already deleted)
@@ -26,7 +26,7 @@ export async function deleteDiscordMessage(
 }
 
 export async function updatePanelMessage(
-  actions: DiscordActions,
+  discord: DiscordHelpers,
   panel: ReactionRolePanel,
   roles: ReactionRole[],
   updates?: {
@@ -48,7 +48,7 @@ export async function updatePanelMessage(
 
   const finalMode = updates?.mode !== undefined ? updates.mode : (panel.mode as PanelMode);
 
-  await actions.editMessage(
+  await discord.editMessage(
     panel.channelId,
     panel.messageId,
     buildPanelEmbed({
@@ -67,14 +67,14 @@ export async function updatePanelMessage(
 }
 
 export async function deleteDiscordReaction(
-  actions: DiscordActions,
+  discord: DiscordHelpers,
   channelId: string,
   messageId: string,
   emoji: string,
   context: { guildId: string; panelId: string }
 ): Promise<void> {
   try {
-    await actions.deleteOwnReaction(channelId, messageId, emoji);
+    await discord.removeReaction(channelId, messageId, emoji);
     log.debug({ ...context, emoji }, 'Discord reaction deleted');
   } catch (error: any) {
     // 10008 = Unknown Message or reaction doesn't exist
@@ -86,13 +86,13 @@ export async function deleteDiscordReaction(
 }
 
 export async function addDiscordReaction(
-  actions: DiscordActions,
+  discord: DiscordHelpers,
   channelId: string,
   messageId: string,
   emoji: string,
   context: { guildId: string; panelId: string }
 ): Promise<void> {
-  await actions.addReaction(channelId, messageId, emoji);
+  await discord.addReaction(channelId, messageId, emoji);
   log.debug({ ...context, emoji }, 'Discord reaction added');
 }
 

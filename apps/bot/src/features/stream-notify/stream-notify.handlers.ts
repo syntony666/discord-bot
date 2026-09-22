@@ -1,6 +1,6 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import { StreamPlatform } from '@discord-bot/shared';
-import type { DiscordActions } from '@discord-bot/discord-client';
+import type { DiscordHelpers } from '@discord-bot/discord-client';
 import type { SchedulerService } from '@core/scheduler';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
@@ -13,7 +13,7 @@ const log = createLogger('StreamNotify');
 
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface StreamNotifyDeps {
-  actions: DiscordActions;
+  discord: DiscordHelpers;
   modules: { streamNotify: StreamNotifyModule };
   scheduler: SchedulerService;
 }
@@ -21,9 +21,9 @@ export interface StreamNotifyDeps {
 const TWITCH_TASK_ID = 'twitch-stream-check';
 
 export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
-  const { actions, scheduler } = deps;
+  const { discord, scheduler } = deps;
   const module = deps.modules.streamNotify;
-  const service = createStreamNotifyService(actions);
+  const service = createStreamNotifyService(discord);
   const h = useHandlers(streamNotifyCommand);
 
   const twitchService = new TwitchService(

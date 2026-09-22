@@ -9,7 +9,7 @@ import type {
   APIButtonComponentWithURL,
   APIEmbed,
 } from 'discord-api-types/v10';
-import type { DiscordActions } from '@discord-bot/discord-client';
+import type { DiscordHelpers } from '@discord-bot/discord-client';
 import type { KeywordModule } from '@features/keyword/keyword.module';
 import type { MemberNotifyModule } from '@features/member-notify/member-notify.module';
 import type { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
@@ -25,7 +25,7 @@ const log = createLogger('Status');
 
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface StatusDeps {
-  actions: DiscordActions;
+  discord: DiscordHelpers;
   modules: {
     memberNotify: MemberNotifyModule;
     streamNotify: StreamNotifyModule;
@@ -35,12 +35,12 @@ export interface StatusDeps {
 }
 
 export function useStatusHandlers(deps: StatusDeps) {
-  const { actions } = deps;
+  const { discord } = deps;
   const h = useHandlers(statusCommand);
 
   h.handler('bot', async (ctx) => {
     const version = getBotVersion();
-    const botUser = actions.botUser;
+    const botUser = discord.botUser;
     if (!botUser) {
       return ctx.error('Bot 尚未就緒');
     }
@@ -60,7 +60,7 @@ export function useStatusHandlers(deps: StatusDeps) {
             type: ComponentType.Button,
             style: ButtonStyle.Link,
             label: '邀請連結',
-            url: `https://discord.com/api/oauth2/authorize?client_id=${actions.botId}&permissions=8&scope=bot%20applications.commands`,
+            url: `https://discord.com/api/oauth2/authorize?client_id=${discord.botId}&permissions=8&scope=bot%20applications.commands`,
           },
         ],
       },
@@ -108,8 +108,8 @@ export function useStatusHandlers(deps: StatusDeps) {
   h.handler('guild', async (ctx) => {
     if (!ctx.guildId) return ctx.error('無法取得伺服器資訊');
 
-    const guild = await actions.getGuild(ctx.guildId);
-    const owner = await actions.getUser(guild.owner_id);
+    const guild = await discord.getGuild(ctx.guildId);
+    const owner = await discord.getUser(guild.owner_id);
     const icon = guildIconUrl(guild.id, guild.icon);
 
     await ctx.reply({

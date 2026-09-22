@@ -1,7 +1,7 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import type { CommandContext } from '@discord-bot/discord-client';
 import { NotificationType } from '@discord-bot/shared';
-import type { DiscordActions } from '@discord-bot/discord-client';
+import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import type { GuildModule } from '@features/guild/guild.module';
@@ -13,7 +13,7 @@ const log = createLogger('MemberNotify');
 
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface MemberNotifyDeps {
-  actions: DiscordActions;
+  discord: DiscordHelpers;
   modules: { memberNotify: MemberNotifyModule; guild: GuildModule };
 }
 
@@ -28,7 +28,7 @@ const DEFAULT_TEMPLATES = {
 } as const;
 
 export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
-  const { actions } = deps;
+  const { discord } = deps;
   const module = deps.modules.memberNotify;
   const guildModule = deps.modules.guild;
   const service = createMemberNotifyService();
@@ -185,7 +185,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     const type = ctx.options.type; // 'join' | 'leave'
 
     const templates = await module.getMessageTemplates(ctx.guildId);
-    const guild = await actions.getGuild(ctx.guildId);
+    const guild = await discord.getGuild(ctx.guildId);
     const template =
       type === 'join'
         ? templates?.joinMessage || DEFAULT_TEMPLATES.join
@@ -293,7 +293,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
       if (!service.shouldSendJoin(joinChannel)) return;
 
       const templates = await module.getMessageTemplates(guildId);
-      const guild = await actions.getGuild(guildId);
+      const guild = await discord.getGuild(guildId);
       const message = service.formatMessage(
         templates?.joinMessage || DEFAULT_TEMPLATES.join,
         {
@@ -304,7 +304,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
         }
       );
 
-      await actions.sendMessage(joinChannel!.channelId, {
+      await discord.sendMessage(joinChannel!.channelId, {
         embeds: [
           {
             title: '新成員加入',
@@ -331,7 +331,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
       if (!service.shouldSendLeave(leaveChannel)) return;
 
       const templates = await module.getMessageTemplates(guildId);
-      const guild = await actions.getGuild(guildId);
+      const guild = await discord.getGuild(guildId);
       const message = service.formatMessage(
         templates?.leaveMessage || DEFAULT_TEMPLATES.leave,
         {
@@ -342,7 +342,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
         }
       );
 
-      await actions.sendMessage(leaveChannel!.channelId, {
+      await discord.sendMessage(leaveChannel!.channelId, {
         embeds: [
           {
             title: '成員離開',

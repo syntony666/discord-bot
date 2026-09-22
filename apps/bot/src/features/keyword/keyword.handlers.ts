@@ -1,6 +1,6 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import { KeywordMatchType } from '@discord-bot/shared';
-import type { DiscordActions } from '@discord-bot/discord-client';
+import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import type { KeywordModule } from './keyword.module';
@@ -11,12 +11,12 @@ const log = createLogger('Keyword');
 
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface KeywordDeps {
-  actions: DiscordActions;
+  discord: DiscordHelpers;
   modules: { keyword: KeywordModule };
 }
 
 export function useKeywordHandlers(deps: KeywordDeps) {
-  const { actions } = deps;
+  const { discord } = deps;
   const module = deps.modules.keyword;
   const service = createKeywordService(module);
   const h = useHandlers(keywordCommand);
@@ -191,7 +191,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     if (!match) return;
 
     try {
-      await actions.sendMessage(msg.channel_id, {
+      await discord.sendMessage(msg.channel_id, {
         content: match.rule.response,
       });
       log.info(

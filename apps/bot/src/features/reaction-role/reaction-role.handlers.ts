@@ -1,7 +1,7 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import type { CommandContext } from '@discord-bot/discord-client';
 import { concatMap } from 'rxjs';
-import type { DiscordActions } from '@discord-bot/discord-client';
+import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import type { ReactionRoleModule } from './reaction-role.module';
@@ -26,7 +26,7 @@ const log = createLogger('ReactionRole');
 
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface ReactionRoleDeps {
-  actions: DiscordActions;
+  discord: DiscordHelpers;
   modules: { reactionRole: ReactionRoleModule };
 }
 
@@ -36,7 +36,7 @@ const cancelled = {
 };
 
 export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
-  const { actions } = deps;
+  const { discord } = deps;
   const module = deps.modules.reactionRole;
   const service = createReactionRoleService(module);
   const h = useHandlers(reactionRoleCommand);
@@ -50,12 +50,12 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     const mode = ctx.options.mode || 'NORMAL';
 
     try {
-      const message = await actions.sendMessage(
+      const message = await discord.sendMessage(
         channelId,
         buildPanelEmbed({ title, description, mode, roles: [] })
       );
 
-      await actions.editMessage(
+      await discord.editMessage(
         channelId,
         message.id,
         buildPanelEmbed({ title, description, mode, roles: [], messageId: message.id })
@@ -185,7 +185,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     if (!ok) return ctx.editReply(cancelled);
 
     try {
-      await deleteDiscordMessage(actions, panel.channelId, panelId, { guildId, panelId });
+      await deleteDiscordMessage(discord, panel.channelId, panelId, { guildId, panelId });
       await module.deletePanel(guildId, panelId);
 
       await ctx.editReply({
@@ -271,7 +271,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
 
     try {
       const roles = await module.getReactionRolesByMessage(guildId, panelId);
-      await updatePanelMessage(actions, panel, roles, updates);
+      await updatePanelMessage(discord, panel, roles, updates);
       await module.updatePanel(guildId, panelId, sanitizeUpdates(updates));
 
       await ctx.editReply({
@@ -323,7 +323,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
 
     try {
       const reactionEmoji = formatEmojiForReaction(emoji);
-      await addDiscordReaction(actions, panel.channelId, panelId, reactionEmoji, {
+      await addDiscordReaction(discord, panel.channelId, panelId, reactionEmoji, {
         guildId,
         panelId,
       });
@@ -334,7 +334,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         { emoji, roleId, description: description || null, guildId, messageId: panelId },
       ];
 
-      await actions.editMessage(
+      await discord.editMessage(
         panel.channelId,
         panelId,
         buildPanelEmbed({
@@ -437,14 +437,14 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
 
     try {
       const reactionEmoji = formatEmojiForReaction(emoji);
-      await deleteDiscordReaction(actions, panel.channelId, panelId, reactionEmoji, {
+      await deleteDiscordReaction(discord, panel.channelId, panelId, reactionEmoji, {
         guildId,
         panelId,
       });
 
       const currentRoles = await module.getReactionRolesByMessage(guildId, panelId);
       await updatePanelMessage(
-        actions,
+        discord,
         panel,
         currentRoles.filter((r) => r.emoji !== emoji)
       );
@@ -552,7 +552,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
 
             for (const role of allRoles) {
               if (role.roleId !== match.roleId) {
-                await actions
+                await discord
                   .removeRole(guildId, reaction.user_id, role.roleId)
                   .catch((err) => {
                     log.debug(
@@ -561,12 +561,12 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
                     );
                   });
 
-                await actions
-                  .deleteUserReaction(
+                await discord
+                  .removeReaction(
                     reaction.channel_id,
                     reaction.message_id,
-                    reaction.user_id,
-                    role.emoji
+                    role.emoji,
+                    reaction.user_id
                   )
                   .catch((err) => {
                     log.debug(
@@ -583,7 +583,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
             );
           }
 
-          await actions.addRole(guildId, reaction.user_id, match.roleId);
+          await discord.addRole(guildId, reaction.user_id, match.roleId);
 
           log.info(
             { guildId, userId: reaction.user_id, roleId: match.roleId, mode: match.mode },
@@ -592,11 +592,11 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
 
           // VERIFY mode: remove reaction after granting role
           if (match.mode === 'VERIFY') {
-            await actions.deleteUserReaction(
+            await discord.removeReaction(
               reaction.channel_id,
               reaction.message_id,
-              reaction.user_id,
-              emoji
+              emoji,
+              reaction.user_id
             );
             log.debug({ userId: reaction.user_id }, 'Removed reaction (VERIFY mode)');
           }
@@ -626,7 +626,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
             return;
           }
 
-          await actions.removeRole(guildId, reaction.user_id, match.roleId);
+          await discord.removeRole(guildId, reaction.user_id, match.roleId);
 
           log.info(
             { guildId, userId: reaction.user_id, roleId: match.roleId, mode: match.mode },
