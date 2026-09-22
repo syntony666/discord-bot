@@ -11,10 +11,9 @@ import type { Resources } from './resources';
 import { buildCommandContext, buildComponentContext } from './context';
 import type {
   CommandContext,
-  CommandRoute,
   ComponentContext,
-  SessionApi,
-} from './context';
+} from '../context';
+import type { CommandRoute, SessionApi } from './context';
 import type { CommandDef } from '../commands';
 
 export type CommandHandler = (ctx: CommandContext) => void | Promise<void>;

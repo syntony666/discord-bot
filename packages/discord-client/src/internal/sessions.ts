@@ -24,8 +24,8 @@ import type {
   ModalOptions,
   PaginateOptions,
   PromptOptions,
-  SessionApi,
-} from './context';
+} from '../context';
+import type { SessionApi } from './context';
 
 const PREFIX = 'kit:';
 const DEFAULT_CONFIRM_TIMEOUT = 120_000;
