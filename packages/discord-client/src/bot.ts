@@ -9,24 +9,9 @@ import { createResources } from './internal/resources';
 import { toRestBody } from './internal/serialize';
 import { createSessionStore } from './internal/sessions';
 import { createEventHub } from './internal/events/hub';
-import type { Collected, Feature } from './features';
-import type { CommandDef } from './commands';
-
-export interface BotOptions<Deps> {
-  appId: string;
-  deps: Deps;
-  onError?: (err: unknown) => void;
-}
-
-export interface Bot<Deps = unknown> {
-  /** Registers features: commands + handlers + events + components in one pass. */
-  register(...features: Feature<Deps>[]): void;
-  /** Pushes all registered command defs to Discord. */
-  sync(): Promise<void>;
-  /** Gateway dispatch entry point. Returns true when the payload was claimed. */
-  handleDispatch(payload: GatewayDispatchPayload): boolean;
-  close(): void;
-}
+import type { Bot, BotOptions } from './bot.type';
+import type { Collected, Feature } from './features.type';
+import type { CommandDef } from './commands.type';
 
 export function createBot<Deps>(
   client: { rest: REST; getBotUser: () => APIUser | null },

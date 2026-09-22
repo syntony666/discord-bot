@@ -1,9 +1,7 @@
 import { InteractionResponseType, MessageFlags } from 'discord-api-types/v10';
 import type {
   APIChatInputApplicationCommandInteraction,
-  APIInteraction,
   APIInteractionResponse,
-  APIMessage,
   APIMessageComponentInteraction,
   APIModalSubmitInteraction,
   APIUser,
@@ -18,44 +16,9 @@ import type {
   PaginateOptions,
   PromptOptions,
   ReplyData,
-} from '../context';
+} from '../context.type';
+import type { CommandRoute, Interaction, SessionApi } from './context.type';
 import type { Resources } from './resources';
-
-/** Implemented by the session store (created in sessions.ts). */
-export interface SessionApi {
-  confirm(
-    interaction: APIInteraction,
-    options: ConfirmOptions,
-    responded: boolean
-  ): Promise<boolean>;
-  paginate<T>(
-    interaction: APIInteraction,
-    options: PaginateOptions<T>,
-    responded: boolean
-  ): Promise<void>;
-  modal(
-    interaction: APIInteraction,
-    options: ModalOptions,
-    responded: boolean
-  ): Promise<Record<string, string> | null>;
-  prompt(
-    interaction: APIInteraction,
-    options: PromptOptions,
-    responded: boolean
-  ): Promise<APIMessage | null>;
-}
-
-type Interaction =
-  | APIChatInputApplicationCommandInteraction
-  | APIMessageComponentInteraction
-  | APIModalSubmitInteraction;
-
-export interface CommandRoute {
-  command: string;
-  subcommand?: string;
-  subcommandGroup?: string;
-  options: Record<string, unknown>;
-}
 
 const EMBED_OK = 0x57f287;
 const EMBED_ERR = 0xed4245;

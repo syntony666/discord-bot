@@ -9,26 +9,14 @@ import type {
 import { ApplicationCommandOptionType } from 'discord-api-types/v10';
 import type { Resources } from './resources';
 import { buildCommandContext, buildComponentContext } from './context';
+import type { CommandRoute, SessionApi } from './context.type';
 import type {
-  CommandContext,
-  ComponentContext,
-} from '../context';
-import type { CommandRoute, SessionApi } from './context';
-import type { CommandDef } from '../commands';
-
-export type CommandHandler = (ctx: CommandContext) => void | Promise<void>;
-export type ComponentHandler = (ctx: ComponentContext) => void | Promise<void>;
-
-interface ComponentRoute {
-  pattern: RegExp;
-  params: string[];
-  handler: ComponentHandler;
-}
-
-interface SessionDispatcher {
-  claims(customId: string): boolean;
-  dispatch(interaction: APIInteraction): Promise<boolean>;
-}
+  CommandHandler,
+  ComponentHandler,
+  ComponentRoute,
+  SessionDispatcher,
+} from './router.type';
+import type { CommandDef } from '../commands.type';
 
 /** Handler keys a command def accepts: 'add', 'panel.create', or the command
  *  name itself when it has no subcommands. */

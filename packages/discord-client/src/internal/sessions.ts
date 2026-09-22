@@ -24,45 +24,15 @@ import type {
   ModalOptions,
   PaginateOptions,
   PromptOptions,
-} from '../context';
-import type { SessionApi } from './context';
+} from '../context.type';
+import type { SessionApi } from './context.type';
+import type { Pending, Waiter } from './sessions.type';
 
 const PREFIX = 'kit:';
 const DEFAULT_CONFIRM_TIMEOUT = 120_000;
 const DEFAULT_PAGINATE_TIMEOUT = 5 * 60_000;
 const DEFAULT_MODAL_TIMEOUT = 5 * 60_000;
 const DEFAULT_PROMPT_TIMEOUT = 60_000;
-
-type Pending =
-  | {
-      kind: 'confirm';
-      ownerId: string;
-      resolve: (ok: boolean) => void;
-      timer: NodeJS.Timeout;
-    }
-  | {
-      kind: 'paginate';
-      ownerId: string;
-      items: unknown[];
-      render: PaginateOptions<unknown>['render'];
-      pageSize: number;
-      page: number;
-      timeoutMs: number;
-      token: string;
-      messageId: string;
-      timer: NodeJS.Timeout;
-    }
-  | {
-      kind: 'modal';
-      resolve: (values: Record<string, string> | null) => void;
-      timer: NodeJS.Timeout;
-    };
-
-interface Waiter {
-  resolve: (msg: APIMessage | null) => void;
-  filter?: (msg: APIMessage) => boolean;
-  timer: NodeJS.Timeout;
-}
 
 export function createSessionStore(
   resources: Resources,

@@ -1,24 +1,11 @@
 import { REST } from '@discordjs/rest';
 import { WebSocketManager, WebSocketShardEvents } from '@discordjs/ws';
-import type {
-  APIUser,
-  GatewayDispatchPayload,
-  GatewayReadyDispatchData,
-} from 'discord-api-types/v10';
+import type { APIUser } from 'discord-api-types/v10';
 import { createResources } from './internal/resources';
 import { createHelpers } from './helpers';
-import { createBot, type BotOptions } from './bot';
-
-export interface GatewayConnectOptions {
-  intents: number;
-  onDispatch: (payload: GatewayDispatchPayload) => void;
-  onReady?: (data: GatewayReadyDispatchData, shardId: number) => void;
-  onLog?: (message: string, meta?: Record<string, unknown>) => void;
-}
-
-export interface GatewaySession {
-  close(): void;
-}
+import { createBot } from './bot';
+import type { BotOptions } from './bot.type';
+import type { GatewayConnectOptions } from './client.type';
 
 export function createDiscordClient(options: {
   token: string;
