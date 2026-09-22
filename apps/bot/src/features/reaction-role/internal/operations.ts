@@ -1,4 +1,4 @@
-import type { DiscordHelpers } from '@discord-bot/discord-client';
+import type { DiscordApi } from '@discord-bot/discord-client';
 import { ReactionRolePanel, ReactionRole } from '@discord-bot/shared';
 import { createLogger } from '@discord-bot/shared';
 import { buildPanelEmbed } from './panel.helpers';
@@ -7,7 +7,7 @@ import type { PanelMode } from './panel.helpers';
 const log = createLogger('ReactionRoleOperations');
 
 export async function deleteDiscordMessage(
-  discord: DiscordHelpers,
+  discord: DiscordApi,
   channelId: string,
   messageId: string,
   context: { guildId: string; panelId?: string }
@@ -26,7 +26,7 @@ export async function deleteDiscordMessage(
 }
 
 export async function updatePanelMessage(
-  discord: DiscordHelpers,
+  discord: DiscordApi,
   panel: ReactionRolePanel,
   roles: ReactionRole[],
   updates?: {
@@ -67,7 +67,7 @@ export async function updatePanelMessage(
 }
 
 export async function deleteDiscordReaction(
-  discord: DiscordHelpers,
+  discord: DiscordApi,
   channelId: string,
   messageId: string,
   emoji: string,
@@ -86,7 +86,7 @@ export async function deleteDiscordReaction(
 }
 
 export async function addDiscordReaction(
-  discord: DiscordHelpers,
+  discord: DiscordApi,
   channelId: string,
   messageId: string,
   emoji: string,

@@ -35,7 +35,7 @@ export async function bootstrapApp(client: DiscordClient) {
   const streamNotifyModule = createStreamNotifyModule(request);
 
   const deps = {
-    discord: client.helpers,
+    discord: client.api,
     modules: {
       guild: guildModule,
       keyword: keywordModule,
