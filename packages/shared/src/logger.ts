@@ -28,7 +28,7 @@ export const logger = pino({
     },
   },
   hooks: {
-    logMethod(args, method, level) {
+    logMethod(args, method) {
       if (args.length === 0) {
         method.apply(this, args);
         return;
