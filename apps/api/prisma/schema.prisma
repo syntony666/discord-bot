@@ -1,0 +1,179 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/.prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/**
+ * Guild - Root entity for all guild-related data
+ * Tracks guild membership and member count
+ */
+model Guild {
+  id        String   @id
+  name      String
+  createdAt DateTime @default(now())
+  
+  keywordRules              KeywordRule[]
+  notificationChannels      NotificationChannel[]
+  memberNotifyMessage       MemberNotifyMessage?
+  reactionRoles             ReactionRole[]
+  reactionRolePanels        ReactionRolePanel[]
+  streamNotifyConfig         StreamNotifyConfig?
+  streamWatchers            StreamWatcher[]
+
+  @@index([id])
+}
+
+/**
+ * KeywordRule - Auto-response rules for specific patterns
+ */
+model KeywordRule {
+  guildId   String
+  pattern   String
+  matchType KeywordMatchType
+  response  String
+  enabled   Boolean  @default(true)
+  editorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@id([guildId, pattern])
+  @@index([guildId])
+}
+
+enum KeywordMatchType {
+  EXACT
+  CONTAINS
+}
+
+/**
+ * NotificationChannel - Where to send member join/leave notifications
+ */
+model NotificationChannel {
+  guildId   String
+  type      NotificationType
+  channelId String
+  enabled   Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  guild     Guild            @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@id([guildId, type])
+  @@index([guildId])
+}
+
+enum NotificationType {
+  MEMBER_JOIN
+  MEMBER_LEAVE
+}
+
+/**
+ * MemberNotifyMessage - Message templates for member notifications
+ */
+model MemberNotifyMessage {
+  guildId     String   @id
+  joinMessage String   @default("📥 {user} 加入了 {server}！目前共 {memberCount} 位成員")
+  leaveMessage String  @default("📤 {username} 離開了 {server}。目前剩餘 {memberCount} 位成員")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@index([guildId])
+}
+
+/**
+ * ReactionRole - Maps emoji reactions to Discord roles
+ */
+model ReactionRole {
+  guildId     String
+  messageId   String
+  emoji       String
+  roleId      String
+  description String?
+
+  guild       Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@id([guildId, messageId, emoji])
+  @@index([guildId])
+  @@index([messageId])
+}
+
+/**
+ * ReactionRolePanel - Groups multiple reaction roles into a single message
+ */
+model ReactionRolePanel {
+  guildId     String
+  messageId   String
+  channelId   String
+  title       String   @default("選擇你的身分組")
+  description String?
+  mode        ReactionRoleMode @default(NORMAL)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  guild       Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@id([guildId, messageId])
+  @@index([guildId])
+}
+
+enum ReactionRoleMode {
+  NORMAL
+  UNIQUE
+  VERIFY
+}
+
+/**
+ * StreamNotifyConfig - Configuration for stream notifications
+ */
+model StreamNotifyConfig {
+  guildId   String   @id
+  channelId String
+  enabled   Boolean  @default(true)
+  message   String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@index([guildId])
+}
+
+/**
+ * StreamWatcher - Tracks stream channels to monitor
+ */
+model StreamWatcher {
+  id               String           @id @default(cuid())
+  guildId          String
+  platformId       String           // user_login (e.g., "yb57152")
+  platformUserId   String?          // user_id (e.g., "104484222") - null means needs conversion
+  platform         StreamPlatform
+  displayName      String
+  isLive           Boolean          @default(false)
+  lastChecked      DateTime         @default(now())
+  createdAt        DateTime         @default(now())
+
+  guild            Guild            @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@unique([guildId, platform, platformId])
+  @@index([guildId])
+  @@index([isLive])
+  @@index([platformUserId])
+}
+
+enum StreamPlatform {
+  TWITCH
+}
