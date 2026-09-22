@@ -13,7 +13,7 @@ import { guildFeature } from '@features/guild/guild.feature';
 import { createLogger } from '@discord-bot/shared';
 import { reactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
 import { streamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
-import { createSchedulerService } from '@core/scheduler';
+import { createScheduler } from '@core/scheduler';
 
 const log = createLogger('Bootstrap');
 
@@ -22,9 +22,7 @@ export async function bootstrapApp(client: DiscordClient) {
 
   const request = createRequest(appConfig.api.url);
 
-  // Create and start scheduler
-  const scheduler = createSchedulerService();
-  scheduler.start();
+  const scheduler = createScheduler();
 
   // ========== Api ==========
   const guildApi = createGuildApi(request);
