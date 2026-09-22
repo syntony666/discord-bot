@@ -19,6 +19,10 @@ interface TwitchApiResponse {
   };
 }
 
+interface TwitchUsersResponse {
+  data: Array<{ id: string; login: string }>;
+}
+
 export class TwitchService implements StreamPlatformService {
   private clientId: string;
   private clientSecret: string;
@@ -85,7 +89,7 @@ export class TwitchService implements StreamPlatformService {
       );
 
       if (response.ok) {
-        const data = (await response.json()) as any;
+        const data = (await response.json()) as TwitchUsersResponse;
         for (const user of data.data) {
           usernameToIdMap.set(user.login.toLowerCase(), user.id);
         }

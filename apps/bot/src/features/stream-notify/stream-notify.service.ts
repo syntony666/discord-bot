@@ -2,6 +2,7 @@ import { StreamInfo } from './stream-notify.types';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { StreamNotifyApi } from './stream-notify.api';
 import { StreamPlatformService } from './platforms/platform.interface';
+import type { TwitchService } from './platforms/twitch.service';
 import { createLogger } from '@discord-bot/shared';
 import { StreamWatcher } from '@discord-bot/shared';
 
@@ -32,8 +33,10 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
       );
 
       if (twitchWatchersNeedingConversion.length > 0) {
-        const twitchService = services.find((s) => s.getPlatformName() === 'twitch') as any;
-        if (twitchService && twitchService.convertUsernamesToUserIds) {
+        const twitchService = services.find(
+          (s) => s.getPlatformName() === 'twitch'
+        ) as TwitchService | undefined;
+        if (twitchService) {
           const usernames = twitchWatchersNeedingConversion.map((w) => w.platformId);
           const usernameToIdMap = await twitchService.convertUsernamesToUserIds(usernames);
 
