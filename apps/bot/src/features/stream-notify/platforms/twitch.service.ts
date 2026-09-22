@@ -1,4 +1,7 @@
 import { StreamPlatformService, StreamInfo } from './platform.interface';
+import { createLogger } from '@discord-bot/shared';
+
+const log = createLogger('TwitchService');
 
 interface TwitchStreamResponse {
   id: string;
@@ -94,7 +97,7 @@ export class TwitchService implements StreamPlatformService {
           usernameToIdMap.set(user.login.toLowerCase(), user.id);
         }
       } else {
-        console.error(`Failed to convert usernames to IDs: ${response.statusText}`);
+        log.error({ statusText: response.statusText }, 'Failed to convert usernames to IDs');
       }
     }
 
@@ -137,7 +140,7 @@ export class TwitchService implements StreamPlatformService {
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(`Twitch API error (user_ids): ${response.statusText}`, errorText);
+          log.error({ statusText: response.statusText, errorText }, 'Twitch API error (user_ids)');
           continue;
         }
 
@@ -177,7 +180,10 @@ export class TwitchService implements StreamPlatformService {
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(`Twitch API error (user_logins): ${response.statusText}`, errorText);
+          log.error(
+            { statusText: response.statusText, errorText },
+            'Twitch API error (user_logins)'
+          );
           continue;
         }
 

@@ -1,5 +1,8 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { createLogger } from '@discord-bot/shared';
+
+const log = createLogger('BotInfo');
 
 interface VersionInfo {
   version: string;
@@ -23,7 +26,7 @@ export function getBotVersion(): VersionInfo {
 
     return cachedVersion;
   } catch (error) {
-    console.error('Failed to read package.json:', error);
+    log.error({ error }, 'Failed to read package.json');
     return {
       version: 'unknown',
       apiTypesVersion: 'unknown',

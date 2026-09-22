@@ -1,4 +1,7 @@
 import { StreamPlatformService, StreamInfo } from './platform.interface';
+import { createLogger } from '@discord-bot/shared';
+
+const log = createLogger('YouTubeService');
 
 interface YouTubeLiveBroadcastResponse {
   kind: string;
@@ -92,7 +95,7 @@ export class YouTubeService implements StreamPlatformService {
       );
 
       if (!response.ok) {
-        console.error(`YouTube channels API error: ${response.statusText}`);
+        log.error({ statusText: response.statusText }, 'YouTube channels API error');
         continue;
       }
 
@@ -121,7 +124,7 @@ export class YouTubeService implements StreamPlatformService {
       );
 
       if (!response.ok) {
-        console.error(`YouTube live broadcasts API error: ${response.statusText}`);
+        log.error({ statusText: response.statusText }, 'YouTube live broadcasts API error');
         continue;
       }
 
