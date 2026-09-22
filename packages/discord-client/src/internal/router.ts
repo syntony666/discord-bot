@@ -7,7 +7,7 @@ import type {
   APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 import { ApplicationCommandOptionType } from 'discord-api-types/v10';
-import type { REST } from '@discordjs/rest';
+import type { Resources } from './resources';
 import { buildCommandContext, buildComponentContext } from './context';
 import type {
   CommandContext,
@@ -119,7 +119,7 @@ const compilePattern = (pattern: string) => {
 };
 
 export function createCommandRouter(
-  rest: REST,
+  resources: Resources,
   appId: string,
   sessions: SessionApi & SessionDispatcher,
   onError: (err: unknown) => void
@@ -157,7 +157,7 @@ export function createCommandRouter(
     const handler = entry.handlers[key || route.command];
     if (!handler) return false;
 
-    const ctx = buildCommandContext(rest, appId, sessions, i, route);
+    const ctx = buildCommandContext(resources, appId, sessions, i, route);
     await handler(ctx);
     return true;
   };
@@ -173,7 +173,7 @@ export function createCommandRouter(
       route.params.forEach((name, idx) => {
         params[name] = m[idx + 1]!;
       });
-      const ctx = buildComponentContext(rest, appId, sessions, i, params);
+      const ctx = buildComponentContext(resources, appId, sessions, i, params);
       await route.handler(ctx);
       return true;
     }

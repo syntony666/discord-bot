@@ -4,10 +4,15 @@ import type {
   APIChannel,
   APIGuild,
   APIGuildMember,
+  APIInteractionResponse,
   APIMessage,
   APIUser,
   RESTPatchAPIChannelMessageJSONBody,
+  RESTPatchAPIWebhookWithTokenMessageJSONBody,
   RESTPostAPIChannelMessageJSONBody,
+  RESTPostAPIWebhookWithTokenJSONBody,
+  RESTPutAPIApplicationCommandsJSONBody,
+  RESTPutAPIApplicationCommandsResult,
 } from 'discord-api-types/v10';
 
 const ownReactionRoute = (channelId: string, messageId: string, emoji: string) =>
@@ -78,6 +83,35 @@ export function createResources(rest: REST, getBotUser: () => APIUser | null) {
     get: () => rest.get(Routes.user(userId)) as Promise<APIUser>,
   });
 
+  const interaction = (interactionId: string, token: string) => ({
+    respond: (body: APIInteractionResponse) =>
+      rest.post(Routes.interactionCallback(interactionId, token), { body }),
+  });
+
+  const webhook = (webhookId: string, token: string) => ({
+    execute: (body: RESTPostAPIWebhookWithTokenJSONBody, wait = false) =>
+      rest.post(Routes.webhook(webhookId, token), {
+        body,
+        ...(wait ? { query: new URLSearchParams({ wait: 'true' }) } : {}),
+      }) as Promise<APIMessage | undefined>,
+    message: (messageId: string) => ({
+      edit: (body: RESTPatchAPIWebhookWithTokenMessageJSONBody) =>
+        rest.patch(Routes.webhookMessage(webhookId, token, messageId), {
+          body,
+        }),
+      delete: () => rest.delete(Routes.webhookMessage(webhookId, token, messageId)),
+    }),
+  });
+
+  const application = (applicationId: string) => ({
+    commands: {
+      overwrite: (body: RESTPutAPIApplicationCommandsJSONBody) =>
+        rest.put(Routes.applicationCommands(applicationId), {
+          body,
+        }) as Promise<RESTPutAPIApplicationCommandsResult>,
+    },
+  });
+
   return {
     get botId() {
       return getBotUser()?.id ?? '';
@@ -88,6 +122,9 @@ export function createResources(rest: REST, getBotUser: () => APIUser | null) {
     channel,
     guild,
     user,
+    interaction,
+    webhook,
+    application,
   };
 }
 
