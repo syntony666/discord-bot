@@ -5,8 +5,6 @@ import type {
   APIMessageComponentInteraction,
   APIModalSubmitInteraction,
   APIUser,
-  RESTPatchAPIWebhookWithTokenMessageJSONBody,
-  RESTPostAPIWebhookWithTokenJSONBody,
 } from 'discord-api-types/v10';
 import type {
   CommandContext,
@@ -18,7 +16,7 @@ import type {
   ReplyData,
 } from '../context.type';
 import type { CommandRoute, Interaction, SessionApi } from './context.type';
-import type { Resources } from './resources';
+import { ORIGINAL_MESSAGE, type Resources } from './resources';
 
 const EMBED_OK = 0x57f287;
 const EMBED_ERR = 0xed4245;
@@ -69,14 +67,14 @@ function baseMethods(resources: Resources, appId: string, sessions: SessionApi, 
     followUp: (data: ReplyData) =>
       resources
         .webhook(appId, i.token)
-        .execute(normalize(data) as RESTPostAPIWebhookWithTokenJSONBody)
+        .execute(normalize(data))
         .then(() => undefined),
 
     editReply: (data: ReplyData) =>
       resources
         .webhook(appId, i.token)
-        .message('@original')
-        .edit(normalize(data) as RESTPatchAPIWebhookWithTokenMessageJSONBody)
+        .message(ORIGINAL_MESSAGE)
+        .edit(normalize(data))
         .then(() => undefined),
 
     confirm: (options: ConfirmOptions) => sessions.confirm(i, options, responded),
