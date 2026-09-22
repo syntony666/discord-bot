@@ -15,6 +15,9 @@ import type {
   RESTPutAPIApplicationCommandsResult,
 } from 'discord-api-types/v10';
 
+/** Discord's sentinel id for the original interaction response. */
+export const ORIGINAL_MESSAGE = '@original';
+
 const ownReactionRoute = (channelId: string, messageId: string, emoji: string) =>
   Routes.channelMessageOwnReaction(channelId, messageId, encodeURIComponent(emoji));
 

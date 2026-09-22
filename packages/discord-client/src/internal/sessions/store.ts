@@ -8,25 +8,24 @@ import {
   TextInputStyle,
 } from 'discord-api-types/v10';
 import type {
-  APIButtonComponentWithCustomId,
   APIEmbed,
   APIInteraction,
   APIInteractionResponseCallbackData,
   APIMessage,
   APIMessageComponentInteraction,
   APIModalSubmitInteraction,
-  RESTPatchAPIWebhookWithTokenMessageJSONBody,
-  RESTPostAPIWebhookWithTokenJSONBody,
 } from 'discord-api-types/v10';
-import type { Resources } from './resources';
-import type {
-  ConfirmOptions,
-  ModalOptions,
-  PaginateOptions,
-  PromptOptions,
-} from '../context.type';
-import type { SessionApi } from './context.type';
-import type { Pending, Waiter } from './sessions.type';
+import { ORIGINAL_MESSAGE, type Resources } from '../resources';
+import type { PaginateOptions } from '../../context.type';
+import type { SessionApi } from '../context.type';
+import type { PaginatePending, Pending, Waiter } from './store.type';
+import {
+  button,
+  modalFieldValues,
+  paginateEmbed,
+  paginateRow,
+  row,
+} from './components';
 
 const PREFIX = 'kit:';
 const DEFAULT_CONFIRM_TIMEOUT = 120_000;
@@ -69,7 +68,7 @@ export function createSessionStore(
     if (responded) {
       return resources
         .webhook(appId, i.token)
-        .execute(data as RESTPostAPIWebhookWithTokenJSONBody, true)
+        .execute(data, true)
         .then((msg) => ({ token: i.token, messageId: (msg as APIMessage).id }));
     }
     return resources
@@ -78,7 +77,7 @@ export function createSessionStore(
         type: InteractionResponseType.ChannelMessageWithSource,
         data,
       })
-      .then(() => ({ token: i.token, messageId: '@original' }));
+      .then(() => ({ token: i.token, messageId: ORIGINAL_MESSAGE }));
   };
 
   const editMessage = (
@@ -89,58 +88,8 @@ export function createSessionStore(
     resources
       .webhook(appId, token)
       .message(messageId)
-      .edit(data as RESTPatchAPIWebhookWithTokenMessageJSONBody)
+      .edit(data)
       .catch(fail);
-
-  const button = (
-    customId: string,
-    label: string,
-    style:
-      | ButtonStyle.Primary
-      | ButtonStyle.Secondary
-      | ButtonStyle.Success
-      | ButtonStyle.Danger,
-    disabled = false
-  ): APIButtonComponentWithCustomId => ({
-    type: ComponentType.Button,
-    custom_id: customId,
-    label,
-    style,
-    disabled,
-  });
-
-  const row = <T>(...components: T[]) => ({
-    type: ComponentType.ActionRow as const,
-    components,
-  });
-
-  const modalFieldValues = (
-    i: APIModalSubmitInteraction
-  ): Record<string, string> => {
-    const values: Record<string, string> = {};
-    for (const c of i.data.components) {
-      if (c.type === ComponentType.ActionRow) {
-        for (const t of c.components) {
-          if (t.type === ComponentType.TextInput) values[t.custom_id] = t.value;
-        }
-      } else if (
-        c.type === ComponentType.Label &&
-        c.component.type === ComponentType.TextInput
-      ) {
-        values[c.component.custom_id] = c.component.value;
-      }
-    }
-    return values;
-  };
-
-  type PaginatePending = Extract<Pending, { kind: 'paginate' }>;
-
-  const paginateEmbed = (s: PaginatePending): APIEmbed =>
-    s.render(
-      s.items.slice(s.page * s.pageSize, (s.page + 1) * s.pageSize),
-      s.page,
-      Math.ceil(s.items.length / s.pageSize)
-    );
 
   const expirePaginate = (id: string, s: PaginatePending) => {
     clearTimeout(s.timer);
@@ -192,22 +141,6 @@ export function createSessionStore(
   };
 
   // --- paginate ------------------------------------------------------------
-
-  const paginateRow = (
-    base: string,
-    page: number,
-    totalPages: number
-  ) =>
-    row(
-      button(`${base}:prev`, '◀', ButtonStyle.Secondary, page === 0),
-      button(`${base}:jump`, `${page + 1}/${totalPages}`, ButtonStyle.Secondary),
-      button(
-        `${base}:next`,
-        '▶',
-        ButtonStyle.Secondary,
-        page === totalPages - 1
-      )
-    );
 
   const paginate: SessionApi['paginate'] = async (i, options, responded) => {
     const pageSize = options.pageSize ?? 10;
@@ -357,7 +290,7 @@ export function createSessionStore(
         data: { flags: MessageFlags.Ephemeral },
       })
       .then(() =>
-        resources.webhook(appId, i.token).message('@original').delete()
+        resources.webhook(appId, i.token).message(ORIGINAL_MESSAGE).delete()
       )
       .catch(fail);
 

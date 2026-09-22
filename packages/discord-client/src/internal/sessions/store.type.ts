@@ -1,5 +1,5 @@
 import type { APIMessage } from 'discord-api-types/v10';
-import type { PaginateOptions } from '../context.type';
+import type { PaginateOptions } from '../../context.type';
 
 export type Pending =
   | {
@@ -25,6 +25,8 @@ export type Pending =
       resolve: (values: Record<string, string> | null) => void;
       timer: NodeJS.Timeout;
     };
+
+export type PaginatePending = Extract<Pending, { kind: 'paginate' }>;
 
 export interface Waiter {
   resolve: (msg: APIMessage | null) => void;

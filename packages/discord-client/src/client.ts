@@ -12,12 +12,10 @@ export function createDiscordClient(options: {
 }) {
   const rest = new REST({ version: '10' }).setToken(options.token);
   let botUser: APIUser | null = null;
-  const helpers = createHelpers(createResources(rest, () => botUser));
+  const resources = createResources(rest, () => botUser);
+  const helpers = createHelpers(resources);
   return {
     helpers,
-    get botId() {
-      return botUser?.id ?? '';
-    },
     async connect({ intents, onDispatch, onReady, onLog }: GatewayConnectOptions) {
       const manager = new WebSocketManager({ token: options.token, intents, rest });
       manager.on(WebSocketShardEvents.Dispatch, (payload) => onDispatch(payload));
@@ -30,7 +28,7 @@ export function createDiscordClient(options: {
       return { close: () => void manager.destroy() };
     },
     createBot: <Deps>(botOptions: BotOptions<Deps>) =>
-      createBot({ rest, getBotUser: () => botUser }, botOptions),
+      createBot(resources, botOptions),
   };
 }
 

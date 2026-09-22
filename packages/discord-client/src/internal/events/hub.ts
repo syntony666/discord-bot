@@ -30,7 +30,7 @@ export function createEventHub(
     subjectFor(name).subscribe({
       next: (data) => {
         try {
-          const out = handler(data as never);
+          const out = handler(data as EventMap[K]);
           void Promise.resolve(out).catch(onError);
         } catch (err) {
           onError(err);
