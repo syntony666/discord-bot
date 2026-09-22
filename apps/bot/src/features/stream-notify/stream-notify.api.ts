@@ -9,7 +9,7 @@ import {
 const base = (guildId: string) => `/api/v1/guilds/${guildId}`;
 const WATCHERS = '/api/v1/stream-watchers';
 
-export function createStreamNotifyModule(request: ApiRequest) {
+export function createStreamNotifyApi(request: ApiRequest) {
   return {
     getConfig(guildId: string) {
       return orNull(request<StreamNotifyConfig>(`${base(guildId)}/stream-notify-config`));
@@ -75,4 +75,4 @@ export function createStreamNotifyModule(request: ApiRequest) {
   };
 }
 
-export type StreamNotifyModule = ReturnType<typeof createStreamNotifyModule>;
+export type StreamNotifyApi = ReturnType<typeof createStreamNotifyApi>;

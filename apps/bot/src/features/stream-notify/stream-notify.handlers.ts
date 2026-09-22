@@ -4,7 +4,7 @@ import type { DiscordHelpers } from '@discord-bot/discord-client';
 import type { SchedulerService } from '@core/scheduler';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
-import type { StreamNotifyModule } from './stream-notify.module';
+import type { StreamNotifyApi } from './stream-notify.api';
 import { createStreamNotifyService } from './stream-notify.service';
 import { TwitchService } from './platforms/twitch.service';
 import { streamNotifyCommand } from './stream-notify.command';
@@ -14,7 +14,7 @@ const log = createLogger('StreamNotify');
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface StreamNotifyDeps {
   discord: DiscordHelpers;
-  modules: { streamNotify: StreamNotifyModule };
+  api: { streamNotify: StreamNotifyApi };
   scheduler: SchedulerService;
 }
 
@@ -22,7 +22,7 @@ const TWITCH_TASK_ID = 'twitch-stream-check';
 
 export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
   const { discord, scheduler } = deps;
-  const module = deps.modules.streamNotify;
+  const api = deps.api.streamNotify;
   const service = createStreamNotifyService(discord);
   const h = useHandlers(streamNotifyCommand);
 
@@ -37,7 +37,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     schedule: '*/1 * * * *',
     handler: async () => {
       try {
-        await service.checkAllStreams(module, [twitchService]);
+        await service.checkAllStreams(api, [twitchService]);
       } catch (error) {
         log.error({ error }, 'Twitch stream check failed');
       }
@@ -53,10 +53,10 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     const channelId = ctx.options.channel.id;
     const message = ctx.options.message;
 
-    const existingConfig = await module.getConfig(guildId);
+    const existingConfig = await api.getConfig(guildId);
 
     if (existingConfig) {
-      await module.updateConfig(guildId, {
+      await api.updateConfig(guildId, {
         channelId,
         message: message || existingConfig.message,
         enabled: true,
@@ -71,7 +71,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
         ],
       });
     } else {
-      await module.createConfig(guildId, channelId, message);
+      await api.createConfig(guildId, channelId, message);
       await ctx.reply({
         embeds: [
           {
@@ -89,7 +89,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
 
-    const existingConfig = await module.getConfig(guildId);
+    const existingConfig = await api.getConfig(guildId);
     if (!existingConfig) {
       return ctx.reply({
         embeds: [
@@ -102,7 +102,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
       });
     }
 
-    await module.updateConfig(guildId, { enabled: false });
+    await api.updateConfig(guildId, { enabled: false });
     await ctx.reply({
       embeds: [
         {
@@ -122,7 +122,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     const id = ctx.options.id;
     const name = ctx.options.name;
 
-    const existingWatcher = await module.getWatcher(guildId, toPlatform(platform), id);
+    const existingWatcher = await api.getWatcher(guildId, toPlatform(platform), id);
     if (existingWatcher) {
       return ctx.reply({
         embeds: [
@@ -135,7 +135,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
       });
     }
 
-    await module.addWatcher(guildId, toPlatform(platform), id, name || id);
+    await api.addWatcher(guildId, toPlatform(platform), id, name || id);
     await ctx.reply({
       embeds: [
         {
@@ -154,7 +154,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     const platform = ctx.options.platform;
     const id = ctx.options.id;
 
-    const existingWatcher = await module.getWatcher(guildId, toPlatform(platform), id);
+    const existingWatcher = await api.getWatcher(guildId, toPlatform(platform), id);
     if (!existingWatcher) {
       return ctx.reply({
         embeds: [
@@ -167,7 +167,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
       });
     }
 
-    await module.removeWatcher(guildId, toPlatform(platform), id);
+    await api.removeWatcher(guildId, toPlatform(platform), id);
     await ctx.reply({
       embeds: [
         {
@@ -185,8 +185,8 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     const guildId = ctx.guildId;
 
     const [config, watchers] = await Promise.all([
-      module.getConfig(guildId),
-      module.getWatchers(guildId),
+      api.getConfig(guildId),
+      api.getWatchers(guildId),
     ]);
 
     const configItems = config

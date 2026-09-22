@@ -1,11 +1,9 @@
 import { NotificationType } from '@discord-bot/shared';
 import type { StatusDeps } from './status.handlers';
 
-type Modules = StatusDeps['modules'];
-
 export async function buildNotifyStatusItems(
   guildId: string,
-  modules: Modules
+  api: StatusDeps['api']
 ): Promise<string[]> {
   const [
     joinChannel,
@@ -16,13 +14,13 @@ export async function buildNotifyStatusItems(
     keywordRules,
     reactionRolePanels,
   ] = await Promise.all([
-    modules.memberNotify.getNotificationChannel(guildId, NotificationType.MEMBER_JOIN),
-    modules.memberNotify.getNotificationChannel(guildId, NotificationType.MEMBER_LEAVE),
-    modules.memberNotify.getMessageTemplates(guildId),
-    modules.streamNotify.getConfig(guildId),
-    modules.streamNotify.getWatchers(guildId),
-    modules.keyword.getRulesForList(guildId),
-    modules.reactionRole.getPanelsByGuild(guildId),
+    api.memberNotify.getNotificationChannel(guildId, NotificationType.MEMBER_JOIN),
+    api.memberNotify.getNotificationChannel(guildId, NotificationType.MEMBER_LEAVE),
+    api.memberNotify.getMessageTemplates(guildId),
+    api.streamNotify.getConfig(guildId),
+    api.streamNotify.getWatchers(guildId),
+    api.keyword.getRulesForList(guildId),
+    api.reactionRole.getPanelsByGuild(guildId),
   ]);
 
   const items: string[] = [];

@@ -4,11 +4,11 @@ import { statusFeature } from '@features/status/status.feature';
 import { keywordFeature } from '@features/keyword/keyword.feature';
 import { memberNotifyFeature } from '@features/member-notify/member-notify.feature';
 import { appConfig } from '@core/config';
-import { createGuildModule } from '@features/guild/guild.module';
-import { createKeywordModule } from '@features/keyword/keyword.module';
-import { createMemberNotifyModule } from '@features/member-notify/member-notify.module';
-import { createReactionRoleModule } from '@features/reaction-role/reaction-role.module';
-import { createStreamNotifyModule } from '@features/stream-notify/stream-notify.module';
+import { createGuildApi } from '@features/guild/guild.api';
+import { createKeywordApi } from '@features/keyword/keyword.api';
+import { createMemberNotifyApi } from '@features/member-notify/member-notify.api';
+import { createReactionRoleApi } from '@features/reaction-role/reaction-role.api';
+import { createStreamNotifyApi } from '@features/stream-notify/stream-notify.api';
 import { guildFeature } from '@features/guild/guild.feature';
 import { createLogger } from '@discord-bot/shared';
 import { reactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
@@ -26,21 +26,21 @@ export async function bootstrapApp(client: DiscordClient) {
   const scheduler = createSchedulerService();
   scheduler.start();
 
-  // ========== Modules ==========
-  const guildModule = createGuildModule(request);
-  const keywordModule = createKeywordModule(request);
-  const memberNotifyModule = createMemberNotifyModule(request);
-  const reactionRoleModule = createReactionRoleModule(request);
-  const streamNotifyModule = createStreamNotifyModule(request);
+  // ========== Api ==========
+  const guildApi = createGuildApi(request);
+  const keywordApi = createKeywordApi(request);
+  const memberNotifyApi = createMemberNotifyApi(request);
+  const reactionRoleApi = createReactionRoleApi(request);
+  const streamNotifyApi = createStreamNotifyApi(request);
 
   const deps = {
     discord: client.helpers,
-    modules: {
-      guild: guildModule,
-      keyword: keywordModule,
-      memberNotify: memberNotifyModule,
-      reactionRole: reactionRoleModule,
-      streamNotify: streamNotifyModule,
+    api: {
+      guild: guildApi,
+      keyword: keywordApi,
+      memberNotify: memberNotifyApi,
+      reactionRole: reactionRoleApi,
+      streamNotify: streamNotifyApi,
     },
     scheduler,
   };

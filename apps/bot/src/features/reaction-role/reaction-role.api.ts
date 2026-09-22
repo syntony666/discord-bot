@@ -12,7 +12,7 @@ export type { ReactionRoleMatch } from '@discord-bot/shared';
 
 const base = (guildId: string) => `/api/v1/guilds/${guildId}`;
 
-export function createReactionRoleModule(request: ApiRequest) {
+export function createReactionRoleApi(request: ApiRequest) {
   return {
     getPanel(guildId: string, messageId: string) {
       return orNull(
@@ -66,4 +66,4 @@ export function createReactionRoleModule(request: ApiRequest) {
   };
 }
 
-export type ReactionRoleModule = ReturnType<typeof createReactionRoleModule>;
+export type ReactionRoleApi = ReturnType<typeof createReactionRoleApi>;

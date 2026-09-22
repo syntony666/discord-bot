@@ -2,7 +2,7 @@ import { ApiRequest, GuildData, orNull } from '@discord-bot/shared';
 
 const BASE = '/api/v1/guilds';
 
-export function createGuildModule(request: ApiRequest) {
+export function createGuildApi(request: ApiRequest) {
   return {
     ensureGuild(guildId: string, guildName?: string) {
       return request<GuildData>(`${BASE}/ensure`, {
@@ -22,4 +22,4 @@ export function createGuildModule(request: ApiRequest) {
   };
 }
 
-export type GuildModule = ReturnType<typeof createGuildModule>;
+export type GuildApi = ReturnType<typeof createGuildApi>;

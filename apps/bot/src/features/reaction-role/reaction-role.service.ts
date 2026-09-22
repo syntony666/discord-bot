@@ -1,4 +1,4 @@
-import { ReactionRoleModule, ReactionRoleMatch } from './reaction-role.module';
+import { ReactionRoleApi, ReactionRoleMatch } from './reaction-role.api';
 import { normalizeEmojiFromReaction } from './internal/emoji.helper';
 import { createLogger } from '@discord-bot/shared';
 
@@ -17,16 +17,16 @@ export interface ReactionRoleService {
   }): string;
 }
 
-export function createReactionRoleService(module: ReactionRoleModule): ReactionRoleService {
+export function createReactionRoleService(api: ReactionRoleApi): ReactionRoleService {
   return {
     async findMatch(guildId: string, messageId: string, emoji: string) {
       log.debug({ guildId, messageId, emoji }, 'Finding reaction role match');
 
       // Legacy rows store `name:id` without the animated prefix
       const reactionRole =
-        (await module.getReactionRole(guildId, messageId, emoji)) ??
+        (await api.getReactionRole(guildId, messageId, emoji)) ??
         (emoji.startsWith('a:')
-          ? await module.getReactionRole(guildId, messageId, emoji.slice(2))
+          ? await api.getReactionRole(guildId, messageId, emoji.slice(2))
           : null);
       log.debug(
         { guildId, messageId, emoji, reactionRole: !!reactionRole },
@@ -37,7 +37,7 @@ export function createReactionRoleService(module: ReactionRoleModule): ReactionR
         return null;
       }
 
-      const panel = await module.getPanel(guildId, messageId);
+      const panel = await api.getPanel(guildId, messageId);
       log.debug(
         { guildId, messageId, panel: !!panel, mode: panel?.mode },
         'Panel query result'

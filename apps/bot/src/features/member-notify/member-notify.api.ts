@@ -11,7 +11,7 @@ import {
 
 const base = (guildId: string) => `/api/v1/guilds/${guildId}`;
 
-export function createMemberNotifyModule(request: ApiRequest) {
+export function createMemberNotifyApi(request: ApiRequest) {
   return {
     getNotificationChannel(guildId: string, type: NotificationType) {
       return orNull(
@@ -59,4 +59,4 @@ export function createMemberNotifyModule(request: ApiRequest) {
   };
 }
 
-export type MemberNotifyModule = ReturnType<typeof createMemberNotifyModule>;
+export type MemberNotifyApi = ReturnType<typeof createMemberNotifyApi>;

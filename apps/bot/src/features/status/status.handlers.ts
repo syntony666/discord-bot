@@ -10,10 +10,10 @@ import type {
   APIEmbed,
 } from 'discord-api-types/v10';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
-import type { KeywordModule } from '@features/keyword/keyword.module';
-import type { MemberNotifyModule } from '@features/member-notify/member-notify.module';
-import type { ReactionRoleModule } from '@features/reaction-role/reaction-role.module';
-import type { StreamNotifyModule } from '@features/stream-notify/stream-notify.module';
+import type { KeywordApi } from '@features/keyword/keyword.api';
+import type { MemberNotifyApi } from '@features/member-notify/member-notify.api';
+import type { ReactionRoleApi } from '@features/reaction-role/reaction-role.api';
+import type { StreamNotifyApi } from '@features/stream-notify/stream-notify.api';
 import { getBotVersion, getUptime } from '@core/bot-info';
 import { appConfig } from '@core/config';
 import { createLogger } from '@discord-bot/shared';
@@ -26,11 +26,11 @@ const log = createLogger('Status');
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface StatusDeps {
   discord: DiscordHelpers;
-  modules: {
-    memberNotify: MemberNotifyModule;
-    streamNotify: StreamNotifyModule;
-    keyword: KeywordModule;
-    reactionRole: ReactionRoleModule;
+  api: {
+    memberNotify: MemberNotifyApi;
+    streamNotify: StreamNotifyApi;
+    keyword: KeywordApi;
+    reactionRole: ReactionRoleApi;
   };
 }
 
@@ -155,7 +155,7 @@ export function useStatusHandlers(deps: StatusDeps) {
   h.handler('notify', async (ctx) => {
     if (!ctx.guildId) return ctx.error('無法取得伺服器資訊');
 
-    const items = await buildNotifyStatusItems(ctx.guildId, deps.modules);
+    const items = await buildNotifyStatusItems(ctx.guildId, deps.api);
     await ctx.paginate({
       items,
       pageSize: 10,
