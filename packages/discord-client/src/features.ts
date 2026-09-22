@@ -8,7 +8,7 @@ import type {
 import type {
   CommandContext,
   ComponentContext,
-} from './internal/context';
+} from './context';
 import type {
   CommandHandler,
   ComponentHandler,
