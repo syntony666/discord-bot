@@ -2,7 +2,7 @@ import type {
   RESTPatchAPIChannelMessageJSONBody,
   RESTPostAPIChannelMessageJSONBody,
 } from 'discord-api-types/v10';
-import type { Resources } from './internal/resources';
+import type { Resources } from './resources';
 
 export function createHelpers(resources: Resources) {
   return {
@@ -59,4 +59,3 @@ export function createHelpers(resources: Resources) {
   };
 }
 
-export type DiscordHelpers = ReturnType<typeof createHelpers>;

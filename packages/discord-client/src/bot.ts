@@ -5,7 +5,7 @@ import type { Resources } from './internal/resources';
 import { toRestBody } from './internal/serialize';
 import { createSessionStore } from './internal/sessions/store';
 import { createEventHub } from './internal/events/hub';
-import { createHelpers } from './helpers';
+import { createHelpers } from './internal/helpers';
 import type { Bot, BotOptions } from './bot.type';
 import type { Collected, Feature } from './features.type';
 import type { CommandDef } from './commands.type';
