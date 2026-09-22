@@ -1,5 +1,4 @@
 import { createRequest } from '@discord-bot/shared';
-import { createBot } from '@discord-bot/discord-client';
 import type { DiscordClient } from '@discord-bot/discord-client';
 import { statusFeature } from '@features/status/status.feature';
 import { keywordFeature } from '@features/keyword/keyword.feature';
@@ -46,7 +45,7 @@ export async function bootstrapApp(client: DiscordClient) {
     scheduler,
   };
 
-  const bot = createBot(client, {
+  const bot = client.createBot({
     appId: appConfig.discord.appId,
     deps,
     onError: (err) => log.error({ err }, 'Bot dispatch error'),

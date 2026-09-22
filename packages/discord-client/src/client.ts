@@ -6,7 +6,8 @@ import type {
   GatewayReadyDispatchData,
 } from 'discord-api-types/v10';
 import { createResources } from './internal/resources';
-import { createHelpers, type DiscordHelpers } from './helpers';
+import { createHelpers } from './helpers';
+import { createBot, type BotOptions } from './bot';
 
 export interface GatewayConnectOptions {
   intents: number;
@@ -26,7 +27,6 @@ export function createDiscordClient(options: {
   let botUser: APIUser | null = null;
   const helpers = createHelpers(createResources(rest, () => botUser));
   return {
-    rest,
     helpers,
     get botId() {
       return botUser?.id ?? '';
@@ -42,6 +42,8 @@ export function createDiscordClient(options: {
       await manager.connect();
       return { close: () => void manager.destroy() };
     },
+    createBot: <Deps>(botOptions: BotOptions<Deps>) =>
+      createBot({ rest, getBotUser: () => botUser }, botOptions),
   };
 }
 
