@@ -1,5 +1,4 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
-import type { CommandContext } from '@discord-bot/discord-client';
 import { concatMap } from 'rxjs';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';

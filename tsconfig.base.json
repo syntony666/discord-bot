@@ -17,6 +17,8 @@
     "noUncheckedIndexedAccess": true,
     "strict": true,
     "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
