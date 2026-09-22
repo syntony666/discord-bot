@@ -21,9 +21,7 @@
   "dependencies": {
     "@discord-bot/discord-client": "*",
     "@discord-bot/shared": "*",
-    "@types/node-cron": "^3.0.11",
     "discord-api-types": "0.38.55",
-    "node-cron": "^4.2.1",
     "rxjs": "^7.8.2",
     "tsc-alias": "^1.8.16"
   }
