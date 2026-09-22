@@ -8,14 +8,14 @@ import type {
 import type {
   CommandContext,
   ComponentContext,
-} from './commands/context';
+} from './internal/context';
 import type {
   CommandHandler,
   ComponentHandler,
-} from './commands/router';
-import type { EventHandler, StreamBuilder } from './events/hub';
-import type { EventName } from './events/types';
-import type { CommandDef, OptionDef } from './commands/types';
+} from './internal/router';
+import type { EventHandler, StreamBuilder } from './internal/events/hub';
+import type { EventName } from './internal/events/types';
+import type { CommandDef, OptionDef } from './commands';
 
 // --- option → TS type mapping ----------------------------------------------
 

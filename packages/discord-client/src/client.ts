@@ -5,7 +5,7 @@ import type {
   GatewayDispatchPayload,
   GatewayReadyDispatchData,
 } from 'discord-api-types/v10';
-import { createResources } from './resources';
+import { createResources } from './internal/resources';
 import { createApi, type DiscordApi } from './api';
 
 export interface GatewayConnectOptions {

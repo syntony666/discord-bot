@@ -15,7 +15,7 @@ import type {
   ComponentContext,
   SessionApi,
 } from './context';
-import type { CommandDef } from './types';
+import type { CommandDef } from '../commands';
 
 export type CommandHandler = (ctx: CommandContext) => void | Promise<void>;
 export type ComponentHandler = (ctx: ComponentContext) => void | Promise<void>;

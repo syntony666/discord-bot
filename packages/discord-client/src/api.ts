@@ -2,7 +2,7 @@ import type {
   RESTPatchAPIChannelMessageJSONBody,
   RESTPostAPIChannelMessageJSONBody,
 } from 'discord-api-types/v10';
-import type { Resources } from './resources';
+import type { Resources } from './internal/resources';
 
 export function createApi(resources: Resources) {
   return {

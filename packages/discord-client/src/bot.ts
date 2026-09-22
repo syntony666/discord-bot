@@ -1,13 +1,13 @@
 import { GatewayDispatchEvents } from 'discord-api-types/v10';
 import type { GatewayDispatchPayload } from 'discord-api-types/v10';
 import type { REST } from '@discordjs/rest';
-import { createCommandRouter, handlerKeys } from './commands/router';
-import { registerGlobalCommands } from './commands/register';
-import { toRestBody } from './commands/serialize';
-import { createSessionStore } from './commands/sessions';
-import { createEventHub } from './events/hub';
+import { createCommandRouter, handlerKeys } from './internal/router';
+import { registerGlobalCommands } from './internal/register';
+import { toRestBody } from './internal/serialize';
+import { createSessionStore } from './internal/sessions';
+import { createEventHub } from './internal/events/hub';
 import type { Collected, Feature } from './features';
-import type { CommandDef } from './commands/types';
+import type { CommandDef } from './commands';
 
 export interface BotOptions<Deps> {
   appId: string;
