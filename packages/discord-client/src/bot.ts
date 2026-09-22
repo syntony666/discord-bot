@@ -1,11 +1,11 @@
 import { GatewayDispatchEvents } from 'discord-api-types/v10';
 import type { GatewayDispatchPayload } from 'discord-api-types/v10';
-import type { REST } from '@discordjs/rest';
 import { createCommandRouter, handlerKeys } from './internal/router';
-import { registerGlobalCommands } from './internal/register';
+import { createResources } from './internal/resources';
 import { toRestBody } from './internal/serialize';
 import { createSessionStore } from './internal/sessions';
 import { createEventHub } from './internal/events/hub';
+import type { DiscordClient } from './client';
 import type { Collected, Feature } from './features';
 import type { CommandDef } from './commands';
 
@@ -26,14 +26,15 @@ export interface Bot<Deps = unknown> {
 }
 
 export function createBot<Deps>(
-  client: { rest: REST; readonly botId: string },
+  client: DiscordClient,
   options: BotOptions<Deps>
 ): Bot {
   const { appId, deps } = options;
   const onError = options.onError ?? ((err) => console.error(err));
 
-  const sessions = createSessionStore(client.rest, appId, onError);
-  const router = createCommandRouter(client.rest, appId, sessions, onError);
+  const resources = createResources(client.rest, () => client.helpers.botUser);
+  const sessions = createSessionStore(resources, appId, onError);
+  const router = createCommandRouter(resources, appId, sessions, onError);
   const hub = createEventHub(onError, () => client.botId);
   const defs: CommandDef[] = [];
   const seen = new Set<string>();
@@ -86,9 +87,10 @@ export function createBot<Deps>(
   };
 
   const sync = () =>
-    registerGlobalCommands(client.rest, appId, defs.map(toRestBody)).then(
-      () => undefined
-    );
+    resources
+      .application(appId)
+      .commands.overwrite(defs.map(toRestBody))
+      .then(() => undefined);
 
   const handleDispatch = (payload: GatewayDispatchPayload): boolean => {
     if (payload.t === GatewayDispatchEvents.InteractionCreate) {

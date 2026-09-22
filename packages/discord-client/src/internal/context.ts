@@ -1,19 +1,18 @@
-import {
-  InteractionResponseType,
-  MessageFlags,
-  Routes,
-} from 'discord-api-types/v10';
+import { InteractionResponseType, MessageFlags } from 'discord-api-types/v10';
 import type {
   APIChatInputApplicationCommandInteraction,
   APIEmbed,
   APIInteraction,
+  APIInteractionResponse,
   APIInteractionResponseCallbackData,
   APIMessage,
   APIMessageComponentInteraction,
   APIModalSubmitInteraction,
   APIUser,
+  RESTPatchAPIWebhookWithTokenMessageJSONBody,
+  RESTPostAPIWebhookWithTokenJSONBody,
 } from 'discord-api-types/v10';
-import type { REST } from '@discordjs/rest';
+import type { Resources } from './resources';
 
 export interface ConfirmOptions {
   title?: string;
@@ -144,11 +143,11 @@ function interactionUser(i: Interaction): APIUser {
   return user;
 }
 
-function baseMethods(rest: REST, appId: string, sessions: SessionApi, i: Interaction) {
+function baseMethods(resources: Resources, appId: string, sessions: SessionApi, i: Interaction) {
   let responded = false;
 
-  const callback = (body: object) =>
-    rest.post(Routes.interactionCallback(i.id, i.token), { body }).then(() => {
+  const callback = (body: APIInteractionResponse) =>
+    resources.interaction(i.id, i.token).respond(body).then(() => {
       responded = true;
     });
 
@@ -178,14 +177,17 @@ function baseMethods(rest: REST, appId: string, sessions: SessionApi, i: Interac
       callback({ type: InteractionResponseType.DeferredMessageUpdate }),
 
     followUp: (data: ReplyData) =>
-      rest.post(Routes.webhook(appId, i.token), {
-        body: normalize(data),
-      }) as Promise<unknown> as Promise<void>,
+      resources
+        .webhook(appId, i.token)
+        .execute(normalize(data) as RESTPostAPIWebhookWithTokenJSONBody)
+        .then(() => undefined),
 
     editReply: (data: ReplyData) =>
-      rest.patch(Routes.webhookMessage(appId, i.token, '@original'), {
-        body: normalize(data),
-      }) as Promise<unknown> as Promise<void>,
+      resources
+        .webhook(appId, i.token)
+        .message('@original')
+        .edit(normalize(data) as RESTPatchAPIWebhookWithTokenMessageJSONBody)
+        .then(() => undefined),
 
     confirm: (options: ConfirmOptions) => sessions.confirm(i, options, responded),
     paginate: <T>(options: PaginateOptions<T>) => sessions.paginate(i, options, responded),
@@ -202,13 +204,13 @@ export interface CommandRoute {
 }
 
 export function buildCommandContext(
-  rest: REST,
+  resources: Resources,
   appId: string,
   sessions: SessionApi,
   interaction: APIChatInputApplicationCommandInteraction,
   route: CommandRoute
 ): CommandContext {
-  const base = baseMethods(rest, appId, sessions, interaction);
+  const base = baseMethods(resources, appId, sessions, interaction);
   return {
     interaction,
     command: route.command,
@@ -230,13 +232,13 @@ export function buildCommandContext(
 }
 
 export function buildComponentContext(
-  rest: REST,
+  resources: Resources,
   appId: string,
   sessions: SessionApi,
   interaction: APIMessageComponentInteraction | APIModalSubmitInteraction,
   params: Record<string, string>
 ): ComponentContext {
-  const base = baseMethods(rest, appId, sessions, interaction);
+  const base = baseMethods(resources, appId, sessions, interaction);
   return {
     interaction,
     customId: interaction.data.custom_id,

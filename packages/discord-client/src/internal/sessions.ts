@@ -5,7 +5,6 @@ import {
   InteractionResponseType,
   InteractionType,
   MessageFlags,
-  Routes,
   TextInputStyle,
 } from 'discord-api-types/v10';
 import type {
@@ -16,8 +15,10 @@ import type {
   APIMessage,
   APIMessageComponentInteraction,
   APIModalSubmitInteraction,
+  RESTPatchAPIWebhookWithTokenMessageJSONBody,
+  RESTPostAPIWebhookWithTokenJSONBody,
 } from 'discord-api-types/v10';
-import type { REST } from '@discordjs/rest';
+import type { Resources } from './resources';
 import type {
   ConfirmOptions,
   ModalOptions,
@@ -64,7 +65,7 @@ interface Waiter {
 }
 
 export function createSessionStore(
-  rest: REST,
+  resources: Resources,
   appId: string,
   onError?: (err: unknown) => void
 ) {
@@ -96,19 +97,16 @@ export function createSessionStore(
     responded: boolean
   ): Promise<{ token: string; messageId: string }> => {
     if (responded) {
-      return rest
-        .post(Routes.webhook(appId, i.token), {
-          query: new URLSearchParams({ wait: 'true' }),
-          body: data,
-        })
+      return resources
+        .webhook(appId, i.token)
+        .execute(data as RESTPostAPIWebhookWithTokenJSONBody, true)
         .then((msg) => ({ token: i.token, messageId: (msg as APIMessage).id }));
     }
-    return rest
-      .post(Routes.interactionCallback(i.id, i.token), {
-        body: {
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data,
-        },
+    return resources
+      .interaction(i.id, i.token)
+      .respond({
+        type: InteractionResponseType.ChannelMessageWithSource,
+        data,
       })
       .then(() => ({ token: i.token, messageId: '@original' }));
   };
@@ -118,8 +116,10 @@ export function createSessionStore(
     messageId: string,
     data: APIInteractionResponseCallbackData
   ) =>
-    rest
-      .patch(Routes.webhookMessage(appId, token, messageId), { body: data })
+    resources
+      .webhook(appId, token)
+      .message(messageId)
+      .edit(data as RESTPatchAPIWebhookWithTokenMessageJSONBody)
       .catch(fail);
 
   const button = (
@@ -306,32 +306,30 @@ export function createSessionStore(
     }
     const id = randomUUID();
 
-    await rest.post(Routes.interactionCallback(i.id, i.token), {
-      body: {
-        type: InteractionResponseType.Modal,
-        data: {
-          custom_id: `kit:mdl:${id}`,
-          title: options.title,
-          components: options.fields.map((f) => ({
-            type: ComponentType.ActionRow,
-            components: [
-              {
-                type: ComponentType.TextInput,
-                custom_id: f.id,
-                label: f.label,
-                style:
-                  f.style === 'paragraph'
-                    ? TextInputStyle.Paragraph
-                    : TextInputStyle.Short,
-                value: f.value,
-                placeholder: f.placeholder,
-                required: f.required ?? true,
-                min_length: f.minLength,
-                max_length: f.maxLength,
-              },
-            ],
-          })),
-        },
+    await resources.interaction(i.id, i.token).respond({
+      type: InteractionResponseType.Modal,
+      data: {
+        custom_id: `kit:mdl:${id}`,
+        title: options.title,
+        components: options.fields.map((f) => ({
+          type: ComponentType.ActionRow,
+          components: [
+            {
+              type: ComponentType.TextInput,
+              custom_id: f.id,
+              label: f.label,
+              style:
+                f.style === 'paragraph'
+                  ? TextInputStyle.Paragraph
+                  : TextInputStyle.Short,
+              value: f.value,
+              placeholder: f.placeholder,
+              required: f.required ?? true,
+              min_length: f.minLength,
+              max_length: f.maxLength,
+            },
+          ],
+        })),
       },
     });
 
@@ -382,25 +380,23 @@ export function createSessionStore(
   const ackModal = (i: APIModalSubmitInteraction) =>
     // Defer then delete the placeholder so the modal submit is silently acked;
     // the resolved handler follows up on the original command interaction.
-    rest
-      .post(Routes.interactionCallback(i.id, i.token), {
-        body: {
-          type: InteractionResponseType.DeferredChannelMessageWithSource,
-          data: { flags: MessageFlags.Ephemeral },
-        },
+    resources
+      .interaction(i.id, i.token)
+      .respond({
+        type: InteractionResponseType.DeferredChannelMessageWithSource,
+        data: { flags: MessageFlags.Ephemeral },
       })
       .then(() =>
-        rest.delete(Routes.webhookMessage(appId, i.token, '@original'))
+        resources.webhook(appId, i.token).message('@original').delete()
       )
       .catch(fail);
 
   const expired = (i: APIInteraction) =>
-    rest
-      .post(Routes.interactionCallback(i.id, i.token), {
-        body: {
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: { content: '這個操作已過期，請重新執行指令。', flags: MessageFlags.Ephemeral },
-        },
+    resources
+      .interaction(i.id, i.token)
+      .respond({
+        type: InteractionResponseType.ChannelMessageWithSource,
+        data: { content: '這個操作已過期，請重新執行指令。', flags: MessageFlags.Ephemeral },
       })
       .catch(fail);
 
@@ -414,11 +410,9 @@ export function createSessionStore(
       if (notOwner(i, session.ownerId)) return expired(i);
       pending.delete(id);
       clearTimeout(session.timer);
-      await rest.post(Routes.interactionCallback(i.id, i.token), {
-        body: {
-          type: InteractionResponseType.UpdateMessage,
-          data: { components: [] },
-        },
+      await resources.interaction(i.id, i.token).respond({
+        type: InteractionResponseType.UpdateMessage,
+        data: { components: [] },
       });
       session.resolve(action === 'yes');
       return;
@@ -430,22 +424,20 @@ export function createSessionStore(
     const totalPages = Math.ceil(session.items.length / session.pageSize);
 
     if (action === 'jump') {
-      await rest.post(Routes.interactionCallback(i.id, i.token), {
-        body: {
-          type: InteractionResponseType.Modal,
-          data: {
-            custom_id: `kit:pag:${id}:jump`,
-            title: '跳至頁面',
-            components: [
-              row({
-                type: ComponentType.TextInput,
-                custom_id: 'page_number',
-                label: `頁碼 (1-${totalPages})`,
-                style: TextInputStyle.Short,
-                required: true,
-              }),
-            ],
-          },
+      await resources.interaction(i.id, i.token).respond({
+        type: InteractionResponseType.Modal,
+        data: {
+          custom_id: `kit:pag:${id}:jump`,
+          title: '跳至頁面',
+          components: [
+            row({
+              type: ComponentType.TextInput,
+              custom_id: 'page_number',
+              label: `頁碼 (1-${totalPages})`,
+              style: TextInputStyle.Short,
+              required: true,
+            }),
+          ],
         },
       });
       return;
@@ -457,13 +449,11 @@ export function createSessionStore(
         : Math.min(totalPages - 1, session.page + 1);
     expirePaginate(id, session);
 
-    await rest.post(Routes.interactionCallback(i.id, i.token), {
-      body: {
-        type: InteractionResponseType.UpdateMessage,
-        data: {
-          embeds: [paginateEmbed(session)],
-          components: [paginateRow(`kit:pag:${id}`, session.page, totalPages)],
-        },
+    await resources.interaction(i.id, i.token).respond({
+      type: InteractionResponseType.UpdateMessage,
+      data: {
+        embeds: [paginateEmbed(session)],
+        components: [paginateRow(`kit:pag:${id}`, session.page, totalPages)],
       },
     });
   };
@@ -510,37 +500,33 @@ export function createSessionStore(
         const target = Number(raw);
         const totalPages = Math.ceil(session.items.length / session.pageSize);
         if (!Number.isInteger(target) || target < 1 || target > totalPages) {
-          await rest.post(Routes.interactionCallback(i.id, i.token), {
-            body: {
-              type: InteractionResponseType.ChannelMessageWithSource,
-              data: {
-                content: `頁碼必須介於 1 到 ${totalPages}。`,
-                flags: MessageFlags.Ephemeral,
-              },
+          await resources.interaction(i.id, i.token).respond({
+            type: InteractionResponseType.ChannelMessageWithSource,
+            data: {
+              content: `頁碼必須介於 1 到 ${totalPages}。`,
+              flags: MessageFlags.Ephemeral,
             },
           });
           return true;
         }
         session.page = target - 1;
         expirePaginate(id, session);
-        await rest.post(Routes.interactionCallback(i.id, i.token), {
-          body: {
-            type: InteractionResponseType.UpdateMessage,
-            data: {
-              embeds: [
-                session.render(
-                  session.items.slice(
-                    session.page * session.pageSize,
-                    (session.page + 1) * session.pageSize
-                  ),
-                  session.page,
-                  totalPages
+        await resources.interaction(i.id, i.token).respond({
+          type: InteractionResponseType.UpdateMessage,
+          data: {
+            embeds: [
+              session.render(
+                session.items.slice(
+                  session.page * session.pageSize,
+                  (session.page + 1) * session.pageSize
                 ),
-              ],
-              components: [
-                paginateRow(`kit:pag:${id}`, session.page, totalPages),
-              ],
-            },
+                session.page,
+                totalPages
+              ),
+            ],
+            components: [
+              paginateRow(`kit:pag:${id}`, session.page, totalPages),
+            ],
           },
         });
         return true;
