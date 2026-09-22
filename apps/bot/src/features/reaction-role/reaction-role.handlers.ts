@@ -7,20 +7,20 @@ import { createLogger } from '@discord-bot/shared';
 import type { ReactionRoleApi } from './reaction-role.api';
 import { createReactionRoleService } from './reaction-role.service';
 import { reactionRoleCommand } from './reaction-role.command';
-import { buildPanelEmbed, getModeText } from './internal/panel.helpers';
-import type { PanelMode } from './internal/panel.helpers';
+import { buildPanelEmbed, getModeText } from './lib/panel.helpers';
+import type { PanelMode } from './lib/panel.helpers';
 import {
   addDiscordReaction,
   deleteDiscordMessage,
   deleteDiscordReaction,
   sanitizeUpdates,
   updatePanelMessage,
-} from './internal/operations';
+} from './lib/operations';
 import {
   formatEmojiForDisplay,
   formatEmojiForReaction,
   normalizeEmojiForStorage,
-} from './internal/emoji.helper';
+} from './lib/emoji.helper';
 
 const log = createLogger('ReactionRole');
 
