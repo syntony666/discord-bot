@@ -2,18 +2,18 @@
   "name": "discord-bot-docs",
   "version": "0.0.1",
   "description": "Discord Bot Document",
-  "main": "index.js",
   "authors": {
     "name": "Tony",
     "email": "syntony666@outlook.com"
   },
   "repository": "/discord-bot-docs",
   "scripts": {
-    "dev": "vuepress dev src",
-    "build": "vuepress build src"
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs"
   },
   "license": "MIT",
   "devDependencies": {
-    "vuepress": "^2.0.0-beta.49"
+    "vitepress": "^1.6.4"
   }
 }

@@ -1,11 +1,15 @@
 ---
-home: true
-heroImage: ./heroImage.png
-tagline: 我是黒井闇子 我很可愛
-actions:
-  - text: Link Start!!! →
-    link: /command/
-    type: primary
+layout: home
+
+hero:
+  name: 黒井闇子
+  image: /heroImage.png
+  tagline: 我是黒井闇子 我很可愛
+  actions:
+    - theme: brand
+      text: Link Start!!! →
+      link: /command/
+
 features:
   - title: 回覆功能
     details: 你叫他回什麼 他就回什麼
@@ -13,5 +17,4 @@ features:
     details: 想得到身份組？ 不再透過管理員 機器人直接幫你代勞
   - title: 洗地專家
     details: 發現有人在聊不該聊的東西？ 工具人可以幫你把奇怪的言論刪的一乾二淨
-footer: Made by syntony666 ☻ Powered by VuePress
 ---
