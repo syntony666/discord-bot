@@ -29,7 +29,7 @@ export async function buildFeaturesStatusFields(
     fields.push({
       name: '成員進出通知',
       value:
-        `${mention('member-notify status')}\n` +
+        `${mention('notify member status')}\n` +
         `${joinChannel ? `**✅ 加入 → <#${joinChannel.channelId}>**` : '**❌ 加入 → 未設定**'}\n` +
         `${leaveChannel ? `**✅ 離開 → <#${leaveChannel.channelId}>**` : '**❌ 離開 → 未設定**'}\n\u200b`,
       inline: false,
