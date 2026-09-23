@@ -19,7 +19,7 @@ import { appConfig } from '@core/config';
 import { createLogger } from '@discord-bot/shared';
 import { statusCommand } from './status.command';
 import { avatarUrl, guildIconUrl } from './status.utils';
-import { buildNotifyStatusItems } from './status.service';
+import { buildFeaturesStatusFields } from './status.service';
 
 const log = createLogger('Status');
 
@@ -152,20 +152,22 @@ export function useStatusHandlers(deps: StatusDeps) {
     log.info({ guildId: ctx.guildId }, 'Guild status displayed');
   });
 
-  h.handler('notify', async (ctx) => {
+  h.handler('features', async (ctx) => {
     if (!ctx.guildId) return ctx.error('無法取得伺服器資訊');
 
-    const items = await buildNotifyStatusItems(ctx.guildId, deps.api);
-    await ctx.paginate({
-      items,
-      pageSize: 10,
-      emptyText: '目前沒有啟用任何通知功能',
-      render: (page) => ({
-        title: '🔔 通知功能總覽',
-        description: page.join('\n'),
-      }),
+    const fields = await buildFeaturesStatusFields(
+      ctx.guildId,
+      deps.api,
+      discord.commandMention
+    );
+    await ctx.reply({
+      embeds: [
+        fields.length > 0
+          ? { title: '功能狀態總覽', fields }
+          : { title: '功能狀態總覽', description: '目前沒有啟用任何功能' },
+      ],
     });
-    log.info({ guildId: ctx.guildId }, 'Notify status displayed');
+    log.info({ guildId: ctx.guildId }, 'Features status displayed');
   });
 
   return h.collect();

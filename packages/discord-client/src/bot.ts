@@ -72,7 +72,9 @@ export function createBot(resources: Resources, options: BotOptions): Bot {
     resources
       .application(appId)
       .commands.overwrite(defs.map(toRestBody))
-      .then(() => undefined);
+      .then((commands) => {
+        discord.setCommandIds(commands);
+      });
 
   const handleDispatch = (payload: GatewayDispatchPayload): boolean => {
     if (payload.t === GatewayDispatchEvents.InteractionCreate) {
