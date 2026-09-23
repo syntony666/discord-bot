@@ -3,7 +3,6 @@ import { keywordFeature } from '@features/keyword/keyword.feature';
 import { notifyFeature } from '@features/notify/notify.feature';
 import { guildFeature } from '@features/guild/guild.feature';
 import { reactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
-import { streamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
 import type { DiscordClient } from '@discord-bot/discord-client';
 import { appConfig } from '@core/config';
 import { BaseColors, Colors } from '@core/config/colors.config';
@@ -27,14 +26,7 @@ export async function bootstrapApp(client: DiscordClient) {
       },
     },
   });
-  bot.register(
-    statusFeature,
-    keywordFeature,
-    notifyFeature,
-    guildFeature,
-    streamNotifyFeature,
-    reactionRoleFeature
-  );
+  bot.register(statusFeature, keywordFeature, notifyFeature, guildFeature, reactionRoleFeature);
   const syncResult = await bot.sync();
   log.info({ sync: syncResult }, 'Command sync finished');
 
