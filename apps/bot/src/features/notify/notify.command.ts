@@ -13,6 +13,36 @@ const channelOption = {
   channel_types: [ChannelType.GuildText],
 } as const;
 
+const streamChannelOption = {
+  name: 'channel',
+  type: ApplicationCommandOptionType.Channel,
+  description: '選擇要發送通知的頻道',
+  required: true,
+  channel_types: [ChannelType.GuildText],
+} as const;
+
+const streamMessageOption = {
+  name: 'message',
+  type: ApplicationCommandOptionType.String,
+  description: '自訂通知訊息（可用 {user} 代表實況主名稱）',
+  max_length: 1000,
+} as const;
+
+const platformOption = {
+  name: 'platform',
+  type: ApplicationCommandOptionType.String,
+  description: '選擇平台',
+  required: true,
+  choices: [{ name: 'Twitch', value: 'twitch' }],
+} as const;
+
+const streamerIdOption = {
+  name: 'id',
+  type: ApplicationCommandOptionType.String,
+  description: '實況主 ID 或用戶名',
+  required: true,
+} as const;
+
 const typeOption = {
   name: 'type',
   type: ApplicationCommandOptionType.String,
@@ -60,6 +90,38 @@ export const notifyCommand = defineCommand()({
           description: '查看或設定離開通知',
           options: [templateOption, enabledOption],
         },
+      ],
+    },
+    {
+      name: 'stream',
+      description: '直播通知',
+      subcommands: [
+        {
+          name: 'enable',
+          description: '啟用直播通知功能',
+          options: [streamChannelOption, streamMessageOption],
+        },
+        { name: 'disable', description: '停用直播通知功能' },
+        {
+          name: 'watch',
+          description: '新增實況頻道監控',
+          options: [
+            platformOption,
+            streamerIdOption,
+            {
+              name: 'name',
+              type: ApplicationCommandOptionType.String,
+              description: '顯示名稱（預設為 ID）',
+              max_length: 100,
+            },
+          ],
+        },
+        {
+          name: 'unwatch',
+          description: '移除實況頻道監控',
+          options: [platformOption, streamerIdOption],
+        },
+        { name: 'list', description: '顯示目前的直播通知設定' },
       ],
     },
   ],
