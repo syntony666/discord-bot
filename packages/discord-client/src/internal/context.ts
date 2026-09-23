@@ -17,7 +17,7 @@ import type {
 } from '../context.type';
 import type { CommandRoute, Interaction, SessionApi } from './context.type';
 import { ORIGINAL_MESSAGE, type Resources } from './resources';
-import { withEmbedDefaults, type UiConfig } from './embeds';
+import { withEmbedDefaults, type EmbedTheme } from './embeds';
 
 const EMBED_OK = 0x57f287;
 const EMBED_ERR = 0xed4245;
@@ -32,14 +32,14 @@ function interactionUser(i: Interaction): APIUser {
   return user;
 }
 
-function baseMethods(resources: Resources, appId: string, sessions: SessionApi, i: Interaction, ui?: UiConfig) {
+function baseMethods(resources: Resources, appId: string, sessions: SessionApi, i: Interaction, theme?: EmbedTheme) {
   let responded = false;
   const username = interactionUser(i).username;
 
-  const withUi = (data: ReplyData) => {
+  const withTheme = (data: ReplyData) => {
     const d = normalize(data);
     if (!d.embeds?.length) return d;
-    return { ...d, embeds: d.embeds.map((e) => withEmbedDefaults(e, username, ui)) };
+    return { ...d, embeds: d.embeds.map((e) => withEmbedDefaults(e, username, theme)) };
   };
 
   const callback = (body: APIInteractionResponse) =>
@@ -52,7 +52,7 @@ function baseMethods(resources: Resources, appId: string, sessions: SessionApi, 
       callback({
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          ...withUi(data),
+          ...withTheme(data),
           ...(ephemeral ? { flags: MessageFlags.Ephemeral } : {}),
         },
       }),
@@ -66,7 +66,7 @@ function baseMethods(resources: Resources, appId: string, sessions: SessionApi, 
     update: (data: ReplyData) =>
       callback({
         type: InteractionResponseType.UpdateMessage,
-        data: withUi(data),
+        data: withTheme(data),
       }),
 
     deferUpdate: () =>
@@ -75,14 +75,14 @@ function baseMethods(resources: Resources, appId: string, sessions: SessionApi, 
     followUp: (data: ReplyData) =>
       resources
         .webhook(appId, i.token)
-        .execute(withUi(data))
+        .execute(withTheme(data))
         .then(() => undefined),
 
     editReply: (data: ReplyData) =>
       resources
         .webhook(appId, i.token)
         .message(ORIGINAL_MESSAGE)
-        .edit(withUi(data))
+        .edit(withTheme(data))
         .then(() => undefined),
 
     confirm: (options: ConfirmOptions) => sessions.confirm(i, options, responded),
@@ -98,9 +98,9 @@ export function buildCommandContext(
   sessions: SessionApi,
   interaction: APIChatInputApplicationCommandInteraction,
   route: CommandRoute,
-  ui?: UiConfig
+  theme?: EmbedTheme
 ): CommandContext {
-  const base = baseMethods(resources, appId, sessions, interaction, ui);
+  const base = baseMethods(resources, appId, sessions, interaction, theme);
   return {
     interaction,
     command: route.command,
@@ -127,9 +127,9 @@ export function buildComponentContext(
   sessions: SessionApi,
   interaction: APIMessageComponentInteraction | APIModalSubmitInteraction,
   params: Record<string, string>,
-  ui?: UiConfig
+  theme?: EmbedTheme
 ): ComponentContext {
-  const base = baseMethods(resources, appId, sessions, interaction, ui);
+  const base = baseMethods(resources, appId, sessions, interaction, theme);
   return {
     interaction,
     customId: interaction.data.custom_id,

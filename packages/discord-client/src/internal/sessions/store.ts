@@ -26,7 +26,7 @@ import {
   paginateRow,
   row,
 } from './components';
-import { usernameOf, withEmbedDefaults, type UiConfig } from '../embeds';
+import { usernameOf, withEmbedDefaults, type EmbedTheme } from '../embeds';
 
 const PREFIX = 'kit:';
 const DEFAULT_CONFIRM_TIMEOUT = 120_000;
@@ -38,7 +38,7 @@ export function createSessionStore(
   resources: Resources,
   appId: string,
   onError?: (err: unknown) => void,
-  ui?: UiConfig
+  theme?: EmbedTheme
 ) {
   const pending = new Map<string, Pending>();
   const waiters = new Map<string, Waiter>();
@@ -98,7 +98,7 @@ export function createSessionStore(
     s.timer = setTimeout(() => {
       pending.delete(id);
       void editMessage(s.token, s.messageId, {
-        embeds: [paginateEmbed(s, ui)],
+        embeds: [paginateEmbed(s, theme)],
         components: [],
       });
     }, s.timeoutMs);
@@ -123,7 +123,7 @@ export function createSessionStore(
             color: 0xf26522,
             footer: {
               text: `${usernameOf(i)} · ${Math.ceil(timeoutMs / 60_000)} 分鐘後失效`,
-              ...(ui?.footerIconUrl ? { icon_url: ui.footerIconUrl } : {}),
+              ...(theme?.footerIconUrl ? { icon_url: theme.footerIconUrl } : {}),
             },
             timestamp: new Date().toISOString(),
           },
@@ -165,7 +165,7 @@ export function createSessionStore(
                 color: 0xded8d0,
               },
               usernameOf(i),
-              ui
+              theme
             ),
           ],
         },
@@ -188,7 +188,7 @@ export function createSessionStore(
           totalPages
         ),
         username,
-        ui
+        theme
       );
 
     const { token, messageId } = await send(
@@ -373,7 +373,7 @@ export function createSessionStore(
     await resources.interaction(i.id, i.token).respond({
       type: InteractionResponseType.UpdateMessage,
       data: {
-        embeds: [paginateEmbed(session, ui)],
+        embeds: [paginateEmbed(session, theme)],
         components: [paginateRow(`kit:pag:${id}`, session.page, totalPages)],
       },
     });
@@ -435,7 +435,7 @@ export function createSessionStore(
         await resources.interaction(i.id, i.token).respond({
           type: InteractionResponseType.UpdateMessage,
           data: {
-            embeds: [paginateEmbed(session, ui)],
+            embeds: [paginateEmbed(session, theme)],
             components: [
               paginateRow(`kit:pag:${id}`, session.page, totalPages),
             ],

@@ -1,6 +1,6 @@
 import type { APIEmbed, APIInteraction } from 'discord-api-types/v10';
 
-export interface UiConfig {
+export interface EmbedTheme {
   footerIconUrl?: string;
 }
 
@@ -10,12 +10,12 @@ export const usernameOf = (i: APIInteraction): string =>
 export const withEmbedDefaults = (
   embed: APIEmbed,
   username: string,
-  ui?: UiConfig
+  theme?: EmbedTheme
 ): APIEmbed => ({
   ...embed,
   footer: embed.footer ?? {
     text: username,
-    ...(ui?.footerIconUrl ? { icon_url: ui.footerIconUrl } : {}),
+    ...(theme?.footerIconUrl ? { icon_url: theme.footerIconUrl } : {}),
   },
   timestamp: embed.timestamp ?? new Date().toISOString(),
 });
