@@ -1,4 +1,5 @@
 export { DiscordSnowflake } from '@sapphire/snowflake';
+export { CDN, calculateUserDefaultAvatarIndex } from '@discordjs/rest';
 export * as Formatters from '@discordjs/formatters';
 export { defineCommand } from './commands';
 export { defineFeature, useHandlers } from './features';

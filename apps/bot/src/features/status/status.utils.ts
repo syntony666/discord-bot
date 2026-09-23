@@ -1,11 +1,11 @@
-export const avatarUrl = (
-  userId: string,
-  avatarHash?: string | null,
-  discriminator = '0'
-): string =>
+import { CDN, calculateUserDefaultAvatarIndex } from '@discord-bot/discord-client';
+
+const cdn = new CDN();
+
+export const avatarUrl = (userId: string, avatarHash?: string | null): string =>
   avatarHash
-    ? `https://cdn.discordapp.com/avatars/${userId}/${avatarHash}.png`
-    : `https://cdn.discordapp.com/embed/avatars/${Number(discriminator) % 5}.png`;
+    ? cdn.avatar(userId, avatarHash)
+    : cdn.defaultAvatar(calculateUserDefaultAvatarIndex(userId));
 
 export const guildIconUrl = (guildId: string, iconHash?: string | null): string | undefined =>
-  iconHash ? `https://cdn.discordapp.com/icons/${guildId}/${iconHash}.png` : undefined;
+  iconHash ? cdn.icon(guildId, iconHash) : undefined;

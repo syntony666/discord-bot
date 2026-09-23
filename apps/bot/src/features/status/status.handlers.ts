@@ -40,7 +40,7 @@ export function useStatusHandlers(deps: StatusDeps) {
     if (!botUser) {
       return ctx.error('Bot 尚未就緒');
     }
-    const botIcon = avatarUrl(botUser.id, botUser.avatar, botUser.discriminator);
+    const botIcon = avatarUrl(botUser.id, botUser.avatar);
 
     const components: APIActionRowComponent<APIButtonComponentWithURL>[] = [
       {
