@@ -13,4 +13,3 @@ basement_dist
 .temp
 .cache
 *.log
-package-lock.json
