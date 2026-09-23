@@ -5,12 +5,26 @@ import type {
 import type { Resources } from './resources';
 
 export function createHelpers(resources: Resources) {
+  const commandIds = new Map<string, string>();
+
   return {
     get botId() {
       return resources.botId;
     },
     get botUser() {
       return resources.botUser;
+    },
+
+    /** Called by sync() after commands.overwrite resolves. */
+    setCommandIds: (commands: readonly { id: string; name: string }[]) => {
+      commandIds.clear();
+      for (const c of commands) commandIds.set(c.name, c.id);
+    },
+    /** Clickable </path:id> mention; falls back to `/path` text. */
+    commandMention: (path: string) => {
+      const root = path.split(' ')[0];
+      const id = root ? commandIds.get(root) : undefined;
+      return id ? `</${path}:${id}>` : `\`/${path}\``;
     },
 
     sendMessage: (channelId: string, body: RESTPostAPIChannelMessageJSONBody) =>
