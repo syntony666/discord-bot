@@ -2,7 +2,7 @@
 sidebar: false
 ---
 
-## 關於黒井闇子
+## 關於星野咲子
 
 我是誰，我在哪，在這裡做什麼
 
@@ -17,6 +17,21 @@ sidebar: false
 GitHub: [syntony666](https://github.com/syntony666)
 
 ## 版本紀錄
+
+### ver. 5.1.0
+
+#### 2026.9.22
+
+- 內部架構重構（互動路由、session、事件層）
+- 修復動態表情符號顯示問題
+
+### ver. 5.0.0
+
+#### 2026.2.14
+
+- 全面重寫為 monorepo 架構
+- 指令全面改版：`keyword`、`member-notify`、`stream-notify`、`reaction-role`（Panel 制）、`status`
+- 移除 `say`、`clear`、`choose`、`fortune` 等舊指令
 
 ### ver. 4.0.6
 
