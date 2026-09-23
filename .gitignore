@@ -24,6 +24,9 @@ logs
 *.log
 logs/*.log
 
+# Plan docs
+*.plan.md
+
 # Editor / OS
 .DS_Store
 Thumbs.db
