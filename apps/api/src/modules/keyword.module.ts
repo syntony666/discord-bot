@@ -26,6 +26,17 @@ export function createKeywordModule(prisma: PrismaClient) {
       });
     },
 
+    searchRules(guildId: string, query: string) {
+      return prisma.keywordRule.findMany({
+        where: {
+          guildId,
+          enabled: true,
+          pattern: { contains: query, mode: 'insensitive' },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    },
+
     getRuleByPattern(guildId: string, pattern: string) {
       return prisma.keywordRule.findUnique({
         where: { guildId_pattern: { guildId, pattern } },
