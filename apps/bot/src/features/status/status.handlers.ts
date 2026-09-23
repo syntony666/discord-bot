@@ -7,7 +7,7 @@ import type {
 } from 'discord-api-types/v10';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import type { KeywordApi } from '@features/keyword/keyword.api';
-import type { MemberNotifyApi } from '@features/member-notify/member-notify.api';
+import type { MemberNotifyApi } from '@features/notify/member.api';
 import type { ReactionRoleApi } from '@features/reaction-role/reaction-role.api';
 import type { StreamNotifyApi } from '@features/stream-notify/stream-notify.api';
 import { getBotVersion, getUptime } from './bot-info';

@@ -1,6 +1,5 @@
 import { statusFeature } from '@features/status/status.feature';
 import { keywordFeature } from '@features/keyword/keyword.feature';
-import { memberNotifyFeature } from '@features/member-notify/member-notify.feature';
 import { notifyFeature } from '@features/notify/notify.feature';
 import { guildFeature } from '@features/guild/guild.feature';
 import { reactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
@@ -31,7 +30,6 @@ export async function bootstrapApp(client: DiscordClient) {
   bot.register(
     statusFeature,
     keywordFeature,
-    memberNotifyFeature,
     notifyFeature,
     guildFeature,
     streamNotifyFeature,
