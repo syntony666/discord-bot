@@ -69,8 +69,7 @@ export function useStatusHandlers(deps: StatusDeps) {
     const embed = (latency: string | number): APIEmbed => ({
       title: botUser.username,
       description:
-        '你想知道什麼呢?\n\n製作: @sakurashigure ‧ [Twitter(X)](https://x.com/SakuraShigure99)',
-      author: { name: '自我介紹' },
+        '你想知道什麼呢?\n\n製作: @sakurashigure_retry ‧ [Twitter(X)](https://x.com/SakuraShigure99)',
       thumbnail: botIcon ? { url: botIcon } : undefined,
       fields: [
         { name: 'Uptime', value: `\`${getUptime()}\``, inline: false },
@@ -78,12 +77,11 @@ export function useStatusHandlers(deps: StatusDeps) {
           name: 'API Latency',
           value:
             typeof latency === 'number' ? `\`${latency}ms\`` : `\`${latency}\``,
-          inline: false,
+          inline: true,
         },
-        { name: 'Node.js', value: `\`${process.version}\``, inline: true },
         {
-          name: 'discord-api-types',
-          value: `\`v${version.apiTypesVersion}\``,
+          name: 'WS Ping',
+          value: `\`${discord.wsPing > 0 ? `${discord.wsPing}ms` : '—'}\``,
           inline: true,
         },
       ],
