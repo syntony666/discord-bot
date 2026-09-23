@@ -11,11 +11,12 @@ const log = createLogger('StreamNotifyService');
 export interface StreamNotifyService {
   checkAllStreams(api: StreamNotifyApi, services: StreamPlatformService[]): Promise<void>;
   sendNotification(
-    guildId: string,
+    watcher: StreamWatcher,
     streamInfo: StreamInfo,
     messageTemplate: string,
     api: StreamNotifyApi
   ): Promise<void>;
+  refreshTwitchWatcherAvatars(api: StreamNotifyApi, twitchService: TwitchService): Promise<void>;
 }
 
 export function createStreamNotifyService(discord: DiscordHelpers): StreamNotifyService {
@@ -90,7 +91,7 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
 
               const config = await api.getConfig(watcher.guildId);
               if (config && config.enabled) {
-                await sendNotification(watcher.guildId, streamInfo, config.message, api);
+                await sendNotification(watcher, streamInfo, config.message, api);
               }
             }
           }
@@ -117,7 +118,7 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
   };
 
   const sendNotification = async (
-    guildId: string,
+    watcher: StreamWatcher,
     streamInfo: StreamInfo,
     messageTemplate: string,
     api: StreamNotifyApi
@@ -125,65 +126,87 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
     try {
       const message = messageTemplate.replace(/{user}/g, streamInfo.displayName);
 
-      const config = await api.getConfig(guildId);
+      const config = await api.getConfig(watcher.guildId);
 
       if (!config) return;
 
       await discord.sendMessage(config.channelId, {
         content: message,
-        embeds: streamInfo.thumbnailUrl
-          ? [
-              {
-                title: `🔴 ${streamInfo.displayName} 正在直播！`,
-                description: streamInfo.title,
-                url: streamInfo.url,
-                color: 0x6441a5,
-                image: {
-                  url: streamInfo.thumbnailUrl,
-                },
-                fields: streamInfo.game
-                  ? [
-                      {
-                        name: '遊戲',
-                        value: streamInfo.game,
-                        inline: true,
-                      },
-                    ]
-                  : [],
-                timestamp: new Date().toISOString(),
-              },
-            ]
-          : [
-              {
-                title: `🔴 ${streamInfo.displayName} 正在直播！`,
-                description: streamInfo.title,
-                url: streamInfo.url,
-                color: 0x6441a5,
-                fields: streamInfo.game
-                  ? [
-                      {
-                        name: '遊戲',
-                        value: streamInfo.game,
-                        inline: true,
-                      },
-                    ]
-                  : [],
-                timestamp: new Date().toISOString(),
-              },
-            ],
+        embeds: [
+          {
+            title: `🔴 ${streamInfo.displayName} 正在直播！`,
+            description: streamInfo.title,
+            url: streamInfo.url,
+            color: 0x6441a5,
+            ...(watcher.avatarImageUrl
+              ? { thumbnail: { url: watcher.avatarImageUrl } }
+              : {}),
+            fields: streamInfo.game
+              ? [
+                  {
+                    name: '遊戲',
+                    value: streamInfo.game,
+                    inline: true,
+                  },
+                ]
+              : [],
+            timestamp: new Date().toISOString(),
+          },
+        ],
       });
 
       log.info(
-        { guildId, platform: streamInfo.platform, platformId: streamInfo.platformId },
+        { guildId: watcher.guildId, platform: streamInfo.platform, platformId: streamInfo.platformId },
         'Stream notification sent'
       );
     } catch (error) {
-      log.error({ error, guildId, streamInfo }, 'Failed to send stream notification');
+      log.error({ error, watcherId: watcher.id, streamInfo }, 'Failed to send stream notification');
+    }
+  };
+
+  const refreshTwitchWatcherAvatars = async (
+    api: StreamNotifyApi,
+    twitchService: TwitchService
+  ): Promise<void> => {
+    try {
+      const watchers = (await api.getAllWatchers()).filter((w) => w.platform === 'TWITCH');
+      if (watchers.length === 0) return;
+
+      const users = [
+        ...(await twitchService.getUsersByField(
+          'id',
+          watchers.filter((w) => w.platformUserId).map((w) => w.platformUserId!)
+        )),
+        ...(await twitchService.getUsersByField(
+          'login',
+          watchers.filter((w) => !w.platformUserId).map((w) => w.platformId)
+        )),
+      ];
+
+      const byId = new Map(users.map((u) => [u.id, u]));
+      const byLogin = new Map(users.map((u) => [u.login.toLowerCase(), u]));
+
+      for (const watcher of watchers) {
+        const user = watcher.platformUserId
+          ? byId.get(watcher.platformUserId)
+          : byLogin.get(watcher.platformId.toLowerCase());
+        if (!user) continue;
+
+        if (!watcher.platformUserId) {
+          await api.updateWatcherUserId(watcher.id, user.id);
+        }
+        if (user.profile_image_url !== watcher.avatarImageUrl) {
+          await api.updateWatcherAvatar(watcher.id, user.profile_image_url);
+        }
+      }
+    } catch (error) {
+      log.error({ error }, 'Failed to refresh Twitch watcher avatars');
     }
   };
 
   return {
     checkAllStreams,
     sendNotification,
+    refreshTwitchWatcherAvatars,
   };
 }

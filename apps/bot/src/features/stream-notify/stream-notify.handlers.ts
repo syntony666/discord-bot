@@ -19,6 +19,7 @@ export interface StreamNotifyDeps {
 }
 
 const TWITCH_TASK_ID = 'twitch-stream-check';
+const TWITCH_AVATAR_TASK_ID = 'twitch-avatar-refresh';
 
 export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
   const { discord, scheduler } = deps;
@@ -38,6 +39,17 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
       log.error({ error }, 'Twitch stream check failed');
     }
   });
+
+  scheduler.every(TWITCH_AVATAR_TASK_ID, 86_400_000, async () => {
+    try {
+      await service.refreshTwitchWatcherAvatars(api, twitchService);
+    } catch (error) {
+      log.error({ error }, 'Twitch avatar refresh failed');
+    }
+  });
+
+  // Backfill avatars for pre-existing watchers on boot
+  void service.refreshTwitchWatcherAvatars(api, twitchService);
 
   const toPlatform = (platform: string) => platform.toUpperCase() as StreamPlatform;
 
@@ -116,7 +128,29 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     const id = ctx.options.id;
     const name = ctx.options.name;
 
-    const existingWatcher = await api.getWatcher(guildId, toPlatform(platform), id);
+    let platformId = id;
+    let displayName = name || id;
+    let profile: { platformUserId?: string; avatarImageUrl?: string } | undefined;
+
+    if (platform === 'twitch') {
+      const [user] = await twitchService.getUsersByField('login', [id]);
+      if (!user) {
+        return ctx.reply({
+          embeds: [
+            {
+              title: '找不到使用者',
+              description: `Twitch 上找不到使用者 ${id}`,
+              color: Colors.ERROR,
+            },
+          ],
+        });
+      }
+      platformId = user.login;
+      displayName = name || user.display_name || user.login;
+      profile = { platformUserId: user.id, avatarImageUrl: user.profile_image_url };
+    }
+
+    const existingWatcher = await api.getWatcher(guildId, toPlatform(platform), platformId);
     if (existingWatcher) {
       return ctx.reply({
         embeds: [
@@ -129,17 +163,17 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
       });
     }
 
-    await api.addWatcher(guildId, toPlatform(platform), id, name || id);
+    await api.addWatcher(guildId, toPlatform(platform), platformId, displayName, profile);
     await ctx.reply({
       embeds: [
         {
           title: '已新增監控',
-          description: `開始監控 ${platform} 頻道 ${name || id}`,
+          description: `開始監控 ${platform} 頻道 ${displayName}`,
           color: Colors.SUCCESS,
         },
       ],
     });
-    log.info({ guildId, platform, platformId: id }, 'Stream watcher added');
+    log.info({ guildId, platform, platformId }, 'Stream watcher added');
   });
 
   h.handler('unwatch', async (ctx) => {
@@ -148,7 +182,13 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     const platform = ctx.options.platform;
     const id = ctx.options.id;
 
-    const existingWatcher = await api.getWatcher(guildId, toPlatform(platform), id);
+    let platformId = id;
+    if (platform === 'twitch') {
+      const [user] = await twitchService.getUsersByField('login', [id]);
+      platformId = user?.login ?? id;
+    }
+
+    const existingWatcher = await api.getWatcher(guildId, toPlatform(platform), platformId);
     if (!existingWatcher) {
       return ctx.reply({
         embeds: [
@@ -161,7 +201,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
       });
     }
 
-    await api.removeWatcher(guildId, toPlatform(platform), id);
+    await api.removeWatcher(guildId, toPlatform(platform), platformId);
     await ctx.reply({
       embeds: [
         {
@@ -171,7 +211,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
         },
       ],
     });
-    log.info({ guildId, platform, platformId: id }, 'Stream watcher removed');
+    log.info({ guildId, platform, platformId }, 'Stream watcher removed');
   });
 
   h.handler('list', async (ctx) => {

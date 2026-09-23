@@ -22,8 +22,15 @@ interface TwitchApiResponse {
   };
 }
 
-interface TwitchUsersResponse {
-  data: Array<{ id: string; login: string }>;
+export interface TwitchUserProfile {
+  id: string;
+  login: string;
+  display_name: string;
+  profile_image_url: string;
+}
+
+interface TwitchUsersApiResponse {
+  data: TwitchUserProfile[];
 }
 
 export class TwitchService implements StreamPlatformService {
@@ -73,35 +80,42 @@ export class TwitchService implements StreamPlatformService {
     return this.accessToken;
   }
 
-  public async convertUsernamesToUserIds(usernames: string[]): Promise<Map<string, string>> {
+  public async getUsersByField(
+    field: 'id' | 'login',
+    values: string[]
+  ): Promise<TwitchUserProfile[]> {
+    if (values.length === 0) return [];
+
     const token = await this.getAccessToken();
     const batchSize = 100;
-    const usernameToIdMap = new Map<string, string>();
+    const results: TwitchUserProfile[] = [];
 
-    for (let i = 0; i < usernames.length; i += batchSize) {
-      const batch = usernames.slice(i, i + batchSize);
+    for (let i = 0; i < values.length; i += batchSize) {
+      const batch = values.slice(i, i + batchSize);
+      const params = batch.map((v) => `${field}=${v}`).join('&');
 
-      const response = await fetch(
-        `https://api.twitch.tv/helix/users?login=${batch.join('&login=')}`,
-        {
-          headers: {
-            'Client-ID': this.clientId,
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`https://api.twitch.tv/helix/users?${params}`, {
+        headers: {
+          'Client-ID': this.clientId,
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      if (response.ok) {
-        const data = (await response.json()) as TwitchUsersResponse;
-        for (const user of data.data) {
-          usernameToIdMap.set(user.login.toLowerCase(), user.id);
-        }
-      } else {
-        log.error({ statusText: response.statusText }, 'Failed to convert usernames to IDs');
+      if (!response.ok) {
+        log.error({ statusText: response.statusText }, 'Failed to fetch Twitch users');
+        continue;
       }
+
+      const data = (await response.json()) as TwitchUsersApiResponse;
+      results.push(...data.data);
     }
 
-    return usernameToIdMap;
+    return results;
+  }
+
+  public async convertUsernamesToUserIds(usernames: string[]): Promise<Map<string, string>> {
+    const users = await this.getUsersByField('login', usernames);
+    return new Map(users.map((u) => [u.login.toLowerCase(), u.id]));
   }
 
   async checkStreamStatus(platformIds: string[]): Promise<StreamInfo[]> {
@@ -155,9 +169,6 @@ export class TwitchService implements StreamPlatformService {
             url: `https://www.twitch.tv/${stream.user_login}`,
             game: stream.game_name,
             viewers: stream.viewer_count,
-            thumbnailUrl: stream.thumbnail_url
-              .replace('{width}', '1280')
-              .replace('{height}', '720'),
             startedAt: new Date(stream.started_at),
           });
         }
@@ -198,9 +209,6 @@ export class TwitchService implements StreamPlatformService {
             url: `https://www.twitch.tv/${stream.user_login}`,
             game: stream.game_name,
             viewers: stream.viewer_count,
-            thumbnailUrl: stream.thumbnail_url
-              .replace('{width}', '1280')
-              .replace('{height}', '720'),
             startedAt: new Date(stream.started_at),
           });
         }

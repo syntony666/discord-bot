@@ -140,19 +140,13 @@ export class YouTubeService implements StreamPlatformService {
         const channelId = broadcast.snippet.channelId;
         const channelName = channelMap.get(channelId) || `Channel ${channelId}`;
 
-        const thumbnail = broadcast.snippet.thumbnails.maxres || 
-                          broadcast.snippet.thumbnails.high || 
-                          broadcast.snippet.thumbnails.medium || 
-                          broadcast.snippet.thumbnails.default;
-
         results.push({
           platform: 'youtube',
           platformId: channelId,
           displayName: channelName,
           title: broadcast.snippet.title,
           url: `https://www.youtube.com/watch?v=${broadcast.id}`,
-          thumbnailUrl: thumbnail?.url,
-          startedAt: broadcast.snippet.actualStartTime ? 
+          startedAt: broadcast.snippet.actualStartTime ?
                      new Date(broadcast.snippet.actualStartTime) : 
                      new Date(broadcast.snippet.scheduledStartTime),
         });
