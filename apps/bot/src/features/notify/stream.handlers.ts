@@ -53,6 +53,10 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
 
   const toPlatform = (platform: string) => platform.toUpperCase() as StreamPlatform;
 
+  // 'login' or 'login (display_name)' when they differ
+  const nameOf = (platformId: string, displayName: string) =>
+    displayName.toLowerCase() === platformId ? platformId : `${platformId} (${displayName})`;
+
   h.handler('stream.enable', async (ctx) => {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
@@ -168,7 +172,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
       embeds: [
         {
           title: '已新增監控',
-          description: `開始監控 ${platform} 頻道 ${displayName}`,
+          description: `開始監控 ${platform} 頻道 ${nameOf(platformId, displayName)}`,
           color: Colors.SUCCESS,
         },
       ],
@@ -206,7 +210,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
       embeds: [
         {
           title: '已移除監控',
-          description: `已停止監控 ${platform} 頻道 ${existingWatcher.displayName}`,
+          description: `已停止監控 ${platform} 頻道 ${nameOf(existingWatcher.platformId, existingWatcher.displayName)}`,
           color: Colors.SUCCESS,
         },
       ],
@@ -238,13 +242,10 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
 
     const watcherItems =
       watchers.length > 0
-        ? watchers.map((w) => {
-            const name =
-              w.displayName.toLowerCase() === w.platformId
-                ? `**${w.platformId}**`
-                : `**${w.platformId}** (${w.displayName})`;
-            return `${w.isLive ? '🔴' : '⚫'}　${name} · ${w.platform.toLowerCase()}`;
-          })
+        ? watchers.map(
+            (w) =>
+              `${w.isLive ? '🔴' : '⚫'}　**${nameOf(w.platformId, w.displayName)}** · ${w.platform.toLowerCase()}`
+          )
         : ['（尚未監控任何頻道）'];
 
     await ctx.paginate({
