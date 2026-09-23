@@ -54,7 +54,7 @@ export function useStatusHandlers(deps: StatusDeps) {
             type: ComponentType.Button,
             style: ButtonStyle.Link,
             label: '使用說明',
-            url: 'https://github.com/syntony666/discord-bot#readme',
+            url: 'https://discord-bot.syntony666.com',
           },
           {
             type: ComponentType.Button,
