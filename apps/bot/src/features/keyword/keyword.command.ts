@@ -56,6 +56,18 @@ export const keywordCommand = defineCommand()({
     },
     { name: 'list', description: '列出所有關鍵字規則' },
     {
+      name: 'search',
+      description: '搜尋關鍵字規則',
+      options: [
+        {
+          name: 'query',
+          type: ApplicationCommandOptionType.String,
+          description: '搜尋的關鍵字文字',
+          required: true,
+        },
+      ],
+    },
+    {
       name: 'delete',
       description: '刪除關鍵字規則',
       options: [

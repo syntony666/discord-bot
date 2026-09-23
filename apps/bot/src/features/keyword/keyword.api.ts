@@ -19,6 +19,9 @@ export function createKeywordApi(request: ApiRequest) {
     getRulesForList(guildId: string) {
       return request<KeywordRule[]>(base(guildId));
     },
+    searchRules(guildId: string, query: string) {
+      return request<KeywordRule[]>(`${base(guildId)}?q=${encodeURIComponent(query)}`);
+    },
     getRuleByPattern(guildId: string, pattern: string) {
       return orNull(
         request<KeywordRule>(`${base(guildId)}/${encodeURIComponent(pattern)}`)

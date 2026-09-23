@@ -1,6 +1,7 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import { KeywordMatchType } from '@discord-bot/shared';
-import type { DiscordHelpers } from '@discord-bot/discord-client';
+import type { KeywordRule } from '@discord-bot/shared';
+import type { CommandContext, DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import type { KeywordApi } from './keyword.api';
@@ -27,6 +28,25 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     ],
     components: [],
   };
+
+  const formatRule = (r: KeywordRule) =>
+    `\`${r.matchType}\` ${Formatters.userMention(r.editorId)}\n**${r.pattern}** ⭢ ${r.response}`;
+
+  const paginateRules = (
+    ctx: CommandContext,
+    rules: KeywordRule[],
+    title: string,
+    emptyText: string
+  ) =>
+    ctx.paginate({
+      items: rules,
+      pageSize: 10,
+      emptyText,
+      render: (page) => ({
+        title,
+        description: page.map(formatRule).join('\n\n'),
+      }),
+    });
 
   h.handler('add', async (ctx) => {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
@@ -123,21 +143,23 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
 
     const rules = await api.getRulesForList(ctx.guildId);
-    await ctx.paginate({
-      items: rules,
-      pageSize: 10,
-      emptyText: '目前沒有任何關鍵字規則。',
-      render: (page) => ({
-        title: '關鍵字規則列表',
-        description: page
-          .map(
-            (r) =>
-              `\`${r.matchType}\` ${Formatters.userMention(r.editorId)}\n**${r.pattern}** ⭢ ${r.response}`
-          )
-          .join('\n'),
-      }),
-    });
+    await paginateRules(ctx, rules, '關鍵字規則列表', '目前沒有任何關鍵字規則。');
     log.info({ guildId: ctx.guildId }, 'Keyword list displayed');
+  });
+
+  h.handler('search', async (ctx) => {
+    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
+    const guildId = ctx.guildId;
+    const { query } = ctx.options;
+
+    const rules = await api.searchRules(guildId, query);
+    await paginateRules(
+      ctx,
+      rules,
+      `關鍵字搜尋：${query}`,
+      `找不到符合「${query}」的關鍵字規則。`
+    );
+    log.info({ guildId, query }, 'Keyword search displayed');
   });
 
   h.handler('delete', async (ctx) => {
