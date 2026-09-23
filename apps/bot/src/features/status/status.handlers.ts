@@ -1,9 +1,5 @@
 import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
-import {
-  DiscordSnowflake,
-  Formatters,
-  useHandlers,
-} from '@discord-bot/discord-client';
+import { DiscordSnowflake, Formatters, useHandlers } from '@discord-bot/discord-client';
 import type {
   APIActionRowComponent,
   APIButtonComponentWithURL,
@@ -11,15 +7,15 @@ import type {
 } from 'discord-api-types/v10';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import type { KeywordApi } from '@features/keyword/keyword.api';
-import type { MemberNotifyApi } from '@features/member-notify/member-notify.api';
+import type { MemberNotifyApi } from '@features/notify/member.api';
 import type { ReactionRoleApi } from '@features/reaction-role/reaction-role.api';
-import type { StreamNotifyApi } from '@features/stream-notify/stream-notify.api';
+import type { StreamNotifyApi } from '@features/notify/stream.api';
 import { getBotVersion, getUptime } from './bot-info';
 import { appConfig } from '@core/config';
 import { createLogger } from '@discord-bot/shared';
 import { statusCommand } from './status.command';
 import { avatarUrl, guildIconUrl } from './status.utils';
-import { buildNotifyStatusItems } from './status.service';
+import { buildFeaturesStatusFields } from './status.service';
 
 const log = createLogger('Status');
 
@@ -44,7 +40,7 @@ export function useStatusHandlers(deps: StatusDeps) {
     if (!botUser) {
       return ctx.error('Bot 尚未就緒');
     }
-    const botIcon = avatarUrl(botUser.id, botUser.avatar, botUser.discriminator);
+    const botIcon = avatarUrl(botUser.id, botUser.avatar);
 
     const components: APIActionRowComponent<APIButtonComponentWithURL>[] = [
       {
@@ -69,21 +65,18 @@ export function useStatusHandlers(deps: StatusDeps) {
     const embed = (latency: string | number): APIEmbed => ({
       title: botUser.username,
       description:
-        '你想知道什麼呢?\n\n製作: @sakurashigure ‧ [Twitter(X)](https://x.com/SakuraShigure99)',
-      author: { name: '自我介紹' },
+        '你想知道什麼呢?\n\n製作: @sakurashigure_retry ‧ [Twitter(X)](https://x.com/SakuraShigure99)',
       thumbnail: botIcon ? { url: botIcon } : undefined,
       fields: [
         { name: 'Uptime', value: `\`${getUptime()}\``, inline: false },
         {
           name: 'API Latency',
-          value:
-            typeof latency === 'number' ? `\`${latency}ms\`` : `\`${latency}\``,
-          inline: false,
+          value: typeof latency === 'number' ? `\`${latency}ms\`` : `\`${latency}\``,
+          inline: true,
         },
-        { name: 'Node.js', value: `\`${process.version}\``, inline: true },
         {
-          name: 'discord-api-types',
-          value: `\`v${version.apiTypesVersion}\``,
+          name: 'WS Ping',
+          value: `\`${discord.wsPing > 0 ? `${discord.wsPing}ms` : '—'}\``,
           inline: true,
         },
       ],
@@ -99,10 +92,7 @@ export function useStatusHandlers(deps: StatusDeps) {
       embeds: [embed(Date.now() - start)],
       components,
     });
-    log.info(
-      { guildId: ctx.guildId, latency: `${Date.now() - start}ms` },
-      'Bot status displayed'
-    );
+    log.info({ guildId: ctx.guildId, latency: `${Date.now() - start}ms` }, 'Bot status displayed');
   });
 
   h.handler('guild', async (ctx) => {
@@ -152,20 +142,18 @@ export function useStatusHandlers(deps: StatusDeps) {
     log.info({ guildId: ctx.guildId }, 'Guild status displayed');
   });
 
-  h.handler('notify', async (ctx) => {
+  h.handler('features', async (ctx) => {
     if (!ctx.guildId) return ctx.error('無法取得伺服器資訊');
 
-    const items = await buildNotifyStatusItems(ctx.guildId, deps.api);
-    await ctx.paginate({
-      items,
-      pageSize: 10,
-      emptyText: '目前沒有啟用任何通知功能',
-      render: (page) => ({
-        title: '🔔 通知功能總覽',
-        description: page.join('\n'),
-      }),
+    const fields = await buildFeaturesStatusFields(ctx.guildId, deps.api, discord.commandMention);
+    await ctx.reply({
+      embeds: [
+        fields.length > 0
+          ? { title: '功能狀態總覽', fields }
+          : { title: '功能狀態總覽', description: '目前沒有啟用任何功能' },
+      ],
     });
-    log.info({ guildId: ctx.guildId }, 'Notify status displayed');
+    log.info({ guildId: ctx.guildId }, 'Features status displayed');
   });
 
   return h.collect();

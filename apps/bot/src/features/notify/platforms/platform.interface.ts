@@ -6,7 +6,6 @@ export interface StreamInfo {
   url: string;
   game?: string;
   viewers?: number;
-  thumbnailUrl?: string;
   startedAt?: Date;
 }
 

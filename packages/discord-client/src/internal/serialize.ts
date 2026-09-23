@@ -7,12 +7,7 @@ import type {
   APIApplicationCommandOption,
   RESTPostAPIApplicationCommandsJSONBody,
 } from 'discord-api-types/v10';
-import type {
-  CommandDef,
-  OptionDef,
-  SubcommandDef,
-  SubcommandGroupDef,
-} from '../commands.type';
+import type { CommandDef, OptionDef, SubcommandDef, SubcommandGroupDef } from '../commands.type';
 
 const OPTION_PASSTHROUGH = [
   'autocomplete',

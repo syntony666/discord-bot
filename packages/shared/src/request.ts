@@ -13,9 +13,7 @@ export function createRequest(baseUrl: string): ApiRequest {
     });
 
     if (!response.ok) {
-      const body = (await response.json().catch(() => undefined)) as
-        | ErrorDataResponse
-        | undefined;
+      const body = (await response.json().catch(() => undefined)) as ErrorDataResponse | undefined;
       throw new ApiError(
         response.status,
         body?.error?.message ?? response.statusText,

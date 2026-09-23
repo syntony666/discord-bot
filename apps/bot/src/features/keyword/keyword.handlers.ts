@@ -1,10 +1,13 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
+import { RESTJSONErrorCodes } from 'discord-api-types/v10';
 import { KeywordMatchType } from '@discord-bot/shared';
-import type { DiscordHelpers } from '@discord-bot/discord-client';
+import type { KeywordRule } from '@discord-bot/shared';
+import type { CommandContext, DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import type { KeywordApi } from './keyword.api';
 import { createKeywordService } from './keyword.service';
+import { responsePreview, truncate } from './keyword.preview';
 import { keywordCommand } from './keyword.command';
 
 const log = createLogger('Keyword');
@@ -22,11 +25,28 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   const h = useHandlers(keywordCommand);
 
   const cancelled = {
-    embeds: [
-      { title: '已取消', description: '操作已取消。', color: Colors.INFO },
-    ],
+    embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
     components: [],
   };
+
+  const formatRule = (r: KeywordRule) =>
+    `**${truncate(r.pattern, 150)}** ⭢ ${responsePreview(r.response, 150)}\n\`${r.matchType}\` ${Formatters.userMention(r.editorId)}`;
+
+  const paginateRules = (
+    ctx: CommandContext,
+    rules: KeywordRule[],
+    title: string,
+    emptyText: string
+  ) =>
+    ctx.paginate({
+      items: rules,
+      pageSize: 10,
+      emptyText,
+      render: (page) => ({
+        title,
+        description: page.map(formatRule).join('\n\n'),
+      }),
+    });
 
   h.handler('add', async (ctx) => {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
@@ -43,7 +63,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
         embeds: [
           {
             title: '關鍵字已新增',
-            description: `\`${matchType}\` **${pattern}** ⭢ ${response}`,
+            description: `\`${matchType}\` **${pattern}** ⭢ ${responsePreview(response, 900)}`,
             color: Colors.SUCCESS,
           },
         ],
@@ -58,11 +78,11 @@ export function useKeywordHandlers(deps: KeywordDeps) {
       fields: [
         {
           name: '目前設定',
-          value: `**回覆**: ${existing.response}\n**比對類型**: ${existing.matchType}`,
+          value: `**回覆**: ${responsePreview(existing.response, 900)}\n**比對類型**: ${existing.matchType}`,
         },
         {
           name: '新設定',
-          value: `**回覆**: ${response}\n**比對類型**: ${matchType}`,
+          value: `**回覆**: ${responsePreview(response, 900)}\n**比對類型**: ${matchType}`,
         },
       ],
       confirmLabel: '確認覆寫',
@@ -80,7 +100,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
           fields: [
             {
               name: '新設定',
-              value: `\`${matchType}\` **${pattern}** ⭢ ${response}`,
+              value: `\`${matchType}\` **${pattern}** ⭢ ${responsePreview(response, 900)}`,
             },
           ],
           color: Colors.SUCCESS,
@@ -111,7 +131,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
       embeds: [
         {
           title: '關鍵字已更新',
-          description: `\`${matchType}\` **${pattern}** ⭢ ${response}`,
+          description: `\`${matchType}\` **${pattern}** ⭢ ${responsePreview(response, 900)}`,
           color: Colors.SUCCESS,
         },
       ],
@@ -123,21 +143,46 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
 
     const rules = await api.getRulesForList(ctx.guildId);
-    await ctx.paginate({
-      items: rules,
-      pageSize: 10,
-      emptyText: '目前沒有任何關鍵字規則。',
-      render: (page) => ({
-        title: '關鍵字規則列表',
-        description: page
-          .map(
-            (r) =>
-              `\`${r.matchType}\` ${Formatters.userMention(r.editorId)}\n**${r.pattern}** ⭢ ${r.response}`
-          )
-          .join('\n'),
-      }),
-    });
+    await paginateRules(ctx, rules, '關鍵字規則列表', '目前沒有任何關鍵字規則。');
     log.info({ guildId: ctx.guildId }, 'Keyword list displayed');
+  });
+
+  h.handler('view', async (ctx) => {
+    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
+    const { pattern } = ctx.options;
+
+    const rule = await api.getRuleByPattern(ctx.guildId, pattern);
+    if (!rule) return ctx.error('找不到此關鍵字。');
+
+    const candidates = rule.response.split(';;').filter((p) => p.length > 0);
+    const meta = [`\`${rule.matchType}\``, Formatters.userMention(rule.editorId)];
+    if (candidates.length > 1) meta.push(`候選 ${candidates.length} 個`);
+
+    const body = candidates.length > 1 ? candidates.join('、') : rule.response;
+    const shown = body.length > 3900 ? `${body.slice(0, 3900)}… (已截斷)` : body;
+    const arrow =
+      candidates.length > 1 ? `**${rule.pattern}** ⭢\n${shown}` : `**${rule.pattern}** ⭢ ${shown}`;
+
+    await ctx.reply({
+      embeds: [
+        {
+          title: '關鍵字規則',
+          description: `${arrow}\n\n${meta.join(' · ')}`,
+          color: Colors.INFO,
+        },
+      ],
+    });
+    log.info({ guildId: ctx.guildId, pattern }, 'Keyword rule viewed');
+  });
+
+  h.handler('search', async (ctx) => {
+    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
+    const guildId = ctx.guildId;
+    const { query } = ctx.options;
+
+    const rules = await api.searchRules(guildId, query);
+    await paginateRules(ctx, rules, `關鍵字搜尋：${query}`, `找不到符合「${query}」的關鍵字規則。`);
+    log.info({ guildId, query }, 'Keyword search displayed');
   });
 
   h.handler('delete', async (ctx) => {
@@ -155,7 +200,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
       fields: [
         {
           name: '關鍵字資訊',
-          value: `**回覆**: ${rule.response}\n**比對類型**: ${rule.matchType}`,
+          value: `**回覆**: ${responsePreview(rule.response, 900)}\n**比對類型**: ${rule.matchType}`,
         },
       ],
       confirmLabel: '確認刪除',
@@ -173,7 +218,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
           fields: [
             {
               name: '已刪除的設定',
-              value: `\`${rule.matchType}\` **${rule.pattern}** ⭢ ${rule.response}`,
+              value: `\`${rule.matchType}\` **${truncate(rule.pattern, 150)}** ⭢ ${responsePreview(rule.response, 900)}`,
             },
           ],
           color: Colors.WARNING,
@@ -199,16 +244,13 @@ export function useKeywordHandlers(deps: KeywordDeps) {
         'Keyword matched and replied'
       );
     } catch (error) {
-      if ((error as { code?: number }).code === 50013) {
+      if ((error as { code?: number }).code === RESTJSONErrorCodes.MissingPermissions) {
         log.warn(
           { guildId: msg.guild_id, error: (error as Error).message },
           'Missing permissions to send message'
         );
       } else {
-        log.error(
-          { error, guildId: msg.guild_id },
-          'Failed to send keyword response'
-        );
+        log.error({ error, guildId: msg.guild_id }, 'Failed to send keyword response');
       }
     }
   });

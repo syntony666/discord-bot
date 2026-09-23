@@ -99,7 +99,7 @@ export class YouTubeService implements StreamPlatformService {
         continue;
       }
 
-      const data = await response.json() as YouTubeChannelResponse;
+      const data = (await response.json()) as YouTubeChannelResponse;
 
       for (const channel of data.items) {
         channelMap.set(channel.id, channel.snippet.title);
@@ -128,7 +128,7 @@ export class YouTubeService implements StreamPlatformService {
         continue;
       }
 
-      const data = await response.json() as YouTubeLiveBroadcastResponse;
+      const data = (await response.json()) as YouTubeLiveBroadcastResponse;
 
       if (data.items.length === 0) continue;
 
@@ -140,21 +140,15 @@ export class YouTubeService implements StreamPlatformService {
         const channelId = broadcast.snippet.channelId;
         const channelName = channelMap.get(channelId) || `Channel ${channelId}`;
 
-        const thumbnail = broadcast.snippet.thumbnails.maxres || 
-                          broadcast.snippet.thumbnails.high || 
-                          broadcast.snippet.thumbnails.medium || 
-                          broadcast.snippet.thumbnails.default;
-
         results.push({
           platform: 'youtube',
           platformId: channelId,
           displayName: channelName,
           title: broadcast.snippet.title,
           url: `https://www.youtube.com/watch?v=${broadcast.id}`,
-          thumbnailUrl: thumbnail?.url,
-          startedAt: broadcast.snippet.actualStartTime ? 
-                     new Date(broadcast.snippet.actualStartTime) : 
-                     new Date(broadcast.snippet.scheduledStartTime),
+          startedAt: broadcast.snippet.actualStartTime
+            ? new Date(broadcast.snippet.actualStartTime)
+            : new Date(broadcast.snippet.scheduledStartTime),
         });
       }
     }

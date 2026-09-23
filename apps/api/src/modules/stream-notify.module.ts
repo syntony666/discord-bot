@@ -9,6 +9,7 @@ import type {
 export interface StreamWatcherPatch {
   isLive?: boolean;
   platformUserId?: string;
+  avatarImageUrl?: string;
   touch?: boolean;
 }
 
@@ -59,7 +60,9 @@ export function createStreamNotifyModule(prisma: PrismaClient) {
           guildId: input.guildId,
           platform: input.platform,
           platformId: input.platformId,
+          platformUserId: input.platformUserId,
           displayName: input.displayName,
+          avatarImageUrl: input.avatarImageUrl,
         },
       });
     },
@@ -76,6 +79,7 @@ export function createStreamNotifyModule(prisma: PrismaClient) {
         data: {
           ...(patch.isLive !== undefined && { isLive: patch.isLive }),
           ...(patch.platformUserId !== undefined && { platformUserId: patch.platformUserId }),
+          ...(patch.avatarImageUrl !== undefined && { avatarImageUrl: patch.avatarImageUrl }),
           ...(patch.touch && { lastChecked: new Date() }),
         },
       });

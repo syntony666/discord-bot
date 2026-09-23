@@ -5,9 +5,9 @@ import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import type { GuildApi } from '@features/guild/guild.api';
-import type { MemberNotifyApi } from './member-notify.api';
-import { createMemberNotifyService } from './member-notify.service';
-import { memberNotifyCommand } from './member-notify.command';
+import type { MemberNotifyApi } from './member.api';
+import { createMemberNotifyService } from './member.service';
+import { notifyCommand } from './notify.command';
 
 const log = createLogger('MemberNotify');
 
@@ -17,8 +17,7 @@ export interface MemberNotifyDeps {
   api: { memberNotify: MemberNotifyApi; guild: GuildApi };
 }
 
-const typeName = (type: 'join' | 'leave') =>
-  type === 'join' ? '加入通知' : '離開通知';
+const typeName = (type: 'join' | 'leave') => (type === 'join' ? '加入通知' : '離開通知');
 
 const typeEmoji = (enabled: boolean) => (enabled ? '✅' : '❌');
 
@@ -32,16 +31,14 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
   const api = deps.api.memberNotify;
   const guildApi = deps.api.guild;
   const service = createMemberNotifyService();
-  const h = useHandlers(memberNotifyCommand);
+  const h = useHandlers(notifyCommand);
 
   const cancelled = {
-    embeds: [
-      { title: '已取消', description: '操作已取消。', color: Colors.INFO },
-    ],
+    embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
     components: [],
   };
 
-  h.handler('enable', async (ctx) => {
+  h.handler('member.enable', async (ctx) => {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const channelId = ctx.options.channel.id;
@@ -72,7 +69,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     log.info({ guildId, channelId }, 'Member notify enabled');
   });
 
-  h.handler('disable', async (ctx) => {
+  h.handler('member.disable', async (ctx) => {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
 
@@ -99,16 +96,11 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
       fields: [
         {
           name: '目前啟用的通知',
-          value:
-            enabledList.length > 0
-              ? enabledList.join('\n')
-              : '*(所有通知都已關閉)*',
+          value: enabledList.length > 0 ? enabledList.join('\n') : '*(所有通知都已關閉)*',
         },
         {
           name: '通知頻道',
-          value: channels
-            .map((ch) => Formatters.channelMention(ch.channelId))
-            .join(', '),
+          value: channels.map((ch) => Formatters.channelMention(ch.channelId)).join(', '),
         },
       ],
       confirmLabel: '確認關閉',
@@ -117,15 +109,12 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     });
     if (!ok) return ctx.editReply(cancelled);
 
-    await Promise.all(
-      channels.map((ch) => api.toggleChannelEnabled(guildId, ch.type, false))
-    );
+    await Promise.all(channels.map((ch) => api.toggleChannelEnabled(guildId, ch.type, false)));
     await ctx.editReply({
       embeds: [
         {
           title: '成員通知已關閉',
-          description:
-            '所有成員進出通知已停用。\n使用 `/member-notify enable` 可重新啟用。',
+          description: `所有成員進出通知已停用。\n使用 ${discord.commandMention('notify member enable')} 可重新啟用。`,
           color: Colors.SUCCESS,
         },
       ],
@@ -134,7 +123,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     log.info({ guildId }, 'All member notifications disabled');
   });
 
-  h.handler('status', async (ctx) => {
+  h.handler('member.status', async (ctx) => {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
 
@@ -149,8 +138,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
         embeds: [
           {
             title: '成員通知狀態',
-            description:
-              '尚未設定成員通知功能。\n使用 `/member-notify enable` 開始設定。',
+            description: `尚未設定成員通知功能。\n使用 ${discord.commandMention('notify member enable')} 開始設定。`,
             color: Colors.INFO,
           },
         ],
@@ -159,9 +147,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
 
     const description = [
       `**${typeName('join')}:** ${typeEmoji(joinChannel?.enabled || false)} ${joinChannel?.enabled ? '已啟用' : '已停用'}`,
-      joinChannel
-        ? `通知頻道: ${Formatters.channelMention(joinChannel.channelId)}`
-        : '*(未設定)*',
+      joinChannel ? `通知頻道: ${Formatters.channelMention(joinChannel.channelId)}` : '*(未設定)*',
       `訊息模板: \`${templates?.joinMessage || '預設訊息'}\``,
       '',
       `**${typeName('leave')}:** ${typeEmoji(leaveChannel?.enabled || false)} ${leaveChannel?.enabled ? '已啟用' : '已停用'}`,
@@ -174,13 +160,11 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     ].join('\n');
 
     await ctx.reply({
-      embeds: [
-        { title: '成員通知狀態', description, color: Colors.INFO },
-      ],
+      embeds: [{ title: '成員通知狀態', description, color: Colors.INFO }],
     });
   });
 
-  h.handler('test', async (ctx) => {
+  h.handler('member.test', async (ctx) => {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const type = ctx.options.type; // 'join' | 'leave'
 
@@ -209,100 +193,94 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     });
   });
 
-  const updateTemplate = async (
-    ctx: CommandContext<{ template: string }>,
+  const editEvent = async (
+    ctx: CommandContext<{ template?: string; enabled?: boolean }>,
     type: 'join' | 'leave'
   ) => {
     if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
-    const { template } = ctx.options;
+    const { template, enabled } = ctx.options;
+    const notifyType =
+      type === 'join' ? NotificationType.MEMBER_JOIN : NotificationType.MEMBER_LEAVE;
 
+    if (template === undefined && enabled === undefined) {
+      const [channel, templates] = await Promise.all([
+        api.getNotificationChannel(guildId, notifyType),
+        api.getMessageTemplates(guildId),
+      ]);
+      const current = type === 'join' ? templates?.joinMessage : templates?.leaveMessage;
+      return ctx.reply({
+        embeds: [
+          {
+            title: `${typeName(type)}設定`,
+            description: [
+              `狀態: ${typeEmoji(!!channel?.enabled)} ${channel?.enabled ? '已啟用' : '已停用'}`,
+              channel
+                ? `通知頻道: ${Formatters.channelMention(channel.channelId)}`
+                : '*(未設定頻道)*',
+              `訊息模板: \`${current || '預設訊息'}\``,
+            ].join('\n'),
+            color: Colors.INFO,
+          },
+        ],
+      });
+    }
+
+    const fields = [
+      ...(template !== undefined ? [{ name: '新模板', value: `\`${template}\`` }] : []),
+      ...(enabled !== undefined ? [{ name: '通知狀態', value: enabled ? '啟用' : '停用' }] : []),
+    ];
     const ok = await ctx.confirm({
-      title: '📝 確認更新訊息模板',
-      description: `即將更新${typeName(type)}的訊息模板。`,
-      fields: [{ name: '新模板', value: `\`${template}\`` }],
+      title: `📝 確認更新${typeName(type)}`,
+      description: '即將套用以下變更。',
+      fields,
       confirmLabel: '確認更新',
       cancelLabel: '取消',
+      danger: enabled === false,
     });
     if (!ok) return ctx.editReply(cancelled);
 
-    await api.updateMessage({ guildId, type, message: template });
-    await ctx.editReply({
-      embeds: [
-        {
-          title: '訊息模板已更新',
-          description: `${type === 'join' ? '加入' : '離開'}訊息已更新為：\n\`${template}\``,
-          color: Colors.SUCCESS,
-        },
-      ],
-      components: [],
-    });
-    log.info({ guildId, type }, 'Message template updated');
-  };
-
-  h.handler('message.join', (ctx) => updateTemplate(ctx, 'join'));
-  h.handler('message.leave', (ctx) => updateTemplate(ctx, 'leave'));
-
-  const toggle = async (
-    ctx: CommandContext<{ enabled: boolean }>,
-    type: 'join' | 'leave'
-  ) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
-    const guildId = ctx.guildId;
-    const { enabled } = ctx.options;
-
-    const ok = await ctx.confirm({
-      title: `🔄 確認${enabled ? '啟用' : '停用'}${typeName(type)}`,
-      description: `即將${enabled ? '啟用' : '停用'}${typeName(type)}。`,
-      confirmLabel: `確認${enabled ? '啟用' : '停用'}`,
-      cancelLabel: '取消',
-      danger: !enabled,
-    });
-    if (!ok) return ctx.editReply(cancelled);
-
-    const notifyType =
-      type === 'join'
-        ? NotificationType.MEMBER_JOIN
-        : NotificationType.MEMBER_LEAVE;
-    await api.toggleChannelEnabled(guildId, notifyType, enabled);
+    if (template !== undefined) {
+      await api.updateMessage({ guildId, type, message: template });
+    }
+    if (enabled !== undefined) {
+      await api.toggleChannelEnabled(guildId, notifyType, enabled);
+    }
     await ctx.editReply({
       embeds: [
         {
           title: '設定已更新',
-          description: `${type === 'join' ? '加入' : '離開'}通知已${enabled ? '啟用' : '停用'}。`,
+          description: `${typeName(type)}已更新。`,
           color: Colors.SUCCESS,
         },
       ],
       components: [],
     });
-    log.info({ guildId, type, enabled }, 'Notification toggled');
+    log.info(
+      { guildId, type, hasTemplate: template !== undefined, enabled },
+      'Notify event updated'
+    );
   };
 
-  h.handler('toggle.join', (ctx) => toggle(ctx, 'join'));
-  h.handler('toggle.leave', (ctx) => toggle(ctx, 'leave'));
+  h.handler('member.join', (ctx) => editEvent(ctx, 'join'));
+  h.handler('member.leave', (ctx) => editEvent(ctx, 'leave'));
 
   h.event('guildMemberAdd', async ({ user, guild_id: guildId }) => {
     if (!user) return;
     try {
       await guildApi.ensureGuild(guildId);
 
-      const joinChannel = await api.getNotificationChannel(
-        guildId,
-        NotificationType.MEMBER_JOIN
-      );
+      const joinChannel = await api.getNotificationChannel(guildId, NotificationType.MEMBER_JOIN);
       if (!service.shouldSendJoin(joinChannel)) return;
 
       const templates = await api.getMessageTemplates(guildId);
       const guild = await discord.getGuild(guildId);
-      const message = service.formatMessage(
-        templates?.joinMessage || DEFAULT_TEMPLATES.join,
-        {
-          user: Formatters.userMention(user.id),
-          username: user.username || 'Unknown',
-          server: guild.name,
-          memberCount: guild.approximate_member_count || 0,
-        }
-      );
+      const message = service.formatMessage(templates?.joinMessage || DEFAULT_TEMPLATES.join, {
+        user: Formatters.userMention(user.id),
+        username: user.username || 'Unknown',
+        server: guild.name,
+        memberCount: guild.approximate_member_count || 0,
+      });
 
       await discord.sendMessage(joinChannel!.channelId, {
         embeds: [
@@ -310,37 +288,30 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
             title: '新成員加入',
             description: message,
             color: Colors.MEMBER_JOIN,
+            timestamp: new Date().toISOString(),
           },
         ],
       });
       log.info({ guildId, userId: user.id }, 'Sent join notification');
     } catch (error) {
-      log.error(
-        { error, guildId, userId: user.id },
-        'Failed to send join notification'
-      );
+      log.error({ error, guildId, userId: user.id }, 'Failed to send join notification');
     }
   });
 
   h.event('guildMemberRemove', async ({ user, guild_id: guildId }) => {
+    if (!user) return;
     try {
-      const leaveChannel = await api.getNotificationChannel(
-        guildId,
-        NotificationType.MEMBER_LEAVE
-      );
+      const leaveChannel = await api.getNotificationChannel(guildId, NotificationType.MEMBER_LEAVE);
       if (!service.shouldSendLeave(leaveChannel)) return;
 
       const templates = await api.getMessageTemplates(guildId);
       const guild = await discord.getGuild(guildId);
-      const message = service.formatMessage(
-        templates?.leaveMessage || DEFAULT_TEMPLATES.leave,
-        {
-          user: Formatters.userMention(user.id),
-          username: user.username || 'Unknown',
-          server: guild.name,
-          memberCount: guild.approximate_member_count || 0,
-        }
-      );
+      const message = service.formatMessage(templates?.leaveMessage || DEFAULT_TEMPLATES.leave, {
+        user: Formatters.userMention(user.id),
+        username: user.username || 'Unknown',
+        server: guild.name,
+        memberCount: guild.approximate_member_count || 0,
+      });
 
       await discord.sendMessage(leaveChannel!.channelId, {
         embeds: [
@@ -348,15 +319,13 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
             title: '成員離開',
             description: message,
             color: Colors.MEMBER_LEAVE,
+            timestamp: new Date().toISOString(),
           },
         ],
       });
       log.info({ guildId, userId: user.id }, 'Sent leave notification');
     } catch (error) {
-      log.error(
-        { error, guildId, userId: user.id },
-        'Failed to send leave notification'
-      );
+      log.error({ error, guildId, userId: user.id }, 'Failed to send leave notification');
     }
   });
 

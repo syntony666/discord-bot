@@ -1,5 +1,6 @@
 import { PrismaClient } from '../.prisma/client';
 import type { CreateKeywordRuleInput, UpdateKeywordRuleInput } from '@discord-bot/shared';
+import { pickResponse } from './keyword.response';
 
 const keywordRuntimeSelect = {
   guildId: true,
@@ -12,16 +13,29 @@ const keywordRuntimeSelect = {
 export function createKeywordModule(prisma: PrismaClient) {
   return {
     getRulesByGuild(guildId: string) {
-      return prisma.keywordRule.findMany({
-        where: { guildId, enabled: true },
-        orderBy: { createdAt: 'desc' },
-        select: keywordRuntimeSelect,
-      });
+      return prisma.keywordRule
+        .findMany({
+          where: { guildId, enabled: true },
+          orderBy: { createdAt: 'desc' },
+          select: keywordRuntimeSelect,
+        })
+        .then((rules) => rules.map((r) => ({ ...r, response: pickResponse(r.response) })));
     },
 
     getRulesForList(guildId: string) {
       return prisma.keywordRule.findMany({
         where: { guildId, enabled: true },
+        orderBy: { createdAt: 'desc' },
+      });
+    },
+
+    searchRules(guildId: string, query: string) {
+      return prisma.keywordRule.findMany({
+        where: {
+          guildId,
+          enabled: true,
+          pattern: { contains: query, mode: 'insensitive' },
+        },
         orderBy: { createdAt: 'desc' },
       });
     },

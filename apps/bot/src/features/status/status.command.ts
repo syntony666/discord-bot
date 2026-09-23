@@ -7,6 +7,6 @@ export const statusCommand = defineCommand()({
   subcommands: [
     { name: 'bot', description: '顯示機器人狀態資訊' },
     { name: 'guild', description: '顯示伺服器資訊' },
-    { name: 'notify', description: '顯示所有通知功能設定' },
+    { name: 'features', description: '顯示所有功能狀態' },
   ],
 });
