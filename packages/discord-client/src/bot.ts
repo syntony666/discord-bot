@@ -14,8 +14,8 @@ export function createBot(resources: Resources, options: BotOptions): Bot {
   const { appId } = options;
   const onError = options.onError ?? ((err) => console.error(err));
 
-  const sessions = createSessionStore(resources, appId, onError);
-  const router = createCommandRouter(resources, appId, sessions, onError);
+  const sessions = createSessionStore(resources, appId, onError, options.ui);
+  const router = createCommandRouter(resources, appId, sessions, onError, options.ui);
   const hub = createEventHub(onError, () => resources.botId);
   const discord = createHelpers(resources);
   const defs: CommandDef[] = [];

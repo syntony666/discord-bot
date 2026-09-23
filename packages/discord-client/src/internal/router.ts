@@ -17,6 +17,7 @@ import type {
   SessionDispatcher,
 } from './router.type';
 import type { CommandDef } from '../commands.type';
+import type { UiConfig } from './embeds';
 
 /** Handler keys a command def accepts: 'add', 'panel.create', or the command
  *  name itself when it has no subcommands. */
@@ -109,7 +110,8 @@ export function createCommandRouter(
   resources: Resources,
   appId: string,
   sessions: SessionApi & SessionDispatcher,
-  onError: (err: unknown) => void
+  onError: (err: unknown) => void,
+  ui?: UiConfig
 ) {
   const commands = new Map<
     string,
@@ -144,7 +146,7 @@ export function createCommandRouter(
     const handler = entry.handlers[key || route.command];
     if (!handler) return false;
 
-    const ctx = buildCommandContext(resources, appId, sessions, i, route);
+    const ctx = buildCommandContext(resources, appId, sessions, i, route, ui);
     await handler(ctx);
     return true;
   };
@@ -160,7 +162,7 @@ export function createCommandRouter(
       route.params.forEach((name, idx) => {
         params[name] = m[idx + 1]!;
       });
-      const ctx = buildComponentContext(resources, appId, sessions, i, params);
+      const ctx = buildComponentContext(resources, appId, sessions, i, params, ui);
       await route.handler(ctx);
       return true;
     }

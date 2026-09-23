@@ -16,6 +16,7 @@ export async function bootstrapApp(client: DiscordClient) {
   const bot = client.createBot({
     appId: appConfig.discord.appId,
     onError: (err) => log.error({ err }, 'Bot dispatch error'),
+    ui: { footerIconUrl: appConfig.footerIconUrl },
   });
   bot.register(
     statusFeature,

@@ -26,6 +26,7 @@ import {
   paginateRow,
   row,
 } from './components';
+import { usernameOf, withEmbedDefaults, type UiConfig } from '../embeds';
 
 const PREFIX = 'kit:';
 const DEFAULT_CONFIRM_TIMEOUT = 120_000;
@@ -36,7 +37,8 @@ const DEFAULT_PROMPT_TIMEOUT = 60_000;
 export function createSessionStore(
   resources: Resources,
   appId: string,
-  onError?: (err: unknown) => void
+  onError?: (err: unknown) => void,
+  ui?: UiConfig
 ) {
   const pending = new Map<string, Pending>();
   const waiters = new Map<string, Waiter>();
@@ -96,7 +98,7 @@ export function createSessionStore(
     s.timer = setTimeout(() => {
       pending.delete(id);
       void editMessage(s.token, s.messageId, {
-        embeds: [paginateEmbed(s)],
+        embeds: [paginateEmbed(s, ui)],
         components: [],
       });
     }, s.timeoutMs);
@@ -108,6 +110,7 @@ export function createSessionStore(
     const id = randomUUID();
     const base = `kit:cfm:${id}`;
     const ownerId = i.user?.id ?? i.member?.user.id ?? '';
+    const timeoutMs = options.timeoutMs ?? DEFAULT_CONFIRM_TIMEOUT;
 
     await send(
       i,
@@ -117,7 +120,12 @@ export function createSessionStore(
             title: options.title ?? '確認',
             description: options.description,
             fields: options.fields,
-            color: 0xfee75c,
+            color: 0xf26522,
+            footer: {
+              text: `${usernameOf(i)} · ${Math.round(timeoutMs / 60_000)} 分鐘後失效`,
+              ...(ui?.footerIconUrl ? { icon_url: ui.footerIconUrl } : {}),
+            },
+            timestamp: new Date().toISOString(),
           },
         ],
         components: [
@@ -134,7 +142,7 @@ export function createSessionStore(
       arm(
         id,
         { kind: 'confirm', ownerId, resolve,  },
-        options.timeoutMs ?? DEFAULT_CONFIRM_TIMEOUT,
+        timeoutMs,
         () => resolve(false)
       );
     });
@@ -151,10 +159,14 @@ export function createSessionStore(
         i,
         {
           embeds: [
-            {
-              description: options.emptyText ?? '沒有資料。',
-              color: 0x5865f2,
-            },
+            withEmbedDefaults(
+              {
+                description: options.emptyText ?? '沒有資料。',
+                color: 0xded8d0,
+              },
+              usernameOf(i),
+              ui
+            ),
           ],
         },
         responded
@@ -167,11 +179,16 @@ export function createSessionStore(
     const ownerId = i.user?.id ?? i.member?.user.id ?? '';
     const timeoutMs = options.timeoutMs ?? DEFAULT_PAGINATE_TIMEOUT;
 
+    const username = usernameOf(i);
     const embedFor = (page: number): APIEmbed =>
-      options.render(
-        options.items.slice(page * pageSize, (page + 1) * pageSize),
-        page,
-        totalPages
+      withEmbedDefaults(
+        options.render(
+          options.items.slice(page * pageSize, (page + 1) * pageSize),
+          page,
+          totalPages
+        ),
+        username,
+        ui
       );
 
     const { token, messageId } = await send(
@@ -188,6 +205,7 @@ export function createSessionStore(
     const session: PaginatePending = {
       kind: 'paginate',
       ownerId,
+      username,
       items: options.items,
       render: options.render as PaginateOptions<unknown>['render'],
       pageSize,
@@ -355,7 +373,7 @@ export function createSessionStore(
     await resources.interaction(i.id, i.token).respond({
       type: InteractionResponseType.UpdateMessage,
       data: {
-        embeds: [paginateEmbed(session)],
+        embeds: [paginateEmbed(session, ui)],
         components: [paginateRow(`kit:pag:${id}`, session.page, totalPages)],
       },
     });
@@ -417,16 +435,7 @@ export function createSessionStore(
         await resources.interaction(i.id, i.token).respond({
           type: InteractionResponseType.UpdateMessage,
           data: {
-            embeds: [
-              session.render(
-                session.items.slice(
-                  session.page * session.pageSize,
-                  (session.page + 1) * session.pageSize
-                ),
-                session.page,
-                totalPages
-              ),
-            ],
+            embeds: [paginateEmbed(session, ui)],
             components: [
               paginateRow(`kit:pag:${id}`, session.page, totalPages),
             ],

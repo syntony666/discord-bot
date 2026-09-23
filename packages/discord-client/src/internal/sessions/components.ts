@@ -5,6 +5,7 @@ import type {
   APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 import type { PaginatePending } from './store.type';
+import { withEmbedDefaults, type UiConfig } from '../embeds';
 
 export const button = (
   customId: string,
@@ -47,11 +48,15 @@ export const modalFieldValues = (
   return values;
 };
 
-export const paginateEmbed = (s: PaginatePending): APIEmbed =>
-  s.render(
-    s.items.slice(s.page * s.pageSize, (s.page + 1) * s.pageSize),
-    s.page,
-    Math.ceil(s.items.length / s.pageSize)
+export const paginateEmbed = (s: PaginatePending, ui?: UiConfig): APIEmbed =>
+  withEmbedDefaults(
+    s.render(
+      s.items.slice(s.page * s.pageSize, (s.page + 1) * s.pageSize),
+      s.page,
+      Math.ceil(s.items.length / s.pageSize)
+    ),
+    s.username,
+    ui
   );
 
 export const paginateRow = (base: string, page: number, totalPages: number) =>

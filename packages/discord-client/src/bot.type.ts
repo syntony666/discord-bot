@@ -1,9 +1,11 @@
 import type { GatewayDispatchPayload } from 'discord-api-types/v10';
 import type { Feature } from './features.type';
+import type { UiConfig } from './internal/embeds';
 
 export interface BotOptions {
   appId: string;
   onError?: (err: unknown) => void;
+  ui?: UiConfig;
 }
 
 export interface Bot {

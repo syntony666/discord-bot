@@ -17,6 +17,7 @@ import type {
 } from '../context.type';
 import type { CommandRoute, Interaction, SessionApi } from './context.type';
 import { ORIGINAL_MESSAGE, type Resources } from './resources';
+import { withEmbedDefaults, type UiConfig } from './embeds';
 
 const EMBED_OK = 0x57f287;
 const EMBED_ERR = 0xed4245;
@@ -31,8 +32,15 @@ function interactionUser(i: Interaction): APIUser {
   return user;
 }
 
-function baseMethods(resources: Resources, appId: string, sessions: SessionApi, i: Interaction) {
+function baseMethods(resources: Resources, appId: string, sessions: SessionApi, i: Interaction, ui?: UiConfig) {
   let responded = false;
+  const username = interactionUser(i).username;
+
+  const withUi = (data: ReplyData) => {
+    const d = normalize(data);
+    if (!d.embeds?.length) return d;
+    return { ...d, embeds: d.embeds.map((e) => withEmbedDefaults(e, username, ui)) };
+  };
 
   const callback = (body: APIInteractionResponse) =>
     resources.interaction(i.id, i.token).respond(body).then(() => {
@@ -44,7 +52,7 @@ function baseMethods(resources: Resources, appId: string, sessions: SessionApi, 
       callback({
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          ...normalize(data),
+          ...withUi(data),
           ...(ephemeral ? { flags: MessageFlags.Ephemeral } : {}),
         },
       }),
@@ -58,7 +66,7 @@ function baseMethods(resources: Resources, appId: string, sessions: SessionApi, 
     update: (data: ReplyData) =>
       callback({
         type: InteractionResponseType.UpdateMessage,
-        data: normalize(data),
+        data: withUi(data),
       }),
 
     deferUpdate: () =>
@@ -67,14 +75,14 @@ function baseMethods(resources: Resources, appId: string, sessions: SessionApi, 
     followUp: (data: ReplyData) =>
       resources
         .webhook(appId, i.token)
-        .execute(normalize(data))
+        .execute(withUi(data))
         .then(() => undefined),
 
     editReply: (data: ReplyData) =>
       resources
         .webhook(appId, i.token)
         .message(ORIGINAL_MESSAGE)
-        .edit(normalize(data))
+        .edit(withUi(data))
         .then(() => undefined),
 
     confirm: (options: ConfirmOptions) => sessions.confirm(i, options, responded),
@@ -89,9 +97,10 @@ export function buildCommandContext(
   appId: string,
   sessions: SessionApi,
   interaction: APIChatInputApplicationCommandInteraction,
-  route: CommandRoute
+  route: CommandRoute,
+  ui?: UiConfig
 ): CommandContext {
-  const base = baseMethods(resources, appId, sessions, interaction);
+  const base = baseMethods(resources, appId, sessions, interaction, ui);
   return {
     interaction,
     command: route.command,
@@ -106,7 +115,7 @@ export function buildCommandContext(
       base.reply({ embeds: [{ title: '✅', description, color: EMBED_OK }] }),
     error: (description) =>
       base.reply(
-        { embeds: [{ title: '❌', description, color: EMBED_ERR }] },
+        { embeds: [{ title: '❌ 錯誤', description, color: EMBED_ERR }] },
         true
       ),
   };
@@ -117,9 +126,10 @@ export function buildComponentContext(
   appId: string,
   sessions: SessionApi,
   interaction: APIMessageComponentInteraction | APIModalSubmitInteraction,
-  params: Record<string, string>
+  params: Record<string, string>,
+  ui?: UiConfig
 ): ComponentContext {
-  const base = baseMethods(resources, appId, sessions, interaction);
+  const base = baseMethods(resources, appId, sessions, interaction, ui);
   return {
     interaction,
     customId: interaction.data.custom_id,

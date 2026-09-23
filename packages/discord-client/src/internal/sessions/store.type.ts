@@ -11,6 +11,7 @@ export type Pending =
   | {
       kind: 'paginate';
       ownerId: string;
+      username: string;
       items: unknown[];
       render: PaginateOptions<unknown>['render'];
       pageSize: number;
