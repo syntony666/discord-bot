@@ -5,7 +5,7 @@ import type { EmbedTheme } from './internal/embeds';
 export interface BotOptions {
   appId: string;
   onError?: (err: unknown) => void;
-  theme?: EmbedTheme;
+  theme: EmbedTheme;
 }
 
 export interface Bot {

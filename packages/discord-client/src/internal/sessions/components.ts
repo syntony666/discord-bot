@@ -48,7 +48,7 @@ export const modalFieldValues = (
   return values;
 };
 
-export const paginateEmbed = (s: PaginatePending, theme?: EmbedTheme): APIEmbed =>
+export const paginateEmbed = (s: PaginatePending, theme: EmbedTheme): APIEmbed =>
   withEmbedDefaults(
     s.render(
       s.items.slice(s.page * s.pageSize, (s.page + 1) * s.pageSize),

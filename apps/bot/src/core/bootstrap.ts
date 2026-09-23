@@ -6,6 +6,7 @@ import { reactionRoleFeature } from '@features/reaction-role/reaction-role.featu
 import { streamNotifyFeature } from '@features/stream-notify/stream-notify.feature';
 import type { DiscordClient } from '@discord-bot/discord-client';
 import { appConfig } from '@core/config';
+import { BaseColors, Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 
 const log = createLogger('Bootstrap');
@@ -16,7 +17,15 @@ export async function bootstrapApp(client: DiscordClient) {
   const bot = client.createBot({
     appId: appConfig.discord.appId,
     onError: (err) => log.error({ err }, 'Bot dispatch error'),
-    theme: { footerIconUrl: appConfig.footerIconUrl },
+    theme: {
+      footerIconUrl: appConfig.footerIconUrl,
+      colors: {
+        success: Colors.SUCCESS,
+        error: Colors.ERROR,
+        confirm: BaseColors.ORANGE,
+        info: Colors.INFO,
+      },
+    },
   });
   bot.register(
     statusFeature,

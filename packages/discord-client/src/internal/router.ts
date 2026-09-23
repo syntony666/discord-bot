@@ -111,7 +111,7 @@ export function createCommandRouter(
   appId: string,
   sessions: SessionApi & SessionDispatcher,
   onError: (err: unknown) => void,
-  theme?: EmbedTheme
+  theme: EmbedTheme
 ) {
   const commands = new Map<
     string,

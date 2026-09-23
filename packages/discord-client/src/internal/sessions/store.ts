@@ -37,8 +37,8 @@ const DEFAULT_PROMPT_TIMEOUT = 60_000;
 export function createSessionStore(
   resources: Resources,
   appId: string,
-  onError?: (err: unknown) => void,
-  theme?: EmbedTheme
+  theme: EmbedTheme,
+  onError?: (err: unknown) => void
 ) {
   const pending = new Map<string, Pending>();
   const waiters = new Map<string, Waiter>();
@@ -120,10 +120,10 @@ export function createSessionStore(
             title: options.title ?? '確認',
             description: options.description,
             fields: options.fields,
-            color: 0xf26522,
+            color: theme.colors.confirm,
             footer: {
               text: `${usernameOf(i)} · ${Math.ceil(timeoutMs / 60_000)} 分鐘後失效`,
-              ...(theme?.footerIconUrl ? { icon_url: theme.footerIconUrl } : {}),
+              icon_url: theme.footerIconUrl,
             },
             timestamp: new Date().toISOString(),
           },
@@ -162,7 +162,7 @@ export function createSessionStore(
             withEmbedDefaults(
               {
                 description: options.emptyText ?? '沒有資料。',
-                color: 0xded8d0,
+                color: theme.colors.info,
               },
               usernameOf(i),
               theme

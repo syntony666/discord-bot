@@ -1,7 +1,13 @@
 import type { APIEmbed, APIInteraction } from 'discord-api-types/v10';
 
 export interface EmbedTheme {
-  footerIconUrl?: string;
+  footerIconUrl: string;
+  colors: {
+    success: number;
+    error: number;
+    confirm: number;
+    info: number;
+  };
 }
 
 export const usernameOf = (i: APIInteraction): string =>
@@ -10,12 +16,12 @@ export const usernameOf = (i: APIInteraction): string =>
 export const withEmbedDefaults = (
   embed: APIEmbed,
   username: string,
-  theme?: EmbedTheme
+  theme: EmbedTheme
 ): APIEmbed => ({
   ...embed,
   footer: embed.footer ?? {
     text: username,
-    ...(theme?.footerIconUrl ? { icon_url: theme.footerIconUrl } : {}),
+    icon_url: theme.footerIconUrl,
   },
   timestamp: embed.timestamp ?? new Date().toISOString(),
 });

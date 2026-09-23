@@ -19,9 +19,6 @@ import type { CommandRoute, Interaction, SessionApi } from './context.type';
 import { ORIGINAL_MESSAGE, type Resources } from './resources';
 import { withEmbedDefaults, type EmbedTheme } from './embeds';
 
-const EMBED_OK = 0x57f287;
-const EMBED_ERR = 0xed4245;
-
 function normalize(data: ReplyData) {
   return typeof data === 'string' ? { content: data } : data;
 }
@@ -32,7 +29,7 @@ function interactionUser(i: Interaction): APIUser {
   return user;
 }
 
-function baseMethods(resources: Resources, appId: string, sessions: SessionApi, i: Interaction, theme?: EmbedTheme) {
+function baseMethods(resources: Resources, appId: string, sessions: SessionApi, i: Interaction, theme: EmbedTheme) {
   let responded = false;
   const username = interactionUser(i).username;
 
@@ -98,7 +95,7 @@ export function buildCommandContext(
   sessions: SessionApi,
   interaction: APIChatInputApplicationCommandInteraction,
   route: CommandRoute,
-  theme?: EmbedTheme
+  theme: EmbedTheme
 ): CommandContext {
   const base = baseMethods(resources, appId, sessions, interaction, theme);
   return {
@@ -112,10 +109,10 @@ export function buildCommandContext(
     ...base,
 
     success: (description) =>
-      base.reply({ embeds: [{ title: '✅', description, color: EMBED_OK }] }),
+      base.reply({ embeds: [{ title: '✅', description, color: theme.colors.success }] }),
     error: (description) =>
       base.reply(
-        { embeds: [{ title: '❌ 錯誤', description, color: EMBED_ERR }] },
+        { embeds: [{ title: '❌ 錯誤', description, color: theme.colors.error }] },
         true
       ),
   };
@@ -127,7 +124,7 @@ export function buildComponentContext(
   sessions: SessionApi,
   interaction: APIMessageComponentInteraction | APIModalSubmitInteraction,
   params: Record<string, string>,
-  theme?: EmbedTheme
+  theme: EmbedTheme
 ): ComponentContext {
   const base = baseMethods(resources, appId, sessions, interaction, theme);
   return {
