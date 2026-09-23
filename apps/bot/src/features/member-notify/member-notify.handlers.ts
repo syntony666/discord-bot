@@ -310,6 +310,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
             title: '新成員加入',
             description: message,
             color: Colors.MEMBER_JOIN,
+            timestamp: new Date().toISOString(),
           },
         ],
       });
@@ -348,6 +349,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
             title: '成員離開',
             description: message,
             color: Colors.MEMBER_LEAVE,
+            timestamp: new Date().toISOString(),
           },
         ],
       });

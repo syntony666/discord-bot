@@ -1,4 +1,5 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
+import { RESTJSONErrorCodes } from 'discord-api-types/v10';
 import { KeywordMatchType } from '@discord-bot/shared';
 import type { KeywordRule } from '@discord-bot/shared';
 import type { CommandContext, DiscordHelpers } from '@discord-bot/discord-client';
@@ -221,7 +222,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
         'Keyword matched and replied'
       );
     } catch (error) {
-      if ((error as { code?: number }).code === 50013) {
+      if ((error as { code?: number }).code === RESTJSONErrorCodes.MissingPermissions) {
         log.warn(
           { guildId: msg.guild_id, error: (error as Error).message },
           'Missing permissions to send message'
