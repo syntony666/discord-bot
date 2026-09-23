@@ -7,6 +7,7 @@ import type {
   APIGuildMember,
   APIInteractionResponse,
   APIMessage,
+  RESTGetAPIChannelMessagesQuery,
   APIUser,
   RESTPatchAPIChannelMessageJSONBody,
   RESTPatchAPIWebhookWithTokenMessageJSONBody,
@@ -32,6 +33,23 @@ export function createResources(rest: REST, getBotUser: () => APIUser | null) {
       rest.post(Routes.channelMessages(channelId), {
         body,
       }) as Promise<APIMessage>,
+    messages: {
+      list: (query: RESTGetAPIChannelMessagesQuery = {}) => {
+        const params = new URLSearchParams();
+        for (const [k, v] of Object.entries(query)) {
+          if (v !== undefined) params.set(k, String(v));
+        }
+        const qs = params.toString();
+        return rest.get(`${Routes.channelMessages(channelId)}${qs ? `?${qs}` : ''}`) as Promise<
+          APIMessage[]
+        >;
+      },
+      bulkDelete: (messageIds: string[], reason?: string) =>
+        rest.post(Routes.channelBulkDelete(channelId), {
+          body: { messages: messageIds },
+          reason,
+        }),
+    },
     message: (messageId: string) => ({
       get: () => rest.get(Routes.channelMessage(channelId, messageId)) as Promise<APIMessage>,
       edit: (body: RESTPatchAPIChannelMessageJSONBody) =>

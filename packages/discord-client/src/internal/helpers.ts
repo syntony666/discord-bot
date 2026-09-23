@@ -1,8 +1,12 @@
 import type {
+  APIMessage,
   RESTPatchAPIChannelMessageJSONBody,
   RESTPostAPIChannelMessageJSONBody,
 } from 'discord-api-types/v10';
+import { DiscordSnowflake } from '@sapphire/snowflake';
 import type { Resources } from './resources';
+
+const BULK_DELETE_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
 
 export function createHelpers(resources: Resources, getPing: () => number) {
   const commandIds = new Map<string, string>();
@@ -33,6 +37,51 @@ export function createHelpers(resources: Resources, getPing: () => number) {
     sendMessage: (channelId: string, body: RESTPostAPIChannelMessageJSONBody) =>
       resources.channel(channelId).send(body),
     getChannel: (channelId: string) => resources.channel(channelId).get(),
+    /** Fetches up to `limit` recent messages, paginating in chunks of 100. */
+    getChannelMessages: async (
+      channelId: string,
+      opts: { limit?: number; before?: string } = {}
+    ): Promise<APIMessage[]> => {
+      const { limit = 100 } = opts;
+      const out: APIMessage[] = [];
+      let before = opts.before;
+      while (out.length < limit) {
+        const page = await resources.channel(channelId).messages.list({
+          limit: Math.min(100, limit - out.length),
+          before,
+        });
+        if (page.length === 0) break;
+        out.push(...page);
+        before = page[page.length - 1]!.id;
+        if (page.length < 100) break;
+      }
+      return out;
+    },
+    /**
+     * Deletes many messages: chunks of 100, single-delete for leftovers of
+     * one, and skips messages older than Discord's 14-day bulk-delete window.
+     */
+    bulkDeleteMessages: async (
+      channelId: string,
+      messageIds: readonly string[],
+      reason?: string
+    ) => {
+      const cutoff = Date.now() - BULK_DELETE_WINDOW_MS;
+      const deleted: string[] = [];
+      const skipped: string[] = [];
+      for (const id of messageIds) {
+        (DiscordSnowflake.timestampFrom(id) > cutoff ? deleted : skipped).push(id);
+      }
+      for (let i = 0; i < deleted.length; i += 100) {
+        const chunk = deleted.slice(i, i + 100);
+        if (chunk.length === 1) {
+          await resources.channel(channelId).message(chunk[0]!).delete(reason);
+        } else if (chunk.length > 1) {
+          await resources.channel(channelId).messages.bulkDelete(chunk, reason);
+        }
+      }
+      return { deleted, skipped };
+    },
     getMessage: (channelId: string, messageId: string) =>
       resources.channel(channelId).message(messageId).get(),
     editMessage: (channelId: string, messageId: string, body: RESTPatchAPIChannelMessageJSONBody) =>
