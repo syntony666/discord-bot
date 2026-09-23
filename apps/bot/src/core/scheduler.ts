@@ -20,11 +20,7 @@ const tzParts = (d: Date, timeZone: string) => {
 
 // Find the UTC timestamp where `timeZone`'s wall clock reads y/mo/d h:mi.
 // Iterating twice absorbs the tz offset (and most DST edge cases).
-const wallToUtc = (
-  y: number, mo: number, d: number,
-  h: number, mi: number,
-  timeZone: string
-) => {
+const wallToUtc = (y: number, mo: number, d: number, h: number, mi: number, timeZone: string) => {
   let t = Date.UTC(y, mo, d, h, mi);
   for (let i = 0; i < 2; i++) {
     const p = tzParts(new Date(t), timeZone);

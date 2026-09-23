@@ -1,17 +1,13 @@
 import type { Observable } from 'rxjs';
-import type {
-  GatewayDispatchEvents,
-  GatewayDispatchPayload,
-} from 'discord-api-types/v10';
+import type { GatewayDispatchEvents, GatewayDispatchPayload } from 'discord-api-types/v10';
 
-type DataForEvent<Member> =
-  GatewayDispatchPayload extends infer D
-    ? D extends { t: infer T; d: infer Data }
-      ? Member extends T
-        ? Data
-        : never
+type DataForEvent<Member> = GatewayDispatchPayload extends infer D
+  ? D extends { t: infer T; d: infer Data }
+    ? Member extends T
+      ? Data
       : never
-    : never;
+    : never
+  : never;
 
 /**
  * Gateway dispatch payloads keyed by camelCase event name, derived from the
@@ -27,9 +23,7 @@ export type EventMap = {
 
 export type EventName = keyof EventMap;
 
-export type EventHandler<K extends EventName> = (
-  data: EventMap[K]
-) => void | Promise<void>;
+export type EventHandler<K extends EventName> = (data: EventMap[K]) => void | Promise<void>;
 
 export type StreamBuilder<K extends EventName> = (
   data$: Observable<EventMap[K]>

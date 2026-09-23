@@ -34,9 +34,7 @@ export function reactionRoleRoutes(module: ReactionRoleModule) {
   });
 
   routes.get('/reaction-roles', async (c) =>
-    c.json(
-      await module.getReactionRolesByMessage(guildId(c), c.req.query('messageId') ?? '')
-    )
+    c.json(await module.getReactionRolesByMessage(guildId(c), c.req.query('messageId') ?? ''))
   );
 
   routes.post('/reaction-roles', async (c) => {

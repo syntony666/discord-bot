@@ -19,13 +19,7 @@ import { ORIGINAL_MESSAGE, type Resources } from '../resources';
 import type { PaginateOptions } from '../../context.type';
 import type { SessionApi } from '../context.type';
 import type { PaginatePending, Pending, Waiter } from './store.type';
-import {
-  button,
-  modalFieldValues,
-  paginateEmbed,
-  paginateRow,
-  row,
-} from './components';
+import { button, modalFieldValues, paginateEmbed, paginateRow, row } from './components';
 import { usernameOf, withEmbedDefaults, type EmbedTheme } from '../embeds';
 
 const PREFIX = 'kit:';
@@ -45,12 +39,7 @@ export function createSessionStore(
 
   const fail = (err: unknown) => onError?.(err);
 
-  const arm = (
-    id: string,
-    session: Pending,
-    timeoutMs: number,
-    onTimeout: () => void
-  ) => {
+  const arm = (id: string, session: Pending, timeoutMs: number, onTimeout: () => void) => {
     session.timer = setTimeout(() => {
       pending.delete(id);
       try {
@@ -86,12 +75,7 @@ export function createSessionStore(
     token: string,
     messageId: string,
     data: APIInteractionResponseCallbackData
-  ) =>
-    resources
-      .webhook(appId, token)
-      .message(messageId)
-      .edit(data)
-      .catch(fail);
+  ) => resources.webhook(appId, token).message(messageId).edit(data).catch(fail);
 
   const expirePaginate = (id: string, s: PaginatePending) => {
     clearTimeout(s.timer);
@@ -130,7 +114,11 @@ export function createSessionStore(
         ],
         components: [
           row(
-            button(`${base}:yes`, options.confirmLabel ?? '確認', options.danger ? ButtonStyle.Danger : ButtonStyle.Success),
+            button(
+              `${base}:yes`,
+              options.confirmLabel ?? '確認',
+              options.danger ? ButtonStyle.Danger : ButtonStyle.Success
+            ),
             button(`${base}:no`, options.cancelLabel ?? '取消', ButtonStyle.Secondary)
           ),
         ],
@@ -139,12 +127,7 @@ export function createSessionStore(
     );
 
     return new Promise<boolean>((resolve) => {
-      arm(
-        id,
-        { kind: 'confirm', ownerId, resolve,  },
-        timeoutMs,
-        () => resolve(false)
-      );
+      arm(id, { kind: 'confirm', ownerId, resolve }, timeoutMs, () => resolve(false));
     });
   };
 
@@ -213,7 +196,6 @@ export function createSessionStore(
       timeoutMs,
       token,
       messageId,
-      
     };
     pending.set(id, session);
     expirePaginate(id, session);
@@ -239,10 +221,7 @@ export function createSessionStore(
               type: ComponentType.TextInput,
               custom_id: f.id,
               label: f.label,
-              style:
-                f.style === 'paragraph'
-                  ? TextInputStyle.Paragraph
-                  : TextInputStyle.Short,
+              style: f.style === 'paragraph' ? TextInputStyle.Paragraph : TextInputStyle.Short,
               value: f.value,
               placeholder: f.placeholder,
               required: f.required ?? true,
@@ -255,11 +234,8 @@ export function createSessionStore(
     });
 
     return new Promise((resolve) => {
-      arm(
-        id,
-        { kind: 'modal', resolve,  },
-        options.timeoutMs ?? DEFAULT_MODAL_TIMEOUT,
-        () => resolve(null)
+      arm(id, { kind: 'modal', resolve }, options.timeoutMs ?? DEFAULT_MODAL_TIMEOUT, () =>
+        resolve(null)
       );
     });
   };
@@ -307,9 +283,7 @@ export function createSessionStore(
         type: InteractionResponseType.DeferredChannelMessageWithSource,
         data: { flags: MessageFlags.Ephemeral },
       })
-      .then(() =>
-        resources.webhook(appId, i.token).message(ORIGINAL_MESSAGE).delete()
-      )
+      .then(() => resources.webhook(appId, i.token).message(ORIGINAL_MESSAGE).delete())
       .catch(fail);
 
   const expired = (i: APIInteraction) =>
@@ -384,8 +358,7 @@ export function createSessionStore(
 
   const dispatch = async (i: APIInteraction): Promise<boolean> => {
     const customId =
-      i.type === InteractionType.MessageComponent ||
-      i.type === InteractionType.ModalSubmit
+      i.type === InteractionType.MessageComponent || i.type === InteractionType.ModalSubmit
         ? i.data.custom_id
         : undefined;
     if (!customId?.startsWith(PREFIX)) return false;
@@ -436,9 +409,7 @@ export function createSessionStore(
           type: InteractionResponseType.UpdateMessage,
           data: {
             embeds: [paginateEmbed(session, theme)],
-            components: [
-              paginateRow(`kit:pag:${id}`, session.page, totalPages),
-            ],
+            components: [paginateRow(`kit:pag:${id}`, session.page, totalPages)],
           },
         });
         return true;

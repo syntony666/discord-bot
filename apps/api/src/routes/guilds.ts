@@ -12,9 +12,7 @@ export function guildRoutes(module: GuildModule) {
     return c.json(await module.ensureGuild(body.guildId, body.guildName));
   });
 
-  routes.get('/:guildId', async (c) =>
-    jsonOr404(c, await module.getGuild(guildId(c)))
-  );
+  routes.get('/:guildId', async (c) => jsonOr404(c, await module.getGuild(guildId(c))));
 
   routes.delete('/:guildId', async (c) => {
     await module.deleteGuild(guildId(c));

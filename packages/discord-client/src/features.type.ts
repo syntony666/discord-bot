@@ -7,11 +7,7 @@ import type {
 } from 'discord-api-types/v10';
 import type { CommandContext } from './context.type';
 import type { CommandHandler, ComponentHandler } from './internal/router.type';
-import type {
-  EventHandler,
-  EventName,
-  StreamBuilder,
-} from './internal/events/hub.type';
+import type { EventHandler, EventName, StreamBuilder } from './internal/events/hub.type';
 import type { CommandDef, OptionDef } from './commands.type';
 
 // --- option → TS type mapping ----------------------------------------------
@@ -31,9 +27,7 @@ interface OptionValueMap {
 }
 
 type MapValue<T> = T extends keyof OptionValueMap ? OptionValueMap[T] : unknown;
-type ChoiceValue<P> = P extends { choices: readonly { value: infer V }[] }
-  ? V
-  : never;
+type ChoiceValue<P> = P extends { choices: readonly { value: infer V }[] } ? V : never;
 type TypeOf<P> = P extends { type: infer T } ? T : never;
 
 /** Choice values narrow to their literal union when declared. */
@@ -55,32 +49,28 @@ type OptionsOf<O> = O extends readonly OptionDef[]
 
 // --- def → handler keys / ctx ----------------------------------------------
 
-type SubKeys<C extends CommandDef> =
-  C['subcommands'] extends readonly (infer S)[]
-    ? S extends { name: infer N extends string }
-      ? N
-      : never
-    : never;
+type SubKeys<C extends CommandDef> = C['subcommands'] extends readonly (infer S)[]
+  ? S extends { name: infer N extends string }
+    ? N
+    : never
+  : never;
 
-type GroupKeys<C extends CommandDef> =
-  C['groups'] extends readonly (infer G)[]
-    ? G extends {
-          name: infer GN extends string;
-          subcommands: readonly (infer S)[];
-        }
-      ? S extends { name: infer SN extends string }
-        ? `${GN}.${SN}`
-        : never
+type GroupKeys<C extends CommandDef> = C['groups'] extends readonly (infer G)[]
+  ? G extends {
+      name: infer GN extends string;
+      subcommands: readonly (infer S)[];
+    }
+    ? S extends { name: infer SN extends string }
+      ? `${GN}.${SN}`
       : never
-    : never;
+    : never
+  : never;
 
 /** Valid `h.handler(...)` keys: 'add', 'panel.create', or the command name. */
 export type HandlerKeyOf<C extends CommandDef> =
   | SubKeys<C>
   | GroupKeys<C>
-  | ([SubKeys<C>, GroupKeys<C>] extends [never, never]
-      ? C['command']
-      : never);
+  | ([SubKeys<C>, GroupKeys<C>] extends [never, never] ? C['command'] : never);
 
 /** The def a handler key resolves to — a subcommand, a group subcommand,
  *  or the command itself when it has no subcommands. */
@@ -88,14 +78,10 @@ type Members<T> = T extends readonly (infer M)[] ? M : never;
 type Named<Name> = { name: Name };
 
 type GroupSubcommands<C extends CommandDef, G> =
-  Extract<Members<C['groups']>, Named<G>> extends { subcommands: infer Ss }
-    ? Ss
-    : never;
+  Extract<Members<C['groups']>, Named<G>> extends { subcommands: infer Ss } ? Ss : never;
 
 type HandlerDef<C extends CommandDef, K> =
-  | (K extends `${infer G}.${infer S}`
-      ? Extract<Members<GroupSubcommands<C, G>>, Named<S>>
-      : never)
+  | (K extends `${infer G}.${infer S}` ? Extract<Members<GroupSubcommands<C, G>>, Named<S>> : never)
   | (K extends C['command'] ? C : never)
   | (K extends `${string}.${string}` | C['command']
       ? never

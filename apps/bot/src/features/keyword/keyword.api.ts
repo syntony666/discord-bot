@@ -23,9 +23,7 @@ export function createKeywordApi(request: ApiRequest) {
       return request<KeywordRule[]>(`${base(guildId)}?q=${encodeURIComponent(query)}`);
     },
     getRuleByPattern(guildId: string, pattern: string) {
-      return orNull(
-        request<KeywordRule>(`${base(guildId)}/${encodeURIComponent(pattern)}`)
-      );
+      return orNull(request<KeywordRule>(`${base(guildId)}/${encodeURIComponent(pattern)}`));
     },
     createRule(input: CreateKeywordRuleInput) {
       const { guildId, ...body } = input;
@@ -36,10 +34,10 @@ export function createKeywordApi(request: ApiRequest) {
     },
     updateRule(input: UpdateKeywordRuleInput) {
       const { guildId, pattern, ...body } = input;
-      return request<KeywordRule>(
-        `${base(guildId)}/${encodeURIComponent(pattern)}`,
-        { method: 'PUT', body: JSON.stringify(body) }
-      );
+      return request<KeywordRule>(`${base(guildId)}/${encodeURIComponent(pattern)}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      });
     },
     deleteRule(guildId: string, pattern: string) {
       return request<void>(`${base(guildId)}/${encodeURIComponent(pattern)}`, {

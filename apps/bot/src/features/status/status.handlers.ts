@@ -1,9 +1,5 @@
 import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
-import {
-  DiscordSnowflake,
-  Formatters,
-  useHandlers,
-} from '@discord-bot/discord-client';
+import { DiscordSnowflake, Formatters, useHandlers } from '@discord-bot/discord-client';
 import type {
   APIActionRowComponent,
   APIButtonComponentWithURL,
@@ -75,8 +71,7 @@ export function useStatusHandlers(deps: StatusDeps) {
         { name: 'Uptime', value: `\`${getUptime()}\``, inline: false },
         {
           name: 'API Latency',
-          value:
-            typeof latency === 'number' ? `\`${latency}ms\`` : `\`${latency}\``,
+          value: typeof latency === 'number' ? `\`${latency}ms\`` : `\`${latency}\``,
           inline: true,
         },
         {
@@ -97,10 +92,7 @@ export function useStatusHandlers(deps: StatusDeps) {
       embeds: [embed(Date.now() - start)],
       components,
     });
-    log.info(
-      { guildId: ctx.guildId, latency: `${Date.now() - start}ms` },
-      'Bot status displayed'
-    );
+    log.info({ guildId: ctx.guildId, latency: `${Date.now() - start}ms` }, 'Bot status displayed');
   });
 
   h.handler('guild', async (ctx) => {
@@ -153,11 +145,7 @@ export function useStatusHandlers(deps: StatusDeps) {
   h.handler('features', async (ctx) => {
     if (!ctx.guildId) return ctx.error('無法取得伺服器資訊');
 
-    const fields = await buildFeaturesStatusFields(
-      ctx.guildId,
-      deps.api,
-      discord.commandMention
-    );
+    const fields = await buildFeaturesStatusFields(ctx.guildId, deps.api, discord.commandMention);
     await ctx.reply({
       embeds: [
         fields.length > 0

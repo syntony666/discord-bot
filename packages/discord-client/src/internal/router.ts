@@ -62,15 +62,10 @@ const flattenOptions = (
   return out;
 };
 
-const isChatInput = (
-  i: APIInteraction
-): i is APIChatInputApplicationCommandInteraction =>
-  i.type === InteractionType.ApplicationCommand &&
-  i.data.type === ApplicationCommandType.ChatInput;
+const isChatInput = (i: APIInteraction): i is APIChatInputApplicationCommandInteraction =>
+  i.type === InteractionType.ApplicationCommand && i.data.type === ApplicationCommandType.ChatInput;
 
-const parseRoute = (
-  i: APIChatInputApplicationCommandInteraction
-): CommandRoute => {
+const parseRoute = (i: APIChatInputApplicationCommandInteraction): CommandRoute => {
   const [first] = i.data.options ?? [];
   const resolved = i.data.resolved;
 
@@ -113,10 +108,7 @@ export function createCommandRouter(
   onError: (err: unknown) => void,
   theme: EmbedTheme
 ) {
-  const commands = new Map<
-    string,
-    { def: CommandDef; handlers: Record<string, CommandHandler> }
-  >();
+  const commands = new Map<string, { def: CommandDef; handlers: Record<string, CommandHandler> }>();
   const components: ComponentRoute[] = [];
 
   const addCommand = (def: CommandDef, handlers: Record<string, CommandHandler>) => {
@@ -134,15 +126,11 @@ export function createCommandRouter(
     components.push({ ...compiled, handler });
   };
 
-  const handleChatInput = async (
-    i: APIChatInputApplicationCommandInteraction
-  ) => {
+  const handleChatInput = async (i: APIChatInputApplicationCommandInteraction) => {
     const entry = commands.get(i.data.name);
     if (!entry) return false;
     const route = parseRoute(i);
-    const key = [route.subcommandGroup, route.subcommand]
-      .filter(Boolean)
-      .join('.');
+    const key = [route.subcommandGroup, route.subcommand].filter(Boolean).join('.');
     const handler = entry.handlers[key || route.command];
     if (!handler) return false;
 
@@ -151,9 +139,7 @@ export function createCommandRouter(
     return true;
   };
 
-  const handleComponent = async (
-    i: APIMessageComponentInteraction | APIModalSubmitInteraction
-  ) => {
+  const handleComponent = async (i: APIMessageComponentInteraction | APIModalSubmitInteraction) => {
     const customId = i.data.custom_id;
     for (const route of components) {
       const m = route.pattern.exec(customId);
@@ -170,10 +156,7 @@ export function createCommandRouter(
   };
 
   const handle = async (i: APIInteraction): Promise<boolean> => {
-    if (
-      i.type === InteractionType.MessageComponent ||
-      i.type === InteractionType.ModalSubmit
-    ) {
+    if (i.type === InteractionType.MessageComponent || i.type === InteractionType.ModalSubmit) {
       if (await sessions.dispatch(i)) return true;
       return handleComponent(i);
     }
@@ -182,10 +165,7 @@ export function createCommandRouter(
   };
 
   const claims = (i: APIInteraction): boolean => {
-    if (
-      i.type === InteractionType.MessageComponent ||
-      i.type === InteractionType.ModalSubmit
-    ) {
+    if (i.type === InteractionType.MessageComponent || i.type === InteractionType.ModalSubmit) {
       const customId = i.data.custom_id;
       if (sessions.claims(customId)) return true;
       return components.some((r) => r.pattern.test(customId));

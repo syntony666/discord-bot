@@ -34,9 +34,9 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
       );
 
       if (twitchWatchersNeedingConversion.length > 0) {
-        const twitchService = services.find(
-          (s) => s.getPlatformName() === 'twitch'
-        ) as TwitchService | undefined;
+        const twitchService = services.find((s) => s.getPlatformName() === 'twitch') as
+          | TwitchService
+          | undefined;
         if (twitchService) {
           const usernames = twitchWatchersNeedingConversion.map((w) => w.platformId);
           const usernameToIdMap = await twitchService.convertUsernamesToUserIds(usernames);
@@ -138,9 +138,7 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
             description: streamInfo.title,
             url: streamInfo.url,
             color: 0x6441a5,
-            ...(watcher.avatarImageUrl
-              ? { thumbnail: { url: watcher.avatarImageUrl } }
-              : {}),
+            ...(watcher.avatarImageUrl ? { thumbnail: { url: watcher.avatarImageUrl } } : {}),
             fields: streamInfo.game
               ? [
                   {
@@ -156,7 +154,11 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
       });
 
       log.info(
-        { guildId: watcher.guildId, platform: streamInfo.platform, platformId: streamInfo.platformId },
+        {
+          guildId: watcher.guildId,
+          platform: streamInfo.platform,
+          platformId: streamInfo.platformId,
+        },
         'Stream notification sent'
       );
     } catch (error) {

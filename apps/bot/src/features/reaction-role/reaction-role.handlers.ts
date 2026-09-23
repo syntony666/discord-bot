@@ -501,7 +501,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         embeds: [
           {
             title: `${panel.title} - Reaction Roles`,
-            description: '此 Panel 尚未添加任何 Reaction Role。\n使用 `/reaction-role add` 來添加。',
+            description:
+              '此 Panel 尚未添加任何 Reaction Role。\n使用 `/reaction-role add` 來添加。',
             color: Colors.INFO,
           },
         ],
@@ -563,21 +564,15 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
               allRoles
                 .filter((role) => role.roleId !== match.roleId)
                 .flatMap((role) => {
-                  const key = removalKey(
-                    reaction.user_id,
-                    reaction.message_id,
-                    role.emoji
-                  );
+                  const key = removalKey(reaction.user_id, reaction.message_id, role.emoji);
                   markRemoval(key);
                   return [
-                    discord
-                      .removeRole(guildId, reaction.user_id, role.roleId)
-                      .catch((err) => {
-                        log.debug(
-                          { error: err, roleId: role.roleId },
-                          'Failed to remove role (user may not have it)'
-                        );
-                      }),
+                    discord.removeRole(guildId, reaction.user_id, role.roleId).catch((err) => {
+                      log.debug(
+                        { error: err, roleId: role.roleId },
+                        'Failed to remove role (user may not have it)'
+                      );
+                    }),
                     discord
                       .removeReaction(
                         reaction.channel_id,
@@ -614,18 +609,10 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
             const key = removalKey(reaction.user_id, messageId, emoji);
             markRemoval(key);
             await discord
-              .removeReaction(
-                reaction.channel_id,
-                reaction.message_id,
-                emoji,
-                reaction.user_id
-              )
+              .removeReaction(reaction.channel_id, reaction.message_id, emoji, reaction.user_id)
               .catch((err) => {
                 pendingRemovals.delete(key);
-                log.debug(
-                  { error: err, emoji },
-                  'Failed to remove reaction (VERIFY mode)'
-                );
+                log.debug({ error: err, emoji }, 'Failed to remove reaction (VERIFY mode)');
               });
             log.debug({ userId: reaction.user_id }, 'Removed reaction (VERIFY mode)');
           }

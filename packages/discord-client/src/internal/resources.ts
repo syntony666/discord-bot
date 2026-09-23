@@ -21,18 +21,8 @@ export const ORIGINAL_MESSAGE = '@original';
 const ownReactionRoute = (channelId: string, messageId: string, emoji: string) =>
   Routes.channelMessageOwnReaction(channelId, messageId, encodeURIComponent(emoji));
 
-const userReactionRoute = (
-  channelId: string,
-  messageId: string,
-  userId: string,
-  emoji: string
-) =>
-  Routes.channelMessageUserReaction(
-    channelId,
-    messageId,
-    encodeURIComponent(emoji),
-    userId
-  );
+const userReactionRoute = (channelId: string, messageId: string, userId: string, emoji: string) =>
+  Routes.channelMessageUserReaction(channelId, messageId, encodeURIComponent(emoji), userId);
 
 export function createResources(rest: REST, getBotUser: () => APIUser | null) {
   const channel = (channelId: string) => ({
@@ -42,10 +32,7 @@ export function createResources(rest: REST, getBotUser: () => APIUser | null) {
         body,
       }) as Promise<APIMessage>,
     message: (messageId: string) => ({
-      get: () =>
-        rest.get(
-          Routes.channelMessage(channelId, messageId)
-        ) as Promise<APIMessage>,
+      get: () => rest.get(Routes.channelMessage(channelId, messageId)) as Promise<APIMessage>,
       edit: (body: RESTPatchAPIChannelMessageJSONBody) =>
         rest.patch(Routes.channelMessage(channelId, messageId), {
           body,
@@ -53,8 +40,7 @@ export function createResources(rest: REST, getBotUser: () => APIUser | null) {
       delete: (reason?: string) =>
         rest.delete(Routes.channelMessage(channelId, messageId), { reason }),
       reactions: {
-        add: (emoji: string) =>
-          rest.put(ownReactionRoute(channelId, messageId, emoji)),
+        add: (emoji: string) => rest.put(ownReactionRoute(channelId, messageId, emoji)),
         remove: (emoji: string, userId?: string) =>
           rest.delete(
             userId
@@ -66,11 +52,9 @@ export function createResources(rest: REST, getBotUser: () => APIUser | null) {
   });
 
   const guild = (guildId: string) => ({
-    get: () =>
-      rest.get(`${Routes.guild(guildId)}?with_counts=true`) as Promise<APIGuild>,
+    get: () => rest.get(`${Routes.guild(guildId)}?with_counts=true`) as Promise<APIGuild>,
     member: (userId: string) => ({
-      get: () =>
-        rest.get(Routes.guildMember(guildId, userId)) as Promise<APIGuildMember>,
+      get: () => rest.get(Routes.guildMember(guildId, userId)) as Promise<APIGuildMember>,
       roles: {
         add: (roleId: string, reason?: string) =>
           rest.put(Routes.guildMemberRole(guildId, userId, roleId), { reason }),

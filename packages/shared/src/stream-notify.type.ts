@@ -24,7 +24,15 @@ export interface StreamNotifyConfig {
 
 export type StreamWatcherRuntime = Pick<
   StreamWatcher,
-  | 'id' | 'guildId' | 'platformId' | 'platform' | 'displayName' | 'avatarImageUrl' | 'isLive' | 'lastChecked' | 'createdAt'
+  | 'id'
+  | 'guildId'
+  | 'platformId'
+  | 'platform'
+  | 'displayName'
+  | 'avatarImageUrl'
+  | 'isLive'
+  | 'lastChecked'
+  | 'createdAt'
 >;
 
 export type StreamNotifyConfigRuntime = Pick<

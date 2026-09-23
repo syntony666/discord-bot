@@ -24,9 +24,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   const h = useHandlers(keywordCommand);
 
   const cancelled = {
-    embeds: [
-      { title: '已取消', description: '操作已取消。', color: Colors.INFO },
-    ],
+    embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
     components: [],
   };
 
@@ -154,12 +152,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const { query } = ctx.options;
 
     const rules = await api.searchRules(guildId, query);
-    await paginateRules(
-      ctx,
-      rules,
-      `關鍵字搜尋：${query}`,
-      `找不到符合「${query}」的關鍵字規則。`
-    );
+    await paginateRules(ctx, rules, `關鍵字搜尋：${query}`, `找不到符合「${query}」的關鍵字規則。`);
     log.info({ guildId, query }, 'Keyword search displayed');
   });
 
@@ -228,10 +221,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
           'Missing permissions to send message'
         );
       } else {
-        log.error(
-          { error, guildId: msg.guild_id },
-          'Failed to send keyword response'
-        );
+        log.error({ error, guildId: msg.guild_id }, 'Failed to send keyword response');
       }
     }
   });
