@@ -16,7 +16,8 @@
     "prisma:migrate": "npm run prisma:migrate --workspace=@discord-bot/api",
     "prisma:deploy": "npm run prisma:deploy --workspace=@discord-bot/api",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "node --test 'apps/*/test/**/*.test.mts'"
   },
   "devDependencies": {
     "husky": "^9.1.7",
