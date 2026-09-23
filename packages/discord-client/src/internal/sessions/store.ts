@@ -122,7 +122,7 @@ export function createSessionStore(
             fields: options.fields,
             color: 0xf26522,
             footer: {
-              text: `${usernameOf(i)} · ${Math.round(timeoutMs / 60_000)} 分鐘後失效`,
+              text: `${usernameOf(i)} · ${Math.ceil(timeoutMs / 60_000)} 分鐘後失效`,
               ...(ui?.footerIconUrl ? { icon_url: ui.footerIconUrl } : {}),
             },
             timestamp: new Date().toISOString(),
