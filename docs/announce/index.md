@@ -46,8 +46,8 @@
 
 ## 五、資料之保留與刪除
 
-- 各項設定資料於對應功能停用或伺服器移除本機器人前持續保留
-- 伺服器管理員可隨時透過指令刪除相關設定（如 `/keyword delete`、`/reaction-role panel delete`、`/member-notify disable`、`/stream-notify disable`）
+- 各項設定資料於對應功能停用前持續保留；當本機器人被移出伺服器時，該伺服器之所有設定資料將自動刪除
+- 伺服器管理員可隨時透過指令刪除相關設定（如 `/keyword delete`、`/reaction-role panel delete`、`/notify member disable`、`/notify stream disable`）
 - 如需刪除伺服器之全部資料或有其他資料權利相關請求，請透過下方聯絡方式與開發者聯繫
 
 ## 六、政策之變更

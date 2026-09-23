@@ -18,6 +18,15 @@ GitHub: [syntony666](https://github.com/syntony666)
 
 ## 版本紀錄
 
+### ver. 5.2.0
+
+#### 2026.9.23
+
+- 通知指令整合：`member-notify`、`stream-notify` 合併為 `/notify member`、`/notify stream`
+- 關鍵字回覆新增 `/keyword view`、`/keyword search`，回覆內容支援 `;;` 分隔多個候選隨機回覆
+- `/status notify` 改名為 `/status features`
+- 機器人被移出伺服器時自動清除該伺服器的設定資料
+
 ### ver. 5.1.0
 
 #### 2026.9.22

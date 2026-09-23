@@ -1,6 +1,6 @@
 # 指令說明
 
-#### 所有指令都是斜線指令(/)，在訊息框打 `/` 就會出現，而且只能在伺服器內使用
+#### 所有指令都是斜線指令(/)，在訊息框打 `/` 就會跳出來，而且只能在伺服器內使用
 
 `<必填>` `[選填]`
 
@@ -10,8 +10,7 @@
 |---|---|---|
 | `/keyword` | 設定關鍵字，有人命中就自動回覆 | 無，人人都能用 |
 | `/reaction-role` | 對訊息按表情符號領取身分組 | 管理身分組 |
-| `/member-notify` | 成員加入 / 離開時發送通知 | 管理伺服器 |
-| `/stream-notify` | 實況主開台時發送通知 | 管理伺服器 |
+| `/notify` | 成員進出、實況開台通知 | 管理伺服器 |
 | `/status` | 查看機器人與伺服器狀態 | 無 |
 
 ---
@@ -29,7 +28,7 @@
 | 參數 | 說明 |
 |---|---|
 | `關鍵字` | 用來觸發回覆的文字 |
-| `回覆內容` | 命中時工具人要回的話 |
+| `回覆內容` | 命中時工具人要回的話。想讓它隨機回答，就用 `;;` 分隔多個選項，例如 `早安;;早;;哈囉` |
 | `比對類型` | 不填預設 `EXACT`：整句話要跟關鍵字**完全一樣**才會回；`CONTAINS`：句子裡**有包含**關鍵字就會回 |
 
 ::: tip
@@ -55,6 +54,16 @@
 > 列出伺服器所有回覆規則（關鍵字、回覆內容、比對類型、設定者），可以翻頁
 
 - 指令: `/keyword list`
+
+### 查看單一規則 `/keyword view`
+
+> 列表裡只顯示摘要，想看某條規則的完整回覆內容用這個
+
+- 指令: `/keyword view <關鍵字>`
+
+### 搜尋規則 `/keyword search`
+
+- 指令: `/keyword search <關鍵字>`
 
 ::: tip
 
@@ -114,7 +123,7 @@ _**僅限擁有「管理身分組」權限者執行**_
 | 參數 | 說明 |
 |---|---|
 | `panel_id` | Panel 訊息的 ID，就顯示在 Panel 底部，可以直接複製 |
-| `表情符號` | 直接貼 emoji 或伺服器的自訂表情符號 |
+| `表情符號` | 直接貼表情符號或伺服器的自訂表情符號 |
 | `身分組` | 按下表情符號後要給的身分組 |
 | `說明` | 這個身分組的說明，會顯示在 Panel 上（上限 100 字） |
 
@@ -133,7 +142,7 @@ _**僅限擁有「管理身分組」權限者執行**_
 
 ---
 
-## 直播通知 `/stream-notify`
+## 直播通知 `/notify stream`
 
 _**僅限擁有「管理伺服器」權限者執行**_
 
@@ -145,9 +154,9 @@ _**僅限擁有「管理伺服器」權限者執行**_
 2. `watch` 加入想監控的實況主，可以加好幾個
 3. 之後實況主一開台就會自動發通知
 
-### 啟用通知 `/stream-notify enable`
+### 啟用通知 `/notify stream enable`
 
-- 指令: `/stream-notify enable <頻道> [訊息內容]`
+- 指令: `/notify stream enable <頻道> [訊息內容]`
 
 | 參數 | 說明 |
 |---|---|
@@ -156,15 +165,15 @@ _**僅限擁有「管理伺服器」權限者執行**_
 
 已經設定過再下 `enable` 的話，會更新頻道並重新啟用；沒填 `訊息內容` 就會保留原本的訊息
 
-### 停用通知 `/stream-notify disable`
+### 停用通知 `/notify stream disable`
 
 > 只關掉通知，設定和監控名單都會保留，重新 `enable` 就能恢復
 
-- 指令: `/stream-notify disable`
+- 指令: `/notify stream disable`
 
-### 加入監控 `/stream-notify watch`
+### 加入監控 `/notify stream watch`
 
-- 指令: `/stream-notify watch <platform> <實況主ID或用戶名> [顯示名稱]`
+- 指令: `/notify stream watch <platform> <實況主ID或用戶名> [顯示名稱]`
 
 | 參數 | 說明 |
 |---|---|
@@ -180,8 +189,8 @@ _**僅限擁有「管理伺服器」權限者執行**_
 
 ### 移除監控 / 查看設定
 
-- 指令: `/stream-notify unwatch <platform> <實況主ID或用戶名>` — 停止監控某個實況主
-- 指令: `/stream-notify list` — 查看啟用狀態、通知頻道、訊息模板和所有監控中的實況主
+- 指令: `/notify stream unwatch <platform> <實況主ID或用戶名>` — 停止監控某個實況主
+- 指令: `/notify stream list` — 查看啟用狀態、通知頻道、訊息模板和所有監控中的實況主
 
 ::: tip
 
@@ -193,28 +202,32 @@ _**僅限擁有「管理伺服器」權限者執行**_
 
 ---
 
-## 成員進出通知 `/member-notify`
+## 成員進出通知 `/notify member`
 
 _**僅限擁有「管理伺服器」權限者執行**_
 
 > 有新成員加入、或有人離開伺服器時，在指定頻道發送通知訊息
 
-### 啟用通知 `/member-notify enable`
+### 啟用通知 `/notify member enable`
 
 > 一個指令就會把「加入 + 離開」兩種通知開到同一個頻道
 
-- 指令: `/member-notify enable <頻道>`
+- 指令: `/notify member enable <頻道>`
 
-### 關閉通知 `/member-notify disable`
+### 關閉通知 `/notify member disable`
 
 > 關閉所有成員通知，執行前會跳出確認對話框，列出目前啟用中的通知
 
-- 指令: `/member-notify disable`
+- 指令: `/notify member disable`
 
-### 自訂訊息 `/member-notify message`
+### 查看 / 設定個別通知 `/notify member join`、`/notify member leave`
 
-- 指令: `/member-notify message join <訊息模板>` — 設定加入通知的訊息
-- 指令: `/member-notify message leave <訊息模板>` — 設定離開通知的訊息
+> 不帶參數是查看目前的設定；帶參數就會更新（更新前會跳確認對話框）
+
+- 指令: `/notify member join` — 查看加入通知的狀態、頻道、訊息模板
+- 指令: `/notify member join [訊息模板] [true|false]` — 更新加入通知的模板或開關
+- 指令: `/notify member leave` — 查看離開通知的設定
+- 指令: `/notify member leave [訊息模板] [true|false]` — 更新離開通知的模板或開關
 
 訊息模板可以用的變數：
 
@@ -230,21 +243,14 @@ _**僅限擁有「管理伺服器」權限者執行**_
 - 加入：`📥 {user} 加入了 {server}！目前共 {memberCount} 位成員`
 - 離開：`📤 {username} 離開了 {server}。目前剩餘 {memberCount} 位成員`
 
-### 單獨開關 `/member-notify toggle`
-
-> 只想開加入通知、不開離開通知（或反過來）時用
-
-- 指令: `/member-notify toggle join <true|false>`
-- 指令: `/member-notify toggle leave <true|false>`
-
 ### 查看狀態 / 測試預覽
 
-- 指令: `/member-notify status` — 查看加入 / 離開通知各自的開關狀態、頻道、目前訊息模板
-- 指令: `/member-notify test <join|leave>` — 在**目前頻道**預覽通知長什麼樣子，會用你自己的資訊帶入變數，不會真的發到通知頻道
+- 指令: `/notify member status` — 查看加入 / 離開通知各自的開關狀態、頻道、目前訊息模板
+- 指令: `/notify member test <join|leave>` — 在**目前頻道**預覽通知長什麼樣子，會用你自己的資訊帶入變數，不會真的發到通知頻道
 
 ::: tip
 
-通知是用訊息卡片（embed）發送，加入和離開各有不同的顏色
+通知是用訊息卡片發送，加入和離開各有不同的顏色
 
 :::
 
@@ -256,4 +262,4 @@ _**僅限擁有「管理伺服器」權限者執行**_
 
 - 指令: `/status bot` — 機器人版本、上線時間、API 與 Discord 連線狀態
 - 指令: `/status guild` — 伺服器名稱、成員數、建立時間等
-- 指令: `/status notify` — 成員通知與直播通知目前的設定總覽
+- 指令: `/status features` — 各功能的啟用狀態總覽
