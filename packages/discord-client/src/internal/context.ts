@@ -17,9 +17,7 @@ import type {
 } from '../context.type';
 import type { CommandRoute, Interaction, SessionApi } from './context.type';
 import { ORIGINAL_MESSAGE, type Resources } from './resources';
-
-const EMBED_OK = 0x57f287;
-const EMBED_ERR = 0xed4245;
+import { withEmbedDefaults, type EmbedTheme } from './embeds';
 
 function normalize(data: ReplyData) {
   return typeof data === 'string' ? { content: data } : data;
@@ -31,20 +29,36 @@ function interactionUser(i: Interaction): APIUser {
   return user;
 }
 
-function baseMethods(resources: Resources, appId: string, sessions: SessionApi, i: Interaction) {
+function baseMethods(
+  resources: Resources,
+  appId: string,
+  sessions: SessionApi,
+  i: Interaction,
+  theme: EmbedTheme
+) {
   let responded = false;
+  const username = interactionUser(i).username;
+
+  const withTheme = (data: ReplyData) => {
+    const d = normalize(data);
+    if (!d.embeds?.length) return d;
+    return { ...d, embeds: d.embeds.map((e) => withEmbedDefaults(e, username, theme)) };
+  };
 
   const callback = (body: APIInteractionResponse) =>
-    resources.interaction(i.id, i.token).respond(body).then(() => {
-      responded = true;
-    });
+    resources
+      .interaction(i.id, i.token)
+      .respond(body)
+      .then(() => {
+        responded = true;
+      });
 
   return {
     reply: (data: ReplyData, ephemeral = false) =>
       callback({
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          ...normalize(data),
+          ...withTheme(data),
           ...(ephemeral ? { flags: MessageFlags.Ephemeral } : {}),
         },
       }),
@@ -58,23 +72,22 @@ function baseMethods(resources: Resources, appId: string, sessions: SessionApi, 
     update: (data: ReplyData) =>
       callback({
         type: InteractionResponseType.UpdateMessage,
-        data: normalize(data),
+        data: withTheme(data),
       }),
 
-    deferUpdate: () =>
-      callback({ type: InteractionResponseType.DeferredMessageUpdate }),
+    deferUpdate: () => callback({ type: InteractionResponseType.DeferredMessageUpdate }),
 
     followUp: (data: ReplyData) =>
       resources
         .webhook(appId, i.token)
-        .execute(normalize(data))
+        .execute(withTheme(data))
         .then(() => undefined),
 
     editReply: (data: ReplyData) =>
       resources
         .webhook(appId, i.token)
         .message(ORIGINAL_MESSAGE)
-        .edit(normalize(data))
+        .edit(withTheme(data))
         .then(() => undefined),
 
     confirm: (options: ConfirmOptions) => sessions.confirm(i, options, responded),
@@ -89,9 +102,10 @@ export function buildCommandContext(
   appId: string,
   sessions: SessionApi,
   interaction: APIChatInputApplicationCommandInteraction,
-  route: CommandRoute
+  route: CommandRoute,
+  theme: EmbedTheme
 ): CommandContext {
-  const base = baseMethods(resources, appId, sessions, interaction);
+  const base = baseMethods(resources, appId, sessions, interaction, theme);
   return {
     interaction,
     command: route.command,
@@ -103,12 +117,9 @@ export function buildCommandContext(
     ...base,
 
     success: (description) =>
-      base.reply({ embeds: [{ title: '✅', description, color: EMBED_OK }] }),
+      base.reply({ embeds: [{ title: '✅', description, color: theme.colors.success }] }),
     error: (description) =>
-      base.reply(
-        { embeds: [{ title: '❌', description, color: EMBED_ERR }] },
-        true
-      ),
+      base.reply({ embeds: [{ title: '❌ 錯誤', description, color: theme.colors.error }] }, true),
   };
 }
 
@@ -117,9 +128,10 @@ export function buildComponentContext(
   appId: string,
   sessions: SessionApi,
   interaction: APIMessageComponentInteraction | APIModalSubmitInteraction,
-  params: Record<string, string>
+  params: Record<string, string>,
+  theme: EmbedTheme
 ): ComponentContext {
-  const base = baseMethods(resources, appId, sessions, interaction);
+  const base = baseMethods(resources, appId, sessions, interaction, theme);
   return {
     interaction,
     customId: interaction.data.custom_id,

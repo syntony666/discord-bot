@@ -162,6 +162,7 @@ model StreamWatcher {
   platformUserId   String?          // user_id (e.g., "104484222") - null means needs conversion
   platform         StreamPlatform
   displayName      String
+  avatarImageUrl   String?          // cached platform avatar URL, refreshed periodically
   isLive           Boolean          @default(false)
   lastChecked      DateTime         @default(now())
   createdAt        DateTime         @default(now())

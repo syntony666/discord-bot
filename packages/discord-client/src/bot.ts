@@ -3,6 +3,7 @@ import type { GatewayDispatchPayload } from 'discord-api-types/v10';
 import { createCommandRouter, handlerKeys } from './internal/router';
 import type { Resources } from './internal/resources';
 import { toRestBody } from './internal/serialize';
+import { commandsMatch } from './internal/sync';
 import { createSessionStore } from './internal/sessions/store';
 import { createEventHub } from './internal/events/hub';
 import { createHelpers } from './internal/helpers';
@@ -10,14 +11,18 @@ import type { Bot, BotOptions } from './bot.type';
 import type { Collected, Feature } from './features.type';
 import type { CommandDef } from './commands.type';
 
-export function createBot(resources: Resources, options: BotOptions): Bot {
+export function createBot(
+  resources: Resources,
+  options: BotOptions,
+  getPing: () => number = () => 0
+): Bot {
   const { appId } = options;
   const onError = options.onError ?? ((err) => console.error(err));
 
-  const sessions = createSessionStore(resources, appId, onError);
-  const router = createCommandRouter(resources, appId, sessions, onError);
+  const sessions = createSessionStore(resources, appId, options.theme, onError);
+  const router = createCommandRouter(resources, appId, sessions, onError, options.theme);
   const hub = createEventHub(onError, () => resources.botId);
-  const discord = createHelpers(resources);
+  const discord = createHelpers(resources, getPing);
   const defs: CommandDef[] = [];
   const seen = new Set<string>();
 
@@ -25,15 +30,11 @@ export function createBot(resources: Resources, options: BotOptions): Bot {
     const handlers = Object.keys(collected.handler ?? {});
     if (!feature.command) {
       if (handlers.length) {
-        throw new Error(
-          `feature '${feature.name}' registers command handlers without a command`
-        );
+        throw new Error(`feature '${feature.name}' registers command handlers without a command`);
       }
       return;
     }
-    const missing = handlerKeys(feature.command).filter(
-      (k) => !handlers.includes(k)
-    );
+    const missing = handlerKeys(feature.command).filter((k) => !handlers.includes(k));
     if (missing.length) {
       throw new Error(
         `feature '${feature.name}' is missing handlers for /${feature.command.command}: ${missing.join(', ')}`
@@ -68,11 +69,18 @@ export function createBot(resources: Resources, options: BotOptions): Bot {
     }
   };
 
-  const sync = () =>
-    resources
-      .application(appId)
-      .commands.overwrite(defs.map(toRestBody))
-      .then(() => undefined);
+  const sync = async () => {
+    const commandsApi = resources.application(appId).commands;
+    const remote = await commandsApi.list();
+    const desired = defs.map(toRestBody);
+    if (commandsMatch(desired, remote)) {
+      discord.setCommandIds(remote);
+      return 'skipped' as const;
+    }
+    const commands = await commandsApi.overwrite(desired);
+    discord.setCommandIds(commands);
+    return 'synced' as const;
+  };
 
   const handleDispatch = (payload: GatewayDispatchPayload): boolean => {
     if (payload.t === GatewayDispatchEvents.InteractionCreate) {
@@ -80,10 +88,7 @@ export function createBot(resources: Resources, options: BotOptions): Bot {
       void router.handle(payload.d);
       return true;
     }
-    if (
-      payload.t === GatewayDispatchEvents.MessageCreate &&
-      sessions.tryMessage(payload.d)
-    ) {
+    if (payload.t === GatewayDispatchEvents.MessageCreate && sessions.tryMessage(payload.d)) {
       return true;
     }
     return hub.dispatch(payload);

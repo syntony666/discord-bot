@@ -1,17 +1,7 @@
 import type { CommandHandler, ComponentHandler } from './internal/router.type';
-import type {
-  EventHandler,
-  EventName,
-  StreamBuilder,
-} from './internal/events/hub.type';
+import type { EventHandler, EventName, StreamBuilder } from './internal/events/hub.type';
 import type { CommandDef } from './commands.type';
-import type {
-  Collected,
-  CtxFor,
-  Feature,
-  FeatureSpec,
-  HandlerKeyOf,
-} from './features.type';
+import type { Collected, CtxFor, Feature, FeatureSpec, HandlerKeyOf } from './features.type';
 
 // --- useHandlers ------------------------------------------------------------
 

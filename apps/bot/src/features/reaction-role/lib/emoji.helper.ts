@@ -11,7 +11,10 @@ export function parseEmoji(input: string): ParsedEmoji {
   const trimmed = input.trim();
 
   // Custom emoji: <:name:id>, <a:name:id>, name:id, a:name:id
-  const custom = trimmed.replace(/^</, '').replace(/>$/, '').match(/^(?:(a):)?(\w+):(\d+)$/);
+  const custom = trimmed
+    .replace(/^</, '')
+    .replace(/>$/, '')
+    .match(/^(?:(a):)?(\w+):(\d+)$/);
   if (custom) {
     const [, a, name, id] = custom;
     return {
@@ -60,7 +63,10 @@ export function formatEmojiForReaction(stored: string): string {
 
 export function formatEmojiForDisplay(stored: string): string {
   const trimmed = stored.trim();
-  const custom = trimmed.replace(/^</, '').replace(/>$/, '').match(/^(?:(a):)?(\w+):(\d+)$/);
+  const custom = trimmed
+    .replace(/^</, '')
+    .replace(/>$/, '')
+    .match(/^(?:(a):)?(\w+):(\d+)$/);
   if (!custom) return trimmed;
 
   const [, a, name, id] = custom;

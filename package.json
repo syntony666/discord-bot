@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "prepare": "npm run build -w @discord-bot/shared -w @discord-bot/discord-client",
+    "prepare": "husky && npm run build -w @discord-bot/shared -w @discord-bot/discord-client",
     "dev": "npm run dev:api & npm run dev:bot",
     "dev:bot": "npm run dev --workspace=@discord-bot/bot",
     "dev:api": "npm run dev --workspace=@discord-bot/api",
@@ -16,10 +16,16 @@
     "prisma:migrate": "npm run prisma:migrate --workspace=@discord-bot/api",
     "prisma:deploy": "npm run prisma:deploy --workspace=@discord-bot/api",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "node --test 'apps/*/test/**/*.test.mts' 'packages/*/test/**/*.test.mts'"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.1",
     "prettier": "^3.7.4",
     "typescript": "^5.9.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,json,md,yml,yaml}": "prettier --write"
   }
 }

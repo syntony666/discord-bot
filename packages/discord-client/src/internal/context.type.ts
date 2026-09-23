@@ -5,12 +5,7 @@ import type {
   APIMessageComponentInteraction,
   APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
-import type {
-  ConfirmOptions,
-  ModalOptions,
-  PaginateOptions,
-  PromptOptions,
-} from '../context.type';
+import type { ConfirmOptions, ModalOptions, PaginateOptions, PromptOptions } from '../context.type';
 
 /** Implemented by the session store (created in sessions.ts). */
 export interface SessionApi {

@@ -7,10 +7,13 @@ export function keywordRuleRoutes(module: KeywordModule) {
   const routes = new Hono();
 
   routes.get('/', async (c) => {
+    const query = c.req.query('q');
     const rules =
       c.req.query('runtime') !== undefined
         ? await module.getRulesByGuild(guildId(c))
-        : await module.getRulesForList(guildId(c));
+        : query !== undefined
+          ? await module.searchRules(guildId(c), query)
+          : await module.getRulesForList(guildId(c));
     return c.json(rules);
   });
 

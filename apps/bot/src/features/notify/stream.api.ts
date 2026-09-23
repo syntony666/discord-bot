@@ -42,10 +42,16 @@ export function createStreamNotifyApi(request: ApiRequest) {
         )
       );
     },
-    addWatcher(guildId: string, platform: StreamPlatform, platformId: string, displayName: string) {
+    addWatcher(
+      guildId: string,
+      platform: StreamPlatform,
+      platformId: string,
+      displayName: string,
+      profile?: { platformUserId?: string; avatarImageUrl?: string }
+    ) {
       return request<StreamWatcher>(`${base(guildId)}/stream-watchers`, {
         method: 'POST',
-        body: JSON.stringify({ platform, platformId, displayName }),
+        body: JSON.stringify({ platform, platformId, displayName, ...profile }),
       });
     },
     removeWatcher(guildId: string, platform: StreamPlatform, platformId: string) {
@@ -64,6 +70,12 @@ export function createStreamNotifyApi(request: ApiRequest) {
       return request<StreamWatcher>(`${WATCHERS}/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({ platformUserId }),
+      });
+    },
+    updateWatcherAvatar(id: string, avatarImageUrl: string) {
+      return request<StreamWatcher>(`${WATCHERS}/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ avatarImageUrl }),
       });
     },
     updateLastChecked(id: string) {

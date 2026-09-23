@@ -19,13 +19,8 @@ import { ORIGINAL_MESSAGE, type Resources } from '../resources';
 import type { PaginateOptions } from '../../context.type';
 import type { SessionApi } from '../context.type';
 import type { PaginatePending, Pending, Waiter } from './store.type';
-import {
-  button,
-  modalFieldValues,
-  paginateEmbed,
-  paginateRow,
-  row,
-} from './components';
+import { button, modalFieldValues, paginateEmbed, paginateRow, row } from './components';
+import { usernameOf, withEmbedDefaults, type EmbedTheme } from '../embeds';
 
 const PREFIX = 'kit:';
 const DEFAULT_CONFIRM_TIMEOUT = 120_000;
@@ -36,6 +31,7 @@ const DEFAULT_PROMPT_TIMEOUT = 60_000;
 export function createSessionStore(
   resources: Resources,
   appId: string,
+  theme: EmbedTheme,
   onError?: (err: unknown) => void
 ) {
   const pending = new Map<string, Pending>();
@@ -43,12 +39,7 @@ export function createSessionStore(
 
   const fail = (err: unknown) => onError?.(err);
 
-  const arm = (
-    id: string,
-    session: Pending,
-    timeoutMs: number,
-    onTimeout: () => void
-  ) => {
+  const arm = (id: string, session: Pending, timeoutMs: number, onTimeout: () => void) => {
     session.timer = setTimeout(() => {
       pending.delete(id);
       try {
@@ -84,19 +75,14 @@ export function createSessionStore(
     token: string,
     messageId: string,
     data: APIInteractionResponseCallbackData
-  ) =>
-    resources
-      .webhook(appId, token)
-      .message(messageId)
-      .edit(data)
-      .catch(fail);
+  ) => resources.webhook(appId, token).message(messageId).edit(data).catch(fail);
 
   const expirePaginate = (id: string, s: PaginatePending) => {
     clearTimeout(s.timer);
     s.timer = setTimeout(() => {
       pending.delete(id);
       void editMessage(s.token, s.messageId, {
-        embeds: [paginateEmbed(s)],
+        embeds: [paginateEmbed(s, theme)],
         components: [],
       });
     }, s.timeoutMs);
@@ -108,6 +94,7 @@ export function createSessionStore(
     const id = randomUUID();
     const base = `kit:cfm:${id}`;
     const ownerId = i.user?.id ?? i.member?.user.id ?? '';
+    const timeoutMs = options.timeoutMs ?? DEFAULT_CONFIRM_TIMEOUT;
 
     await send(
       i,
@@ -117,12 +104,21 @@ export function createSessionStore(
             title: options.title ?? '確認',
             description: options.description,
             fields: options.fields,
-            color: 0xfee75c,
+            color: theme.colors.confirm,
+            footer: {
+              text: `${usernameOf(i)} · ${Math.ceil(timeoutMs / 60_000)} 分鐘後失效`,
+              icon_url: theme.footerIconUrl,
+            },
+            timestamp: new Date().toISOString(),
           },
         ],
         components: [
           row(
-            button(`${base}:yes`, options.confirmLabel ?? '確認', options.danger ? ButtonStyle.Danger : ButtonStyle.Success),
+            button(
+              `${base}:yes`,
+              options.confirmLabel ?? '確認',
+              options.danger ? ButtonStyle.Danger : ButtonStyle.Success
+            ),
             button(`${base}:no`, options.cancelLabel ?? '取消', ButtonStyle.Secondary)
           ),
         ],
@@ -131,12 +127,7 @@ export function createSessionStore(
     );
 
     return new Promise<boolean>((resolve) => {
-      arm(
-        id,
-        { kind: 'confirm', ownerId, resolve,  },
-        options.timeoutMs ?? DEFAULT_CONFIRM_TIMEOUT,
-        () => resolve(false)
-      );
+      arm(id, { kind: 'confirm', ownerId, resolve }, timeoutMs, () => resolve(false));
     });
   };
 
@@ -151,10 +142,14 @@ export function createSessionStore(
         i,
         {
           embeds: [
-            {
-              description: options.emptyText ?? '沒有資料。',
-              color: 0x5865f2,
-            },
+            withEmbedDefaults(
+              {
+                description: options.emptyText ?? '沒有資料。',
+                color: theme.colors.info,
+              },
+              usernameOf(i),
+              theme
+            ),
           ],
         },
         responded
@@ -167,11 +162,16 @@ export function createSessionStore(
     const ownerId = i.user?.id ?? i.member?.user.id ?? '';
     const timeoutMs = options.timeoutMs ?? DEFAULT_PAGINATE_TIMEOUT;
 
+    const username = usernameOf(i);
     const embedFor = (page: number): APIEmbed =>
-      options.render(
-        options.items.slice(page * pageSize, (page + 1) * pageSize),
-        page,
-        totalPages
+      withEmbedDefaults(
+        options.render(
+          options.items.slice(page * pageSize, (page + 1) * pageSize),
+          page,
+          totalPages
+        ),
+        username,
+        theme
       );
 
     const { token, messageId } = await send(
@@ -188,6 +188,7 @@ export function createSessionStore(
     const session: PaginatePending = {
       kind: 'paginate',
       ownerId,
+      username,
       items: options.items,
       render: options.render as PaginateOptions<unknown>['render'],
       pageSize,
@@ -195,7 +196,6 @@ export function createSessionStore(
       timeoutMs,
       token,
       messageId,
-      
     };
     pending.set(id, session);
     expirePaginate(id, session);
@@ -221,10 +221,7 @@ export function createSessionStore(
               type: ComponentType.TextInput,
               custom_id: f.id,
               label: f.label,
-              style:
-                f.style === 'paragraph'
-                  ? TextInputStyle.Paragraph
-                  : TextInputStyle.Short,
+              style: f.style === 'paragraph' ? TextInputStyle.Paragraph : TextInputStyle.Short,
               value: f.value,
               placeholder: f.placeholder,
               required: f.required ?? true,
@@ -237,11 +234,8 @@ export function createSessionStore(
     });
 
     return new Promise((resolve) => {
-      arm(
-        id,
-        { kind: 'modal', resolve,  },
-        options.timeoutMs ?? DEFAULT_MODAL_TIMEOUT,
-        () => resolve(null)
+      arm(id, { kind: 'modal', resolve }, options.timeoutMs ?? DEFAULT_MODAL_TIMEOUT, () =>
+        resolve(null)
       );
     });
   };
@@ -289,9 +283,7 @@ export function createSessionStore(
         type: InteractionResponseType.DeferredChannelMessageWithSource,
         data: { flags: MessageFlags.Ephemeral },
       })
-      .then(() =>
-        resources.webhook(appId, i.token).message(ORIGINAL_MESSAGE).delete()
-      )
+      .then(() => resources.webhook(appId, i.token).message(ORIGINAL_MESSAGE).delete())
       .catch(fail);
 
   const expired = (i: APIInteraction) =>
@@ -355,7 +347,7 @@ export function createSessionStore(
     await resources.interaction(i.id, i.token).respond({
       type: InteractionResponseType.UpdateMessage,
       data: {
-        embeds: [paginateEmbed(session)],
+        embeds: [paginateEmbed(session, theme)],
         components: [paginateRow(`kit:pag:${id}`, session.page, totalPages)],
       },
     });
@@ -366,8 +358,7 @@ export function createSessionStore(
 
   const dispatch = async (i: APIInteraction): Promise<boolean> => {
     const customId =
-      i.type === InteractionType.MessageComponent ||
-      i.type === InteractionType.ModalSubmit
+      i.type === InteractionType.MessageComponent || i.type === InteractionType.ModalSubmit
         ? i.data.custom_id
         : undefined;
     if (!customId?.startsWith(PREFIX)) return false;
@@ -417,19 +408,8 @@ export function createSessionStore(
         await resources.interaction(i.id, i.token).respond({
           type: InteractionResponseType.UpdateMessage,
           data: {
-            embeds: [
-              session.render(
-                session.items.slice(
-                  session.page * session.pageSize,
-                  (session.page + 1) * session.pageSize
-                ),
-                session.page,
-                totalPages
-              ),
-            ],
-            components: [
-              paginateRow(`kit:pag:${id}`, session.page, totalPages),
-            ],
+            embeds: [paginateEmbed(session, theme)],
+            components: [paginateRow(`kit:pag:${id}`, session.page, totalPages)],
           },
         });
         return true;

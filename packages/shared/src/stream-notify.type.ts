@@ -7,6 +7,7 @@ export interface StreamWatcher {
   platformUserId: string | null;
   platform: StreamPlatform;
   displayName: string;
+  avatarImageUrl: string | null;
   isLive: boolean;
   lastChecked: string;
   createdAt: string;
@@ -23,7 +24,15 @@ export interface StreamNotifyConfig {
 
 export type StreamWatcherRuntime = Pick<
   StreamWatcher,
-  'id' | 'guildId' | 'platformId' | 'platform' | 'displayName' | 'isLive' | 'lastChecked' | 'createdAt'
+  | 'id'
+  | 'guildId'
+  | 'platformId'
+  | 'platform'
+  | 'displayName'
+  | 'avatarImageUrl'
+  | 'isLive'
+  | 'lastChecked'
+  | 'createdAt'
 >;
 
 export type StreamNotifyConfigRuntime = Pick<
@@ -47,5 +56,7 @@ export interface CreateStreamWatcherInput {
   guildId: string;
   platform: StreamPlatform;
   platformId: string;
+  platformUserId?: string;
   displayName: string;
+  avatarImageUrl?: string;
 }
