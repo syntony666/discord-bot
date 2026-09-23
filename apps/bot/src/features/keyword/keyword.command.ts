@@ -29,7 +29,7 @@ export const keywordCommand = defineCommand()({
         {
           name: 'response',
           type: ApplicationCommandOptionType.String,
-          description: '回覆內容',
+          description: '回覆內容（用 ;; 分隔多個候選則隨機挑選）',
           required: true,
         },
         matchTypeOption,
@@ -48,13 +48,25 @@ export const keywordCommand = defineCommand()({
         {
           name: 'response',
           type: ApplicationCommandOptionType.String,
-          description: '新的回覆內容',
+          description: '新的回覆內容（用 ;; 分隔多個候選則隨機挑選）',
           required: true,
         },
         matchTypeOption,
       ],
     },
     { name: 'list', description: '列出所有關鍵字規則' },
+    {
+      name: 'view',
+      description: '查看單一關鍵字規則的完整回覆',
+      options: [
+        {
+          name: 'pattern',
+          type: ApplicationCommandOptionType.String,
+          description: '要查看的關鍵字文字',
+          required: true,
+        },
+      ],
+    },
     {
       name: 'search',
       description: '搜尋關鍵字規則',
