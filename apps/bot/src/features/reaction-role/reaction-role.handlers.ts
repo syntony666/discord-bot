@@ -532,6 +532,16 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     });
   });
 
+  // Tracks bot-initiated reaction removals so the remove handler skips the
+  // self-triggered event once (consumed on use).
+  const pendingRemovals = new Set<string>();
+  const removalKey = (userId: string, messageId: string, emoji: string) =>
+    `${userId}:${messageId}:${emoji.replace(/^a:/, '')}`;
+  const markRemoval = (key: string) => {
+    pendingRemovals.add(key);
+    setTimeout(() => pendingRemovals.delete(key), 30_000).unref();
+  };
+
   h.stream('messageReactionAdd', (data$) =>
     data$.pipe(
       concatMap(async (reaction) => {
@@ -549,32 +559,42 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
           if (match.mode === 'UNIQUE') {
             const allRoles = await api.getReactionRolesByMessage(guildId, messageId);
 
-            for (const role of allRoles) {
-              if (role.roleId !== match.roleId) {
-                await discord
-                  .removeRole(guildId, reaction.user_id, role.roleId)
-                  .catch((err) => {
-                    log.debug(
-                      { error: err, roleId: role.roleId },
-                      'Failed to remove role (user may not have it)'
-                    );
-                  });
-
-                await discord
-                  .removeReaction(
-                    reaction.channel_id,
+            await Promise.all(
+              allRoles
+                .filter((role) => role.roleId !== match.roleId)
+                .flatMap((role) => {
+                  const key = removalKey(
+                    reaction.user_id,
                     reaction.message_id,
-                    role.emoji,
-                    reaction.user_id
-                  )
-                  .catch((err) => {
-                    log.debug(
-                      { error: err, emoji: role.emoji },
-                      'Failed to remove reaction (may not exist)'
-                    );
-                  });
-              }
-            }
+                    role.emoji
+                  );
+                  markRemoval(key);
+                  return [
+                    discord
+                      .removeRole(guildId, reaction.user_id, role.roleId)
+                      .catch((err) => {
+                        log.debug(
+                          { error: err, roleId: role.roleId },
+                          'Failed to remove role (user may not have it)'
+                        );
+                      }),
+                    discord
+                      .removeReaction(
+                        reaction.channel_id,
+                        reaction.message_id,
+                        role.emoji,
+                        reaction.user_id
+                      )
+                      .catch((err) => {
+                        pendingRemovals.delete(key);
+                        log.debug(
+                          { error: err, emoji: role.emoji },
+                          'Failed to remove reaction (may not exist)'
+                        );
+                      }),
+                  ];
+                })
+            );
 
             log.debug(
               { userId: reaction.user_id },
@@ -591,12 +611,22 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
 
           // VERIFY mode: remove reaction after granting role
           if (match.mode === 'VERIFY') {
-            await discord.removeReaction(
-              reaction.channel_id,
-              reaction.message_id,
-              emoji,
-              reaction.user_id
-            );
+            const key = removalKey(reaction.user_id, messageId, emoji);
+            markRemoval(key);
+            await discord
+              .removeReaction(
+                reaction.channel_id,
+                reaction.message_id,
+                emoji,
+                reaction.user_id
+              )
+              .catch((err) => {
+                pendingRemovals.delete(key);
+                log.debug(
+                  { error: err, emoji },
+                  'Failed to remove reaction (VERIFY mode)'
+                );
+              });
             log.debug({ userId: reaction.user_id }, 'Removed reaction (VERIFY mode)');
           }
         } catch (error) {
@@ -615,6 +645,11 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
           const guildId = reaction.guild_id;
           const messageId = reaction.message_id;
           const emoji = service.normalizeEmoji(reaction.emoji);
+
+          if (pendingRemovals.delete(removalKey(reaction.user_id, messageId, emoji))) {
+            log.debug({ userId: reaction.user_id, emoji }, 'Skipped self-triggered removal');
+            return;
+          }
 
           const match = await service.findMatch(guildId, messageId, emoji);
           if (!match) return;
