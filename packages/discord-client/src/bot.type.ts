@@ -11,8 +11,8 @@ export interface BotOptions {
 export interface Bot {
   /** Registers features: commands + handlers + events + components in one pass. */
   register(...features: Feature[]): void;
-  /** Pushes all registered command defs to Discord. */
-  sync(): Promise<void>;
+  /** Pushes registered command defs to Discord; skips overwrite when unchanged. */
+  sync(): Promise<'skipped' | 'synced'>;
   /** Gateway dispatch entry point. Returns true when the payload was claimed. */
   handleDispatch(payload: GatewayDispatchPayload): boolean;
   close(): void;

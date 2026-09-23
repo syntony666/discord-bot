@@ -1,6 +1,7 @@
 import type { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
 import type {
+  APIApplicationCommand,
   APIChannel,
   APIGuild,
   APIGuildMember,
@@ -92,6 +93,8 @@ export function createResources(rest: REST, getBotUser: () => APIUser | null) {
 
   const application = (applicationId: string) => ({
     commands: {
+      list: () =>
+        rest.get(Routes.applicationCommands(applicationId)) as Promise<APIApplicationCommand[]>,
       overwrite: (body: RESTPutAPIApplicationCommandsJSONBody) =>
         rest.put(Routes.applicationCommands(applicationId), {
           body,
