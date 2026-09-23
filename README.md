@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/github/license/syntony666/discord-bot)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Node](https://img.shields.io/badge/node-%3E%3D24-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Node](https://img.shields.io/badge/node-%3E%3D22-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io)
 [![Discord](https://img.shields.io/badge/Discord-Bot-5865F2?logo=discord&logoColor=white)](https://discord.com)
 
@@ -10,7 +10,7 @@ Modular Discord bot monorepo with keyword auto-replies, reaction roles, member j
 
 ## Requirements
 
-- Node.js 24+
+- Node.js 22+
 - PostgreSQL
 - A Discord application with the **Message Content** and **Server Members** privileged intents enabled
 - Twitch app credentials (optional — only for stream notifications)
@@ -34,8 +34,10 @@ Other commands:
 ```bash
 npm run build          # build all workspaces
 npm run typecheck      # typecheck all workspaces
+npm test               # node --test across apps/*/test and packages/*/test
 npm run prisma:migrate # create a migration
 npm run format         # prettier --write .
+npm run format:check   # prettier --check (CI gate)
 ```
 
 ## Useful Resources
