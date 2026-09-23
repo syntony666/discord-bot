@@ -29,15 +29,11 @@ export function createBot(
     const handlers = Object.keys(collected.handler ?? {});
     if (!feature.command) {
       if (handlers.length) {
-        throw new Error(
-          `feature '${feature.name}' registers command handlers without a command`
-        );
+        throw new Error(`feature '${feature.name}' registers command handlers without a command`);
       }
       return;
     }
-    const missing = handlerKeys(feature.command).filter(
-      (k) => !handlers.includes(k)
-    );
+    const missing = handlerKeys(feature.command).filter((k) => !handlers.includes(k));
     if (missing.length) {
       throw new Error(
         `feature '${feature.name}' is missing handlers for /${feature.command.command}: ${missing.join(', ')}`
@@ -86,10 +82,7 @@ export function createBot(
       void router.handle(payload.d);
       return true;
     }
-    if (
-      payload.t === GatewayDispatchEvents.MessageCreate &&
-      sessions.tryMessage(payload.d)
-    ) {
+    if (payload.t === GatewayDispatchEvents.MessageCreate && sessions.tryMessage(payload.d)) {
       return true;
     }
     return hub.dispatch(payload);

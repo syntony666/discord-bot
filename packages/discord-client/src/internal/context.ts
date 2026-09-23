@@ -29,7 +29,13 @@ function interactionUser(i: Interaction): APIUser {
   return user;
 }
 
-function baseMethods(resources: Resources, appId: string, sessions: SessionApi, i: Interaction, theme: EmbedTheme) {
+function baseMethods(
+  resources: Resources,
+  appId: string,
+  sessions: SessionApi,
+  i: Interaction,
+  theme: EmbedTheme
+) {
   let responded = false;
   const username = interactionUser(i).username;
 
@@ -40,9 +46,12 @@ function baseMethods(resources: Resources, appId: string, sessions: SessionApi, 
   };
 
   const callback = (body: APIInteractionResponse) =>
-    resources.interaction(i.id, i.token).respond(body).then(() => {
-      responded = true;
-    });
+    resources
+      .interaction(i.id, i.token)
+      .respond(body)
+      .then(() => {
+        responded = true;
+      });
 
   return {
     reply: (data: ReplyData, ephemeral = false) =>
@@ -66,8 +75,7 @@ function baseMethods(resources: Resources, appId: string, sessions: SessionApi, 
         data: withTheme(data),
       }),
 
-    deferUpdate: () =>
-      callback({ type: InteractionResponseType.DeferredMessageUpdate }),
+    deferUpdate: () => callback({ type: InteractionResponseType.DeferredMessageUpdate }),
 
     followUp: (data: ReplyData) =>
       resources
@@ -111,10 +119,7 @@ export function buildCommandContext(
     success: (description) =>
       base.reply({ embeds: [{ title: '✅', description, color: theme.colors.success }] }),
     error: (description) =>
-      base.reply(
-        { embeds: [{ title: '❌ 錯誤', description, color: theme.colors.error }] },
-        true
-      ),
+      base.reply({ embeds: [{ title: '❌ 錯誤', description, color: theme.colors.error }] }, true),
   };
 }
 

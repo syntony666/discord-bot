@@ -5,22 +5,11 @@
     "outDir": "./dist",
     "baseUrl": "./src",
     "paths": {
-      "@core/*": [
-        "core/*"
-      ],
-      "@features/*": [
-        "features/*"
-      ],
-      "@platforms/*": [
-        "platforms/*"
-      ]
+      "@core/*": ["core/*"],
+      "@features/*": ["features/*"],
+      "@platforms/*": ["platforms/*"]
     }
   },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }

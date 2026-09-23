@@ -6,9 +6,7 @@ import { createBot } from './bot';
 import type { BotOptions } from './bot.type';
 import type { GatewayConnectOptions } from './client.type';
 
-export function createDiscordClient(options: {
-  token: string;
-}) {
+export function createDiscordClient(options: { token: string }) {
   const rest = new REST({ version: '10' }).setToken(options.token);
   let botUser: APIUser | null = null;
   let latestPing = 0;
@@ -28,8 +26,7 @@ export function createDiscordClient(options: {
       await manager.connect();
       return { close: () => void manager.destroy() };
     },
-    createBot: (botOptions: BotOptions) =>
-      createBot(resources, botOptions, () => latestPing),
+    createBot: (botOptions: BotOptions) => createBot(resources, botOptions, () => latestPing),
   };
 }
 

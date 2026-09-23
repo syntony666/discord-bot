@@ -1,7 +1,4 @@
-import type {
-  GatewayDispatchPayload,
-  GatewayReadyDispatchData,
-} from 'discord-api-types/v10';
+import type { GatewayDispatchPayload, GatewayReadyDispatchData } from 'discord-api-types/v10';
 
 export interface GatewayConnectOptions {
   intents: number;

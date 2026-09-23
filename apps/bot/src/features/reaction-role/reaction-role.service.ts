@@ -5,11 +5,7 @@ import { createLogger } from '@discord-bot/shared';
 const log = createLogger('ReactionRoleService');
 
 export interface ReactionRoleService {
-  findMatch(
-    guildId: string,
-    messageId: string,
-    emoji: string
-  ): Promise<ReactionRoleMatch | null>;
+  findMatch(guildId: string, messageId: string, emoji: string): Promise<ReactionRoleMatch | null>;
   normalizeEmoji(emoji: {
     id?: string | null;
     name?: string | null;

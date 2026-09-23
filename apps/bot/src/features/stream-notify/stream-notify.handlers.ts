@@ -239,8 +239,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     const watcherItems =
       watchers.length > 0
         ? watchers.map(
-            (w) =>
-              `${w.isLive ? '🔴' : '⚫'}　**${w.displayName}** · ${w.platform.toLowerCase()}`
+            (w) => `${w.isLive ? '🔴' : '⚫'}　**${w.displayName}** · ${w.platform.toLowerCase()}`
           )
         : ['（尚未監控任何頻道）'];
 

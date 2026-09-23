@@ -65,13 +65,10 @@ export async function buildFeaturesStatusFields(
   }
 
   if (reactionRolePanels.length > 0) {
-    const modeCounts = reactionRolePanels.reduce<Record<string, number>>(
-      (acc, panel) => {
-        acc[panel.mode] = (acc[panel.mode] || 0) + 1;
-        return acc;
-      },
-      {}
-    );
+    const modeCounts = reactionRolePanels.reduce<Record<string, number>>((acc, panel) => {
+      acc[panel.mode] = (acc[panel.mode] || 0) + 1;
+      return acc;
+    }, {});
     const modes = Object.entries(modeCounts)
       .map(([mode, count]) => `${mode} ×${count}`)
       .join(' · ');
