@@ -9,7 +9,7 @@ import type { DiscordHelpers } from '@discord-bot/discord-client';
 import type { KeywordApi } from '@features/keyword/keyword.api';
 import type { MemberNotifyApi } from '@features/notify/member.api';
 import type { ReactionRoleApi } from '@features/reaction-role/reaction-role.api';
-import type { StreamNotifyApi } from '@features/stream-notify/stream-notify.api';
+import type { StreamNotifyApi } from '@features/notify/stream.api';
 import { getBotVersion, getUptime } from './bot-info';
 import { appConfig } from '@core/config';
 import { createLogger } from '@discord-bot/shared';

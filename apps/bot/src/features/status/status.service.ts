@@ -44,7 +44,7 @@ export async function buildFeaturesStatusFields(
     fields.push({
       name: '直播通知',
       value:
-        `${mention('stream-notify list')}\n` +
+        `${mention('notify stream list')}\n` +
         `${status}\n` +
         `監控 ${streamWatchers.length} 個 · 直播中 ${liveCount} 個\n\u200b`,
       inline: false,
