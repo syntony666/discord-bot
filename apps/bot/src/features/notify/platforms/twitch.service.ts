@@ -118,103 +118,59 @@ export class TwitchService implements StreamPlatformService {
     return new Map(users.map((u) => [u.login.toLowerCase(), u.id]));
   }
 
+  private async fetchStreams(
+    key: 'user_id' | 'user_login',
+    values: string[],
+    token: string
+  ): Promise<StreamInfo[]> {
+    const results: StreamInfo[] = [];
+    for (let i = 0; i < values.length; i += 100) {
+      const batch = values.slice(i, i + 100);
+      const params = batch.map((v) => `${key}=${encodeURIComponent(v)}`).join('&');
+
+      const response = await fetch(`https://api.twitch.tv/helix/streams?${params}`, {
+        headers: {
+          'Client-ID': this.clientId,
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        log.error({ statusText: response.statusText, errorText, key }, 'Twitch API error');
+        continue;
+      }
+
+      const data = (await response.json()) as TwitchApiResponse;
+
+      for (const stream of data.data) {
+        results.push({
+          platform: 'twitch',
+          platformId: stream.user_id,
+          displayName: stream.user_name,
+          title: stream.title,
+          url: `https://www.twitch.tv/${stream.user_login}`,
+          game: stream.game_name,
+          viewers: stream.viewer_count,
+          startedAt: new Date(stream.started_at),
+        });
+      }
+    }
+    return results;
+  }
+
   async checkStreamStatus(platformIds: string[]): Promise<StreamInfo[]> {
     if (platformIds.length === 0) return [];
 
     const token = await this.getAccessToken();
 
-    // Separate user_ids and user_logins
-    const userIds: string[] = [];
-    const userLogins: string[] = [];
+    // Numeric ids are user_ids (more efficient), the rest are user_logins
+    const userIds = platformIds.filter((id) => /^\d+$/.test(id));
+    const userLogins = platformIds.filter((id) => !/^\d+$/.test(id));
 
-    for (const id of platformIds) {
-      // If it's all digits, treat as user_id, otherwise as user_login
-      if (/^\d+$/.test(id)) {
-        userIds.push(id);
-      } else {
-        userLogins.push(id);
-      }
-    }
-
-    const results: StreamInfo[] = [];
-
-    // Check by user_ids (more efficient)
-    if (userIds.length > 0) {
-      const batchSize = 100;
-      for (let i = 0; i < userIds.length; i += batchSize) {
-        const batch = userIds.slice(i, i + batchSize);
-        const userIdParams = batch.map((id) => `user_id=${id}`).join('&');
-
-        const response = await fetch(`https://api.twitch.tv/helix/streams?${userIdParams}`, {
-          headers: {
-            'Client-ID': this.clientId,
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          log.error({ statusText: response.statusText, errorText }, 'Twitch API error (user_ids)');
-          continue;
-        }
-
-        const data = (await response.json()) as TwitchApiResponse;
-
-        for (const stream of data.data) {
-          results.push({
-            platform: 'twitch',
-            platformId: stream.user_id,
-            displayName: stream.user_name,
-            title: stream.title,
-            url: `https://www.twitch.tv/${stream.user_login}`,
-            game: stream.game_name,
-            viewers: stream.viewer_count,
-            startedAt: new Date(stream.started_at),
-          });
-        }
-      }
-    }
-
-    // Check by user_logins (for new watchers)
-    if (userLogins.length > 0) {
-      const batchSize = 100;
-      for (let i = 0; i < userLogins.length; i += batchSize) {
-        const batch = userLogins.slice(i, i + batchSize);
-        const userLoginParams = batch.map((login) => `user_login=${login}`).join('&');
-
-        const response = await fetch(`https://api.twitch.tv/helix/streams?${userLoginParams}`, {
-          headers: {
-            'Client-ID': this.clientId,
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          log.error(
-            { statusText: response.statusText, errorText },
-            'Twitch API error (user_logins)'
-          );
-          continue;
-        }
-
-        const data = (await response.json()) as TwitchApiResponse;
-
-        for (const stream of data.data) {
-          results.push({
-            platform: 'twitch',
-            platformId: stream.user_id, // Still return user_id for consistency
-            displayName: stream.user_name,
-            title: stream.title,
-            url: `https://www.twitch.tv/${stream.user_login}`,
-            game: stream.game_name,
-            viewers: stream.viewer_count,
-            startedAt: new Date(stream.started_at),
-          });
-        }
-      }
-    }
-
-    return results;
+    return [
+      ...(await this.fetchStreams('user_id', userIds, token)),
+      ...(await this.fetchStreams('user_login', userLogins, token)),
+    ];
   }
 }
