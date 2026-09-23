@@ -135,7 +135,27 @@ export function createCommandRouter(
     if (!handler) return false;
 
     const ctx = buildCommandContext(resources, appId, sessions, i, route, theme);
-    await handler(ctx);
+    try {
+      await handler(ctx);
+    } catch (err) {
+      onError(err);
+      // Surface a generic error to the user instead of leaving the
+      // interaction unacknowledged ("application did not respond").
+      const data = {
+        embeds: [
+          {
+            title: '❌ 錯誤',
+            description: '指令執行時發生錯誤，請稍後再試。',
+            color: theme.colors.error,
+          },
+        ],
+        components: [],
+      };
+      await ctx
+        .editReply(data)
+        .catch(() => ctx.reply(data, true))
+        .catch(() => undefined);
+    }
     return true;
   };
 
