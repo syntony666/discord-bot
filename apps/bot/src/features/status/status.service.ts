@@ -25,13 +25,18 @@ export async function buildFeaturesStatusFields(
 
   const fields: APIEmbedField[] = [];
 
+  const channelLine = (ch: { enabled: boolean; channelId: string } | null, label: string) =>
+    ch?.enabled
+      ? `**✅ ${label} → <#${ch.channelId}>**`
+      : `**❌ ${label} → ${ch ? '已停用' : '未設定'}**`;
+
   if (joinChannel || leaveChannel) {
     fields.push({
       name: '成員進出通知',
       value:
         `${mention('notify member status')}\n` +
-        `${joinChannel ? `**✅ 加入 → <#${joinChannel.channelId}>**` : '**❌ 加入 → 未設定**'}\n` +
-        `${leaveChannel ? `**✅ 離開 → <#${leaveChannel.channelId}>**` : '**❌ 離開 → 未設定**'}\n\u200b`,
+        `${channelLine(joinChannel, '加入')}\n` +
+        `${channelLine(leaveChannel, '離開')}\n\u200b`,
       inline: false,
     });
   }
