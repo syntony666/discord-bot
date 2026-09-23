@@ -223,31 +223,52 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
       api.getWatchers(guildId),
     ]);
 
-    const configItems = config
-      ? [
-          `📢 通知頻道: ${Formatters.channelMention(config.channelId)}`,
-          `🔔 狀態: ${config.enabled ? '✅ 已啟用' : '❌ 已停用'}`,
-          `📝 訊息範本: ${config.message}`,
-        ]
-      : [];
+    if (!config && watchers.length === 0) {
+      await ctx.reply({
+        embeds: [
+          {
+            title: '直播通知設定',
+            description: '尚未設定任何直播通知',
+            color: Colors.INFO,
+          },
+        ],
+      });
+      return;
+    }
 
-    const watcherItems = watchers.map(
-      (w) =>
-        `${w.isLive ? '🔴 直播中' : '⚫ 離線'} **${w.displayName}** (${w.platform.toLowerCase()})`
-    );
-
-    const allItems = [...configItems, '', '🎯 監控頻道:', ...watcherItems].filter(Boolean);
+    const watcherItems =
+      watchers.length > 0
+        ? watchers.map(
+            (w) =>
+              `${w.isLive ? '🔴' : '⚫'}　**${w.displayName}** · ${w.platform.toLowerCase()}`
+          )
+        : ['（尚未監控任何頻道）'];
 
     await ctx.paginate({
-      items: allItems,
-      render: (page, pageIndex, totalPages) => ({
+      items: watcherItems,
+      render: (page) => ({
         title: '直播通知設定',
-        description: page.join('\n'),
         color: Colors.INFO,
-        footer:
-          totalPages > 1 ? { text: `第 ${pageIndex + 1}/${totalPages} 頁` } : undefined,
+        fields: [
+          ...(config
+            ? [
+                {
+                  name: '設定',
+                  value:
+                    `頻道 → ${Formatters.channelMention(config.channelId)}\n` +
+                    `狀態 → ${config.enabled ? '✅ 已啟用' : '❌ 已停用'}\n` +
+                    `範本 → ${config.message}`,
+                  inline: false,
+                },
+              ]
+            : []),
+          {
+            name: `監控頻道 (${watchers.length})`,
+            value: page.join('\n'),
+            inline: false,
+          },
+        ],
       }),
-      emptyText: '尚未設定任何直播通知',
     });
     log.info({ guildId }, 'Stream notify list displayed');
   });
