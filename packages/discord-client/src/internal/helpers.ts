@@ -4,10 +4,13 @@ import type {
 } from 'discord-api-types/v10';
 import type { Resources } from './resources';
 
-export function createHelpers(resources: Resources) {
+export function createHelpers(resources: Resources, getPing: () => number) {
   const commandIds = new Map<string, string>();
 
   return {
+    get wsPing() {
+      return getPing();
+    },
     get botId() {
       return resources.botId;
     },

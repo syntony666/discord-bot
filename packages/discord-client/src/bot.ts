@@ -10,14 +10,18 @@ import type { Bot, BotOptions } from './bot.type';
 import type { Collected, Feature } from './features.type';
 import type { CommandDef } from './commands.type';
 
-export function createBot(resources: Resources, options: BotOptions): Bot {
+export function createBot(
+  resources: Resources,
+  options: BotOptions,
+  getPing: () => number = () => 0
+): Bot {
   const { appId } = options;
   const onError = options.onError ?? ((err) => console.error(err));
 
   const sessions = createSessionStore(resources, appId, options.theme, onError);
   const router = createCommandRouter(resources, appId, sessions, onError, options.theme);
   const hub = createEventHub(onError, () => resources.botId);
-  const discord = createHelpers(resources);
+  const discord = createHelpers(resources, getPing);
   const defs: CommandDef[] = [];
   const seen = new Set<string>();
 

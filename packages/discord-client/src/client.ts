@@ -11,6 +11,7 @@ export function createDiscordClient(options: {
 }) {
   const rest = new REST({ version: '10' }).setToken(options.token);
   let botUser: APIUser | null = null;
+  let latestPing = 0;
   const resources = createResources(rest, () => botUser);
   return {
     async connect({ intents, onDispatch, onReady, onLog }: GatewayConnectOptions) {
@@ -20,11 +21,15 @@ export function createDiscordClient(options: {
         botUser = data.user;
         onReady?.(data, shardId);
       });
+      manager.on(WebSocketShardEvents.HeartbeatComplete, (stats) => {
+        latestPing = stats.latency;
+      });
       manager.on(WebSocketShardEvents.Debug, (message, shardId) => onLog?.(message, { shardId }));
       await manager.connect();
       return { close: () => void manager.destroy() };
     },
-    createBot: (botOptions: BotOptions) => createBot(resources, botOptions),
+    createBot: (botOptions: BotOptions) =>
+      createBot(resources, botOptions, () => latestPing),
   };
 }
 

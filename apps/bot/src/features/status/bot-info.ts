@@ -6,7 +6,6 @@ const log = createLogger('BotInfo');
 
 interface VersionInfo {
   version: string;
-  apiTypesVersion: string;
 }
 
 let cachedVersion: VersionInfo | null = null;
@@ -15,22 +14,17 @@ export function getBotVersion(): VersionInfo {
   if (cachedVersion) return cachedVersion;
 
   try {
-    const packagePath = join(__dirname, '../../package.json');
+    const packagePath = join(__dirname, '../../../package.json');
     const packageJson = JSON.parse(readFileSync(packagePath, 'utf-8'));
 
     cachedVersion = {
       version: packageJson.version || '0.0.0',
-      apiTypesVersion:
-        packageJson.dependencies?.['discord-api-types']?.replace(/[\^~]/, '') || 'unknown',
     };
 
     return cachedVersion;
   } catch (error) {
     log.error({ error }, 'Failed to read package.json');
-    return {
-      version: 'unknown',
-      apiTypesVersion: 'unknown',
-    };
+    return { version: 'unknown' };
   }
 }
 
