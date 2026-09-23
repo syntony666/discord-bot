@@ -299,6 +299,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
   });
 
   h.event('guildMemberRemove', async ({ user, guild_id: guildId }) => {
+    if (!user) return;
     try {
       const leaveChannel = await api.getNotificationChannel(guildId, NotificationType.MEMBER_LEAVE);
       if (!service.shouldSendLeave(leaveChannel)) return;
