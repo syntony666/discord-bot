@@ -3,6 +3,7 @@ import type { GatewayDispatchPayload } from 'discord-api-types/v10';
 import { createCommandRouter, handlerKeys } from './internal/router';
 import type { Resources } from './internal/resources';
 import { toRestBody } from './internal/serialize';
+import { commandsMatch } from './internal/sync';
 import { createSessionStore } from './internal/sessions/store';
 import { createEventHub } from './internal/events/hub';
 import { createHelpers } from './internal/helpers';
@@ -68,13 +69,18 @@ export function createBot(
     }
   };
 
-  const sync = () =>
-    resources
-      .application(appId)
-      .commands.overwrite(defs.map(toRestBody))
-      .then((commands) => {
-        discord.setCommandIds(commands);
-      });
+  const sync = async () => {
+    const commandsApi = resources.application(appId).commands;
+    const remote = await commandsApi.list();
+    const desired = defs.map(toRestBody);
+    if (commandsMatch(desired, remote)) {
+      discord.setCommandIds(remote);
+      return 'skipped' as const;
+    }
+    const commands = await commandsApi.overwrite(desired);
+    discord.setCommandIds(commands);
+    return 'synced' as const;
+  };
 
   const handleDispatch = (payload: GatewayDispatchPayload): boolean => {
     if (payload.t === GatewayDispatchEvents.InteractionCreate) {

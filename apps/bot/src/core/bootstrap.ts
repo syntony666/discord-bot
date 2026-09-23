@@ -35,7 +35,8 @@ export async function bootstrapApp(client: DiscordClient) {
     streamNotifyFeature,
     reactionRoleFeature
   );
-  await bot.sync();
+  const syncResult = await bot.sync();
+  log.info({ sync: syncResult }, 'Command sync finished');
 
   log.info('Application bootstrapped successfully');
 
