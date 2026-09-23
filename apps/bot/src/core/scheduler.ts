@@ -29,7 +29,7 @@ const wallToUtc = (y: number, mo: number, d: number, h: number, mi: number, time
   return t;
 };
 
-const nextDailyAt = (time: string, timeZone: string) => {
+export const nextDailyAt = (time: string, timeZone: string) => {
   const [h = 0, mi = 0] = time.split(':').map(Number);
   const now = Date.now();
   for (let i = 0; i <= 1; i++) {
