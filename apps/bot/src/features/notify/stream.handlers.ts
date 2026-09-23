@@ -238,9 +238,13 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
 
     const watcherItems =
       watchers.length > 0
-        ? watchers.map(
-            (w) => `${w.isLive ? '🔴' : '⚫'}　**${w.displayName}** · ${w.platform.toLowerCase()}`
-          )
+        ? watchers.map((w) => {
+            const name =
+              w.displayName.toLowerCase() === w.platformId
+                ? `**${w.platformId}**`
+                : `**${w.platformId}** (${w.displayName})`;
+            return `${w.isLive ? '🔴' : '⚫'}　${name} · ${w.platform.toLowerCase()}`;
+          })
         : ['（尚未監控任何頻道）'];
 
     await ctx.paginate({
