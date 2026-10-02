@@ -212,5 +212,30 @@ export function useBotHandlers(deps: BotDeps) {
     });
   });
 
+  h.handler('limit', async (ctx) => {
+    const { tier, watchers, keywords, panels } = ctx.options;
+    const patch: Record<string, number> = {};
+    if (watchers !== undefined) patch.streamWatchers = watchers;
+    if (keywords !== undefined) patch.keywordRules = keywords;
+    if (panels !== undefined) patch.reactionRolePanels = panels;
+    if (Object.keys(patch).length === 0) {
+      return ctx.error('請提供至少一個要調整的額度');
+    }
+
+    const updated = await botApi.updateTierLimit(tier, patch);
+    const cap = (n: number) => (n < 0 ? '∞' : String(n));
+    await ctx.reply({
+      embeds: [
+        {
+          title: '額度已更新',
+          description:
+            `**${updated.tier}**\n` +
+            `監控 ${cap(updated.streamWatchers)} · 關鍵字 ${cap(updated.keywordRules)} · 面板 ${cap(updated.reactionRolePanels)}`,
+          color: Colors.SUCCESS,
+        },
+      ],
+    });
+  });
+
   return h.collect();
 }

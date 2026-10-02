@@ -104,4 +104,41 @@ export const botCommand = defineCommand()({
       ],
     },
   ],
+  subcommands: [
+    {
+      name: 'limit',
+      description: '調整級別額度',
+      options: [
+        {
+          name: 'tier',
+          type: ApplicationCommandOptionType.String,
+          description: '目標級別',
+          required: true,
+          choices: [
+            { name: 'normal', value: 'NORMAL' },
+            { name: 'premium', value: 'PREMIUM' },
+            { name: 'home', value: 'HOME' },
+          ],
+        },
+        {
+          name: 'watchers',
+          type: ApplicationCommandOptionType.Integer,
+          description: '直播監控上限（-1 為無限）',
+          min_value: -1,
+        },
+        {
+          name: 'keywords',
+          type: ApplicationCommandOptionType.Integer,
+          description: '關鍵字規則上限（-1 為無限）',
+          min_value: -1,
+        },
+        {
+          name: 'panels',
+          type: ApplicationCommandOptionType.Integer,
+          description: '身分組面板上限（-1 為無限）',
+          min_value: -1,
+        },
+      ],
+    },
+  ],
 });
