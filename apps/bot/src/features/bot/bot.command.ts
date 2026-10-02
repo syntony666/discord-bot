@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType } from 'discord-api-types/v10';
+import { ActivityType, ApplicationCommandOptionType } from 'discord-api-types/v10';
 import { defineCommand } from '@discord-bot/discord-client';
 
 const guildIdOption = {
@@ -51,6 +51,43 @@ export const botCommand = defineCommand()({
         {
           name: 'sync',
           description: '比對 Discord 實際所在伺服器與資料庫記錄',
+        },
+      ],
+    },
+    {
+      name: 'profile',
+      description: '個人檔案設定',
+      subcommands: [
+        {
+          name: 'activity',
+          description: '設定活動狀態',
+          options: [
+            {
+              name: 'type',
+              type: ApplicationCommandOptionType.Integer,
+              description: '活動類型',
+              required: true,
+              choices: [
+                { name: '正在玩', value: ActivityType.Playing },
+                { name: '直播中', value: ActivityType.Streaming },
+                { name: '正在收聽', value: ActivityType.Listening },
+                { name: '正在觀看', value: ActivityType.Watching },
+                { name: '自訂', value: ActivityType.Custom },
+                { name: '正在比賽', value: ActivityType.Competing },
+              ],
+            },
+            {
+              name: 'text',
+              type: ApplicationCommandOptionType.String,
+              description: '顯示文字',
+              required: true,
+            },
+            {
+              name: 'url',
+              type: ApplicationCommandOptionType.String,
+              description: '直播連結（僅「直播中」類型使用）',
+            },
+          ],
         },
       ],
     },

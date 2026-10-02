@@ -1,5 +1,5 @@
 import { GatewayDispatchEvents } from 'discord-api-types/v10';
-import type { GatewayDispatchPayload } from 'discord-api-types/v10';
+import type { GatewayDispatchPayload, GatewayPresenceUpdateData } from 'discord-api-types/v10';
 import { createCommandRouter, handlerKeys } from './internal/router';
 import type { Resources } from './internal/resources';
 import { toRestBody } from './internal/serialize';
@@ -15,12 +15,13 @@ import type { CommandDef } from './commands.type';
 export function createBot(
   resources: Resources,
   options: BotOptions,
-  getPing: () => number = () => 0
+  getPing: () => number = () => 0,
+  updatePresence?: (data: GatewayPresenceUpdateData) => Promise<void>
 ): Bot {
   const { appId } = options;
   const onError = options.onError ?? ((err) => console.error(err));
 
-  const discord = createHelpers(resources, getPing);
+  const discord = createHelpers(resources, getPing, updatePresence);
   const sessions = createSessionStore(resources, appId, options.theme, onError);
   const router = createCommandRouter(
     resources,

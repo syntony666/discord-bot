@@ -3,16 +3,19 @@ import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import type { GuildApi } from '@features/guild/guild.api';
 import { botCommand } from './bot.command';
+import type { BotApi } from './bot.api';
+import { ACTIVITY_LABEL, buildPresence } from './bot.presence';
 
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface BotDeps {
   discord: DiscordHelpers;
-  api: { guild: GuildApi };
+  api: { guild: GuildApi; bot: BotApi };
 }
 
 export function useBotHandlers(deps: BotDeps) {
   const { discord } = deps;
   const api = deps.api.guild;
+  const botApi = deps.api.bot;
   const h = useHandlers(botCommand);
 
   const TIER_ICON: Record<string, string> = { NORMAL: '⚪', PREMIUM: '🟣', HOME: '🟡' };
@@ -173,6 +176,23 @@ export function useBotHandlers(deps: BotDeps) {
                 ]
               : []),
           ],
+        },
+      ],
+    });
+  });
+
+  h.handler('profile.activity', async (ctx) => {
+    const { type, text, url } = ctx.options;
+    const cfg = { type, text, ...(url !== undefined ? { url } : {}) };
+
+    await discord.updatePresence(buildPresence(cfg));
+    await botApi.setState('activity', JSON.stringify(cfg));
+    await ctx.reply({
+      embeds: [
+        {
+          title: '活動狀態已更新',
+          description: `${ACTIVITY_LABEL[type] ?? ''} **${text}**`,
+          color: Colors.SUCCESS,
         },
       ],
     });
