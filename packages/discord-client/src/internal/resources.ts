@@ -1,6 +1,7 @@
 import type { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
 import type {
+  APIApplication,
   APIApplicationCommand,
   APIChannel,
   APIGuild,
@@ -127,6 +128,8 @@ export function createResources(rest: REST, getBotUser: () => APIUser | null) {
     get botUser() {
       return getBotUser();
     },
+    currentApplication: () =>
+      rest.get(Routes.oauth2CurrentApplication()) as Promise<APIApplication>,
     channel,
     guild,
     user,

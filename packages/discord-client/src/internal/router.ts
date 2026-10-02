@@ -106,7 +106,8 @@ export function createCommandRouter(
   appId: string,
   sessions: SessionApi & SessionDispatcher,
   onError: (err: unknown) => void,
-  theme: EmbedTheme
+  theme: EmbedTheme,
+  isOwner: (userId: string) => boolean = () => false
 ) {
   const commands = new Map<string, { def: CommandDef; handlers: Record<string, CommandHandler> }>();
   const components: ComponentRoute[] = [];
@@ -135,6 +136,21 @@ export function createCommandRouter(
     if (!handler) return false;
 
     const ctx = buildCommandContext(resources, appId, sessions, i, route, theme);
+    if (entry.def.ownerOnly && !isOwner(ctx.user.id)) {
+      await ctx.reply(
+        {
+          embeds: [
+            {
+              title: '🔒',
+              description: '此指令僅限機器人作者使用',
+              color: theme.colors.error,
+            },
+          ],
+        },
+        true
+      );
+      return true;
+    }
     try {
       await handler(ctx);
     } catch (err) {
