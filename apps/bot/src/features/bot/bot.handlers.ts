@@ -50,24 +50,26 @@ export function useBotHandlers(deps: BotDeps) {
     await ctx.reply({
       embeds: [
         {
-          title: `📋 ${guild.name}`,
+          title: guild.name,
           color: Colors.INFO,
           fields: [
-            { name: 'ID', value: guild.id, inline: true },
+            { name: 'ID', value: `\`${guild.id}\``, inline: true },
             { name: 'Tier', value: guild.tier, inline: true },
             { name: '加入時間', value: guild.createdAt.slice(0, 10), inline: true },
             {
               name: '用量',
               value:
-                `監控 ${counts.streamWatchers}/${cap(limits.streamWatchers)} · ` +
-                `關鍵字 ${counts.keywordRules}/${cap(limits.keywordRules)} · ` +
+                `監控 ${counts.streamWatchers}/${cap(limits.streamWatchers)}\n` +
+                `關鍵字 ${counts.keywordRules}/${cap(limits.keywordRules)}\n` +
                 `面板 ${counts.reactionRolePanels}/${cap(limits.reactionRolePanels)}`,
             },
             {
               name: '功能',
               value:
-                `${flag(features.memberJoin)} 加入通知 · ${flag(features.memberLeave)} 離開通知 · ` +
-                `${flag(features.streamNotify)} 直播通知 · ${flag(counts.reactionRolePanels > 0)} 身分組面板`,
+                `${flag(features.memberJoin)} 加入通知\n` +
+                `${flag(features.memberLeave)} 離開通知\n` +
+                `${flag(features.streamNotify)} 直播通知\n` +
+                `${flag(counts.reactionRolePanels > 0)} 身分組面板`,
             },
           ],
         },
