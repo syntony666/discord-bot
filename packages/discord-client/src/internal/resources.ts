@@ -16,6 +16,7 @@ import type {
   RESTPostAPIWebhookWithTokenJSONBody,
   RESTPutAPIApplicationCommandsJSONBody,
   RESTPutAPIApplicationCommandsResult,
+  RESTGetAPICurrentUserGuildsResult,
 } from 'discord-api-types/v10';
 
 /** Discord's sentinel id for the original interaction response. */
@@ -130,6 +131,12 @@ export function createResources(rest: REST, getBotUser: () => APIUser | null) {
     },
     currentApplication: () =>
       rest.get(Routes.oauth2CurrentApplication()) as Promise<APIApplication>,
+    me: {
+      guilds: () =>
+        rest.get(
+          `${Routes.userGuilds()}?with_counts=true&limit=200`
+        ) as Promise<RESTGetAPICurrentUserGuildsResult>,
+    },
     channel,
     guild,
     user,

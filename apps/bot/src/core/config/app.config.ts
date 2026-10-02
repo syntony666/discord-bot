@@ -16,6 +16,10 @@ export const appConfig = {
   discord: {
     token: requireEnv('DISCORD_TOKEN'),
     appId: requireEnv('DISCORD_APP_ID'),
+    ownerIds: (process.env.DISCORD_OWNER_IDS ?? '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean),
   },
   api: {
     url: process.env.API_URL ?? 'http://localhost:3001',

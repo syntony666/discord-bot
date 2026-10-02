@@ -3,6 +3,7 @@ import { keywordFeature } from '@features/keyword/keyword.feature';
 import { notifyFeature } from '@features/notify/notify.feature';
 import { guildFeature } from '@features/guild/guild.feature';
 import { reactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
+import { botFeature } from '@features/bot/bot.feature';
 import type { DiscordClient } from '@discord-bot/discord-client';
 import { appConfig } from '@core/config';
 import { BaseColors, Colors } from '@core/config/colors.config';
@@ -15,6 +16,7 @@ export async function bootstrapApp(client: DiscordClient) {
 
   const bot = client.createBot({
     appId: appConfig.discord.appId,
+    ownerIds: appConfig.discord.ownerIds,
     onError: (err) => log.error({ err }, 'Bot dispatch error'),
     theme: {
       footerIconUrl: appConfig.footerIconUrl,
@@ -26,7 +28,14 @@ export async function bootstrapApp(client: DiscordClient) {
       },
     },
   });
-  bot.register(statusFeature, keywordFeature, notifyFeature, guildFeature, reactionRoleFeature);
+  bot.register(
+    statusFeature,
+    keywordFeature,
+    notifyFeature,
+    guildFeature,
+    reactionRoleFeature,
+    botFeature
+  );
   const syncResult = await bot.sync();
   log.info({ sync: syncResult }, 'Command sync finished');
 
