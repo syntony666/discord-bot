@@ -10,6 +10,7 @@ const BULK_DELETE_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
 
 export function createHelpers(resources: Resources, getPing: () => number) {
   const commandIds = new Map<string, string>();
+  const ownerIds = new Set<string>();
 
   return {
     get wsPing() {
@@ -20,6 +21,12 @@ export function createHelpers(resources: Resources, getPing: () => number) {
     },
     get botUser() {
       return resources.botUser;
+    },
+
+    isOwner: (userId: string) => ownerIds.has(userId),
+    setOwnerIds: (ids: readonly string[]) => {
+      ownerIds.clear();
+      for (const id of ids) ownerIds.add(id);
     },
 
     /** Called by sync() after commands.overwrite resolves. */

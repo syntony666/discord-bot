@@ -7,6 +7,7 @@ import { commandsMatch } from './internal/sync';
 import { createSessionStore } from './internal/sessions/store';
 import { createEventHub } from './internal/events/hub';
 import { createHelpers } from './internal/helpers';
+import { resolveOwnerIds } from './internal/owners';
 import type { Bot, BotOptions } from './bot.type';
 import type { Collected, Feature } from './features.type';
 import type { CommandDef } from './commands.type';
@@ -19,10 +20,17 @@ export function createBot(
   const { appId } = options;
   const onError = options.onError ?? ((err) => console.error(err));
 
-  const sessions = createSessionStore(resources, appId, options.theme, onError);
-  const router = createCommandRouter(resources, appId, sessions, onError, options.theme);
-  const hub = createEventHub(onError, () => resources.botId);
   const discord = createHelpers(resources, getPing);
+  const sessions = createSessionStore(resources, appId, options.theme, onError);
+  const router = createCommandRouter(
+    resources,
+    appId,
+    sessions,
+    onError,
+    options.theme,
+    discord.isOwner
+  );
+  const hub = createEventHub(onError, () => resources.botId);
   const defs: CommandDef[] = [];
   const seen = new Set<string>();
 
@@ -73,6 +81,18 @@ export function createBot(
     const commandsApi = resources.application(appId).commands;
     const remote = await commandsApi.list();
     const desired = defs.map(toRestBody);
+
+    // Resolve owners for owner-only commands; fails closed (empty set)
+    // when the lookup errors so regular commands still work.
+    try {
+      const ids = options.ownerIds?.length
+        ? options.ownerIds
+        : resolveOwnerIds(await resources.currentApplication());
+      discord.setOwnerIds(ids);
+    } catch (err) {
+      onError(err);
+    }
+
     if (commandsMatch(desired, remote)) {
       discord.setCommandIds(remote);
       return 'skipped' as const;
