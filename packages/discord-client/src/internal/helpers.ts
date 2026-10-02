@@ -117,6 +117,7 @@ export function createHelpers(
     getUser: (userId: string) => resources.user(userId).get(),
     getBotGuilds: () => resources.me.guilds(),
     leaveGuild: (guildId: string) => resources.me.leaveGuild(guildId),
+    openDm: (userId: string) => resources.me.openDm(userId),
 
     updatePresence: async (data: GatewayPresenceUpdateData) => {
       if (!sendPresence) throw new Error('gateway is not connected');

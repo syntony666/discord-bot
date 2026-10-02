@@ -1,10 +1,13 @@
 import { useHandlers } from '@discord-bot/discord-client';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
+import { createLogger } from '@discord-bot/shared';
 import type { GuildApi } from '@features/guild/guild.api';
 import { botCommand } from './bot.command';
 import type { BotApi } from './bot.api';
 import { ACTIVITY_LABEL, buildPresence } from './bot.presence';
+
+const log = createLogger('BotAdmin');
 
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface BotDeps {
@@ -234,6 +237,66 @@ export function useBotHandlers(deps: BotDeps) {
           color: Colors.SUCCESS,
         },
       ],
+    });
+  });
+
+  h.handler('announce', async (ctx) => {
+    const { message, tier } = ctx.options;
+    const targets = (await api.listGuilds()).filter((g) => !tier || g.tier === tier);
+    if (targets.length === 0) return ctx.error('沒有符合條件的伺服器');
+
+    const ok = await ctx.confirm({
+      title: '📢 發送公告',
+      description: `將私訊 ${targets.length} 個伺服器的擁有者${tier ? `（級別 ${tier}）` : ''}。`,
+      fields: [{ name: '公告內容', value: message }],
+      confirmLabel: '發送',
+      cancelLabel: '取消',
+    });
+    if (!ok) {
+      return ctx.editReply({
+        embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
+        components: [],
+      });
+    }
+
+    let sent = 0;
+    const failed: string[] = [];
+    for (const g of targets) {
+      try {
+        const guild = await discord.getGuild(g.id);
+        const dm = await discord.openDm(guild.owner_id);
+        await discord.sendMessage(dm.id, {
+          embeds: [
+            {
+              title: '📢 公告',
+              description: message,
+              color: Colors.INFO,
+              footer: {
+                text: `來自 ${discord.botUser?.username ?? 'bot'} 的開發者 · @${ctx.user.username}`,
+              },
+            },
+          ],
+        });
+        sent++;
+      } catch (err) {
+        log.warn({ err, guildId: g.id }, 'Failed to DM guild owner');
+        failed.push(g.name);
+      }
+    }
+
+    await ctx.editReply({
+      embeds: [
+        {
+          title: '公告已送出',
+          description:
+            `已發送給 ${sent} 位擁有者` +
+            (failed.length
+              ? `\n失敗 ${failed.length} 位：${failed.map((n) => `**${n}**`).join('、')}`
+              : ''),
+          color: Colors.SUCCESS,
+        },
+      ],
+      components: [],
     });
   });
 
