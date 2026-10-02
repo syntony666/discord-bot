@@ -1,6 +1,7 @@
 import { PrismaClient } from '../.prisma/client';
 import type { CreateKeywordRuleInput, UpdateKeywordRuleInput } from '@discord-bot/shared';
 import { pickResponse } from './keyword.response';
+import { assertGuildFeatureLimit } from './tier-limits';
 
 const keywordRuntimeSelect = {
   guildId: true,
@@ -46,7 +47,9 @@ export function createKeywordModule(prisma: PrismaClient) {
       });
     },
 
-    createRule(input: CreateKeywordRuleInput) {
+    async createRule(input: CreateKeywordRuleInput) {
+      const count = await prisma.keywordRule.count({ where: { guildId: input.guildId } });
+      await assertGuildFeatureLimit(prisma, input.guildId, 'keywordRules', count, '關鍵字規則');
       return prisma.keywordRule.create({
         data: {
           guildId: input.guildId,
