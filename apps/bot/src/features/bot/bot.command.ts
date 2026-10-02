@@ -48,6 +48,10 @@ export const botCommand = defineCommand()({
           description: '讓 bot 退出指定伺服器',
           options: [guildIdRequiredOption],
         },
+        {
+          name: 'sync',
+          description: '比對 Discord 實際所在伺服器與資料庫記錄',
+        },
       ],
     },
   ],
