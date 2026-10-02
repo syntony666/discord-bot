@@ -1,4 +1,11 @@
+import { ApplicationCommandOptionType } from 'discord-api-types/v10';
 import { defineCommand } from '@discord-bot/discord-client';
+
+const guildIdOption = {
+  name: 'guild_id',
+  type: ApplicationCommandOptionType.String,
+  description: '伺服器 ID(預設為當前伺服器)',
+} as const;
 
 export const botCommand = defineCommand()({
   command: 'bot',
@@ -8,7 +15,10 @@ export const botCommand = defineCommand()({
     {
       name: 'guild',
       description: '伺服器管理',
-      subcommands: [{ name: 'list', description: '列出 bot 所在的所有伺服器' }],
+      subcommands: [
+        { name: 'list', description: '列出 bot 所在的所有伺服器' },
+        { name: 'info', description: '查看單一伺服器的詳細資訊', options: [guildIdOption] },
+      ],
     },
   ],
 });
