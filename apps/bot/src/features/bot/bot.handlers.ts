@@ -75,5 +75,20 @@ export function useBotHandlers(deps: BotDeps) {
     });
   });
 
+  h.handler('guild.tier', async (ctx) => {
+    const guildId = ctx.options.guild_id ?? ctx.guildId;
+    if (!guildId) return ctx.error('請提供 guild_id,或在伺服器中使用此指令');
+    const tier = ctx.options.tier;
+
+    const guild = await api.getGuild(guildId);
+    if (!guild) return ctx.error('此伺服器不在資料庫中(可用 /bot guild sync 補登)');
+
+    const wasHome = (await api.listGuilds()).find((g) => g.tier === 'HOME' && g.id !== guildId);
+    await api.setTier(guildId, tier);
+
+    const demoted = tier === 'HOME' && wasHome ? `\n(舊的 HOME:${wasHome.name} 已降為 NORMAL)` : '';
+    await ctx.success(`已將 ${guild.name} 設為 ${tier}${demoted}`);
+  });
+
   return h.collect();
 }

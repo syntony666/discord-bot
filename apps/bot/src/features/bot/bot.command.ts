@@ -18,6 +18,24 @@ export const botCommand = defineCommand()({
       subcommands: [
         { name: 'list', description: '列出 bot 所在的所有伺服器' },
         { name: 'info', description: '查看單一伺服器的詳細資訊', options: [guildIdOption] },
+        {
+          name: 'tier',
+          description: '設定伺服器級別',
+          options: [
+            {
+              name: 'tier',
+              type: ApplicationCommandOptionType.String,
+              description: '目標級別',
+              required: true,
+              choices: [
+                { name: 'normal', value: 'NORMAL' },
+                { name: 'premium', value: 'PREMIUM' },
+                { name: 'home', value: 'HOME' },
+              ],
+            },
+            guildIdOption,
+          ],
+        },
       ],
     },
   ],
