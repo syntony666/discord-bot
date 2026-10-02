@@ -198,5 +198,19 @@ export function useBotHandlers(deps: BotDeps) {
     });
   });
 
+  h.handler('profile.about', async (ctx) => {
+    const { text } = ctx.options;
+    await discord.editApplication({ description: text });
+    await ctx.reply({
+      embeds: [
+        {
+          title: '自我介紹已更新',
+          description: `**${text.length > 100 ? `${text.slice(0, 100)}…` : text}**`,
+          color: Colors.SUCCESS,
+        },
+      ],
+    });
+  });
+
   return h.collect();
 }

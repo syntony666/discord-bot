@@ -2,6 +2,7 @@ import type {
   APIMessage,
   GatewayPresenceUpdateData,
   RESTPatchAPIChannelMessageJSONBody,
+  RESTPatchCurrentApplicationJSONBody,
   RESTPostAPIChannelMessageJSONBody,
 } from 'discord-api-types/v10';
 import { DiscordSnowflake } from '@sapphire/snowflake';
@@ -121,5 +122,7 @@ export function createHelpers(
       if (!sendPresence) throw new Error('gateway is not connected');
       await sendPresence(data);
     },
+    editApplication: (body: RESTPatchCurrentApplicationJSONBody) =>
+      resources.editCurrentApplication(body),
   };
 }
