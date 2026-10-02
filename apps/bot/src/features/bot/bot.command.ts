@@ -7,6 +7,13 @@ const guildIdOption = {
   description: '伺服器 ID(預設為當前伺服器)',
 } as const;
 
+const guildIdRequiredOption = {
+  name: 'guild_id',
+  type: ApplicationCommandOptionType.String,
+  description: '伺服器 ID',
+  required: true,
+} as const;
+
 export const botCommand = defineCommand()({
   command: 'bot',
   description: '機器人管理指令(僅限作者)',
@@ -35,6 +42,11 @@ export const botCommand = defineCommand()({
             },
             guildIdOption,
           ],
+        },
+        {
+          name: 'leave',
+          description: '讓 bot 退出指定伺服器',
+          options: [guildIdRequiredOption],
         },
       ],
     },

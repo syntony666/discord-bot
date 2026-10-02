@@ -136,6 +136,7 @@ export function createResources(rest: REST, getBotUser: () => APIUser | null) {
         rest.get(
           `${Routes.userGuilds()}?with_counts=true&limit=200`
         ) as Promise<RESTGetAPICurrentUserGuildsResult>,
+      leaveGuild: (guildId: string) => rest.delete(Routes.userGuild(guildId)),
     },
     channel,
     guild,
