@@ -1,6 +1,7 @@
 import { REST } from '@discordjs/rest';
 import { WebSocketManager, WebSocketShardEvents } from '@discordjs/ws';
-import type { APIUser } from 'discord-api-types/v10';
+import { GatewayOpcodes } from 'discord-api-types/v10';
+import type { APIUser, GatewayPresenceUpdateData } from 'discord-api-types/v10';
 import { createResources } from './internal/resources';
 import { createBot } from './bot';
 import type { BotOptions } from './bot.type';
@@ -10,23 +11,36 @@ export function createDiscordClient(options: { token: string }) {
   const rest = new REST({ version: '10' }).setToken(options.token);
   let botUser: APIUser | null = null;
   let latestPing = 0;
+  let manager: WebSocketManager | null = null;
   const resources = createResources(rest, () => botUser);
+
+  const updatePresence = async (data: GatewayPresenceUpdateData) => {
+    if (!manager) throw new Error('gateway is not connected');
+    const payload = { op: GatewayOpcodes.PresenceUpdate, d: data } as const;
+    for (const shardId of await manager.getShardIds()) {
+      await manager.send(shardId, payload);
+    }
+  };
+
   return {
     async connect({ intents, onDispatch, onReady, onLog }: GatewayConnectOptions) {
-      const manager = new WebSocketManager({ token: options.token, intents, rest });
-      manager.on(WebSocketShardEvents.Dispatch, (payload) => onDispatch(payload));
-      manager.on(WebSocketShardEvents.Ready, (data, shardId) => {
+      const ws = new WebSocketManager({ token: options.token, intents, rest });
+      manager = ws;
+      ws.on(WebSocketShardEvents.Dispatch, (payload) => onDispatch(payload));
+      ws.on(WebSocketShardEvents.Ready, (data, shardId) => {
         botUser = data.user;
         onReady?.(data, shardId);
       });
-      manager.on(WebSocketShardEvents.HeartbeatComplete, (stats) => {
+      ws.on(WebSocketShardEvents.HeartbeatComplete, (stats) => {
         latestPing = stats.latency;
       });
-      manager.on(WebSocketShardEvents.Debug, (message, shardId) => onLog?.(message, { shardId }));
-      await manager.connect();
-      return { close: () => void manager.destroy() };
+      ws.on(WebSocketShardEvents.Debug, (message, shardId) => onLog?.(message, { shardId }));
+      await ws.connect();
+      return { close: () => void ws.destroy() };
     },
-    createBot: (botOptions: BotOptions) => createBot(resources, botOptions, () => latestPing),
+    updatePresence,
+    createBot: (botOptions: BotOptions) =>
+      createBot(resources, botOptions, () => latestPing, updatePresence),
   };
 }
 

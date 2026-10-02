@@ -1,5 +1,6 @@
 import type {
   APIMessage,
+  GatewayPresenceUpdateData,
   RESTPatchAPIChannelMessageJSONBody,
   RESTPostAPIChannelMessageJSONBody,
 } from 'discord-api-types/v10';
@@ -8,7 +9,11 @@ import type { Resources } from './resources';
 
 const BULK_DELETE_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
 
-export function createHelpers(resources: Resources, getPing: () => number) {
+export function createHelpers(
+  resources: Resources,
+  getPing: () => number,
+  sendPresence?: (data: GatewayPresenceUpdateData) => Promise<void>
+) {
   const commandIds = new Map<string, string>();
   const ownerIds = new Set<string>();
 
@@ -111,5 +116,10 @@ export function createHelpers(resources: Resources, getPing: () => number) {
     getUser: (userId: string) => resources.user(userId).get(),
     getBotGuilds: () => resources.me.guilds(),
     leaveGuild: (guildId: string) => resources.me.leaveGuild(guildId),
+
+    updatePresence: async (data: GatewayPresenceUpdateData) => {
+      if (!sendPresence) throw new Error('gateway is not connected');
+      await sendPresence(data);
+    },
   };
 }

@@ -17,7 +17,7 @@ async function main() {
     healthServer = startHealthServer(appConfig.health.port, buildStatusPayload);
 
     const client = createDiscordClient({ token: appConfig.discord.token });
-    const bot = await bootstrapApp(client);
+    const { bot, restoreActivity } = await bootstrapApp(client);
 
     gatewaySession = await client.connect({
       intents: botIntents,
@@ -27,6 +27,7 @@ async function main() {
       onReady: (data) => {
         markDiscordReady();
         logger.info({ user: data.user }, 'Bot is ready');
+        void restoreActivity();
       },
       onLog: (message, meta) => logger.info(meta ?? {}, `[Gateway] ${message}`),
     });
