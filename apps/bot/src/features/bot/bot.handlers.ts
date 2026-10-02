@@ -15,6 +15,8 @@ export function useBotHandlers(deps: BotDeps) {
   const api = deps.api.guild;
   const h = useHandlers(botCommand);
 
+  const TIER_ICON: Record<string, string> = { NORMAL: '⬜', PREMIUM: '🟣', HOME: '🏠' };
+
   h.handler('guild.list', async (ctx) => {
     const [guilds, records] = await Promise.all([discord.getBotGuilds(), api.listGuilds()]);
     const tiers = new Map(records.map((g) => [g.id, g.tier]));
@@ -26,11 +28,9 @@ export function useBotHandlers(deps: BotDeps) {
         color: Colors.INFO,
         fields: page.map((g) => {
           const tier = tiers.get(g.id);
-          const suffix =
-            tier === undefined ? ' · ⚠️ 無記錄' : tier === 'NORMAL' ? '' : ` · ${tier}`;
           return {
-            name: g.name,
-            value: `\`${g.id}\` · ${g.approximate_member_count ?? '?'} 人${suffix}`,
+            name: `${tier ? TIER_ICON[tier] : '⚠️'} ${g.name}`,
+            value: `\`${g.id}\` · ${g.approximate_member_count ?? '?'} 人`,
           };
         }),
       }),
