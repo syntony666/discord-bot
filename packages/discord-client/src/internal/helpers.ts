@@ -110,5 +110,6 @@ export function createHelpers(resources: Resources, getPing: () => number) {
 
     getUser: (userId: string) => resources.user(userId).get(),
     getBotGuilds: () => resources.me.guilds(),
+    leaveGuild: (guildId: string) => resources.me.leaveGuild(guildId),
   };
 }

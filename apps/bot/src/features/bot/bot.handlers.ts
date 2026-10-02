@@ -90,5 +90,30 @@ export function useBotHandlers(deps: BotDeps) {
     await ctx.success(`已將 ${guild.name} 設為 ${tier}${demoted}`);
   });
 
+  h.handler('guild.leave', async (ctx) => {
+    const guildId = ctx.options.guild_id;
+    const record = await api.getGuild(guildId);
+    const name = record?.name ?? guildId;
+
+    const ok = await ctx.confirm({
+      title: '⚠️ 退出伺服器',
+      description: `確定要讓 bot 退出「${name}」?其所有設定資料將被刪除。`,
+      confirmLabel: '退出',
+      danger: true,
+    });
+    if (!ok) {
+      return ctx.editReply({
+        embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
+        components: [],
+      });
+    }
+
+    await discord.leaveGuild(guildId);
+    await ctx.editReply({
+      embeds: [{ title: '✅', description: `已退出「${name}」`, color: Colors.SUCCESS }],
+      components: [],
+    });
+  });
+
   return h.collect();
 }
