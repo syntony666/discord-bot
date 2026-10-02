@@ -109,5 +109,6 @@ export function createHelpers(resources: Resources, getPing: () => number) {
       resources.guild(guildId).member(userId).roles.remove(roleId, reason),
 
     getUser: (userId: string) => resources.user(userId).get(),
+    getBotGuilds: () => resources.me.guilds(),
   };
 }
