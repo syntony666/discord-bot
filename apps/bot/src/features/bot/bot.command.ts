@@ -140,5 +140,27 @@ export const botCommand = defineCommand()({
         },
       ],
     },
+    {
+      name: 'announce',
+      description: '發送公告給各伺服器擁有者',
+      options: [
+        {
+          name: 'message',
+          type: ApplicationCommandOptionType.String,
+          description: '公告內容',
+          required: true,
+        },
+        {
+          name: 'tier',
+          type: ApplicationCommandOptionType.String,
+          description: '僅發送給指定級別',
+          choices: [
+            { name: 'normal', value: 'NORMAL' },
+            { name: 'premium', value: 'PREMIUM' },
+            { name: 'home', value: 'HOME' },
+          ],
+        },
+      ],
+    },
   ],
 });
