@@ -21,3 +21,17 @@ export const StreamPlatform = {
   TWITCH: 'TWITCH',
 } as const;
 export type StreamPlatform = (typeof StreamPlatform)[keyof typeof StreamPlatform];
+
+export const GuildTier = {
+  NORMAL: 'NORMAL',
+  PREMIUM: 'PREMIUM',
+  HOME: 'HOME',
+} as const;
+export type GuildTier = (typeof GuildTier)[keyof typeof GuildTier];
+
+export const LimitFeature = {
+  streamWatchers: 'streamWatchers',
+  keywordRules: 'keywordRules',
+  reactionRolePanels: 'reactionRolePanels',
+} as const;
+export type LimitFeature = (typeof LimitFeature)[keyof typeof LimitFeature];

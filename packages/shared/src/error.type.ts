@@ -1,4 +1,4 @@
-export type ErrorCode = 'NOT_FOUND' | 'CONFLICT' | 'BAD_REQUEST' | 'INTERNAL';
+export type ErrorCode = 'NOT_FOUND' | 'CONFLICT' | 'BAD_REQUEST' | 'LIMIT_EXCEEDED' | 'INTERNAL';
 
 export interface ErrorDataResponse {
   error: {
