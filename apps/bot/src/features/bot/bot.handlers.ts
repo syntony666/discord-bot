@@ -15,16 +15,17 @@ export function useBotHandlers(deps: BotDeps) {
   const api = deps.api.guild;
   const h = useHandlers(botCommand);
 
-  const TIER_ICON: Record<string, string> = { NORMAL: '⬜', PREMIUM: '🟣', HOME: '🏠' };
+  const TIER_ICON: Record<string, string> = { NORMAL: '⚪', PREMIUM: '🟣', HOME: '🟡' };
+  const tierName = (tier: string) => `${TIER_ICON[tier] ?? ''} ${tier}`;
 
   h.handler('guild.list', async (ctx) => {
     const [guilds, records] = await Promise.all([discord.getBotGuilds(), api.listGuilds()]);
     const tiers = new Map(records.map((g) => [g.id, g.tier]));
     await ctx.paginate({
       items: guilds,
-      emptyText: 'Bot 尚未加入任何伺服器',
+      emptyText: '尚未加入任何伺服器',
       render: (page) => ({
-        title: `所在伺服器 (共 ${guilds.length} 個)`,
+        title: `所在伺服器（共 ${guilds.length} 個）`,
         color: Colors.INFO,
         fields: page.map((g) => {
           const tier = tiers.get(g.id);
@@ -39,10 +40,10 @@ export function useBotHandlers(deps: BotDeps) {
 
   h.handler('guild.info', async (ctx) => {
     const guildId = ctx.options.guild_id ?? ctx.guildId;
-    if (!guildId) return ctx.error('請提供 guild_id,或在伺服器中使用此指令');
+    if (!guildId) return ctx.error('請提供 guild_id，或在伺服器中使用此指令');
 
     const guild = await api.getGuild(guildId);
-    if (!guild) return ctx.error('此伺服器不在資料庫中(可用 /bot guild sync 補登)');
+    if (!guild) return ctx.error('此伺服器不在資料庫中（可用 /bot guild sync 補登）');
 
     const cap = (n: number) => (n < 0 ? '∞' : String(n));
     const flag = (on: boolean) => (on ? '✅' : '❌');
@@ -54,7 +55,7 @@ export function useBotHandlers(deps: BotDeps) {
           color: Colors.INFO,
           fields: [
             { name: 'ID', value: `\`${guild.id}\``, inline: true },
-            { name: 'Tier', value: guild.tier, inline: true },
+            { name: '級別', value: tierName(guild.tier), inline: true },
             { name: '加入時間', value: guild.createdAt.slice(0, 10), inline: true },
             {
               name: '用量',
@@ -79,17 +80,26 @@ export function useBotHandlers(deps: BotDeps) {
 
   h.handler('guild.tier', async (ctx) => {
     const guildId = ctx.options.guild_id ?? ctx.guildId;
-    if (!guildId) return ctx.error('請提供 guild_id,或在伺服器中使用此指令');
+    if (!guildId) return ctx.error('請提供 guild_id，或在伺服器中使用此指令');
     const tier = ctx.options.tier;
 
     const guild = await api.getGuild(guildId);
-    if (!guild) return ctx.error('此伺服器不在資料庫中(可用 /bot guild sync 補登)');
+    if (!guild) return ctx.error('此伺服器不在資料庫中（可用 /bot guild sync 補登）');
 
     const wasHome = (await api.listGuilds()).find((g) => g.tier === 'HOME' && g.id !== guildId);
     await api.setTier(guildId, tier);
 
-    const demoted = tier === 'HOME' && wasHome ? `\n(舊的 HOME:${wasHome.name} 已降為 NORMAL)` : '';
-    await ctx.success(`已將 ${guild.name} 設為 ${tier}${demoted}`);
+    const demoted =
+      tier === 'HOME' && wasHome ? `\n（原 HOME 伺服器 **${wasHome.name}** 已降為 NORMAL）` : '';
+    await ctx.reply({
+      embeds: [
+        {
+          title: '級別已更新',
+          description: `**${guild.name}** 已設為 ${tier}${demoted}`,
+          color: Colors.SUCCESS,
+        },
+      ],
+    });
   });
 
   h.handler('guild.leave', async (ctx) => {
@@ -99,7 +109,7 @@ export function useBotHandlers(deps: BotDeps) {
 
     const ok = await ctx.confirm({
       title: '⚠️ 退出伺服器',
-      description: `確定要讓 bot 退出「${name}」?其所有設定資料將被刪除。`,
+      description: `確定要退出 **${name}**？其所有設定資料將被刪除。`,
       confirmLabel: '退出',
       danger: true,
     });
@@ -112,7 +122,13 @@ export function useBotHandlers(deps: BotDeps) {
 
     await discord.leaveGuild(guildId);
     await ctx.editReply({
-      embeds: [{ title: '✅', description: `已退出「${name}」`, color: Colors.SUCCESS }],
+      embeds: [
+        {
+          title: '已退出伺服器',
+          description: `已退出 **${name}**`,
+          color: Colors.SUCCESS,
+        },
+      ],
       components: [],
     });
   });
@@ -130,18 +146,20 @@ export function useBotHandlers(deps: BotDeps) {
     ]);
 
     if (missing.length === 0 && orphans.length === 0) {
-      return ctx.success('已同步,無差異');
+      return ctx.reply({
+        embeds: [{ title: '同步完成', description: '無差異', color: Colors.SUCCESS }],
+      });
     }
     await ctx.reply({
       embeds: [
         {
-          title: '✅ 對帳完成',
+          title: '同步完成',
           color: Colors.SUCCESS,
           fields: [
             ...(missing.length
               ? [
                   {
-                    name: `新增 ${missing.length} 筆(bot 已加入但無記錄)`,
+                    name: `新增 ${missing.length} 筆（已加入但無記錄）`,
                     value: missing.map((g) => g.name).join(' · '),
                   },
                 ]
@@ -149,7 +167,7 @@ export function useBotHandlers(deps: BotDeps) {
             ...(orphans.length
               ? [
                   {
-                    name: `移除 ${orphans.length} 筆(已退出但殘留)`,
+                    name: `移除 ${orphans.length} 筆（已退出但殘留）`,
                     value: orphans.map((g) => g.name).join(' · '),
                   },
                 ]

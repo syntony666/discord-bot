@@ -4,7 +4,7 @@ import { defineCommand } from '@discord-bot/discord-client';
 const guildIdOption = {
   name: 'guild_id',
   type: ApplicationCommandOptionType.String,
-  description: '伺服器 ID(預設為當前伺服器)',
+  description: '伺服器 ID（預設為當前伺服器）',
 } as const;
 
 const guildIdRequiredOption = {
@@ -16,14 +16,14 @@ const guildIdRequiredOption = {
 
 export const botCommand = defineCommand()({
   command: 'bot',
-  description: '機器人管理指令(僅限作者)',
+  description: '機器人管理指令（僅限作者）',
   ownerOnly: true,
   groups: [
     {
       name: 'guild',
       description: '伺服器管理',
       subcommands: [
-        { name: 'list', description: '列出 bot 所在的所有伺服器' },
+        { name: 'list', description: '列出所在的所有伺服器' },
         { name: 'info', description: '查看單一伺服器的詳細資訊', options: [guildIdOption] },
         {
           name: 'tier',
@@ -45,7 +45,7 @@ export const botCommand = defineCommand()({
         },
         {
           name: 'leave',
-          description: '讓 bot 退出指定伺服器',
+          description: '退出指定伺服器',
           options: [guildIdRequiredOption],
         },
         {
