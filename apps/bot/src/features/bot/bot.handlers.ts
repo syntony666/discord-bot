@@ -115,5 +115,48 @@ export function useBotHandlers(deps: BotDeps) {
     });
   });
 
+  h.handler('guild.sync', async (ctx) => {
+    const [discordGuilds, records] = await Promise.all([discord.getBotGuilds(), api.listGuilds()]);
+    const discordIds = new Set(discordGuilds.map((g) => g.id));
+    const dbIds = new Set(records.map((g) => g.id));
+
+    const missing = discordGuilds.filter((g) => !dbIds.has(g.id));
+    const orphans = records.filter((g) => !discordIds.has(g.id));
+    await Promise.all([
+      ...missing.map((g) => api.ensureGuild(g.id, g.name)),
+      ...orphans.map((g) => api.deleteGuild(g.id)),
+    ]);
+
+    if (missing.length === 0 && orphans.length === 0) {
+      return ctx.success('已同步,無差異');
+    }
+    await ctx.reply({
+      embeds: [
+        {
+          title: '✅ 對帳完成',
+          color: Colors.SUCCESS,
+          fields: [
+            ...(missing.length
+              ? [
+                  {
+                    name: `新增 ${missing.length} 筆(bot 已加入但無記錄)`,
+                    value: missing.map((g) => g.name).join(' · '),
+                  },
+                ]
+              : []),
+            ...(orphans.length
+              ? [
+                  {
+                    name: `移除 ${orphans.length} 筆(已退出但殘留)`,
+                    value: orphans.map((g) => g.name).join(' · '),
+                  },
+                ]
+              : []),
+          ],
+        },
+      ],
+    });
+  });
+
   return h.collect();
 }
