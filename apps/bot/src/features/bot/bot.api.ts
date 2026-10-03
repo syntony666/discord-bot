@@ -1,4 +1,4 @@
-import { ApiRequest, BotStateEntry, TierLimitData, orNull } from '@discord-bot/shared';
+import { ApiRequest, BotStateEntry, BotStats, TierLimitData, orNull } from '@discord-bot/shared';
 
 const BASE = '/api/v1/bot-state';
 
@@ -22,6 +22,9 @@ export function createBotApi(request: ApiRequest) {
         method: 'PATCH',
         body: JSON.stringify(patch),
       });
+    },
+    getStats() {
+      return request<BotStats>('/api/v1/stats');
     },
   };
 }

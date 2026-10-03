@@ -36,3 +36,13 @@ export interface BotStateEntry {
   key: string;
   value: string;
 }
+
+export interface BotStats {
+  guilds: number;
+  tierCounts: Record<string, number>;
+  watchers: number;
+  liveWatchers: number;
+  keywordRules: number;
+  reactionRolePanels: number;
+  limits: TierLimitData[];
+}

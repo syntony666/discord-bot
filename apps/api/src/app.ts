@@ -14,6 +14,7 @@ import { keywordRuleRoutes } from './routes/keyword-rules';
 import { memberNotifyRoutes } from './routes/member-notify';
 import { reactionRoleRoutes } from './routes/reaction-roles';
 import { streamNotifyRoutes, streamWatcherRoutes } from './routes/stream-notify';
+import { statsRoutes } from './routes/stats';
 import { tierLimitRoutes } from './routes/tier-limits';
 
 const guildModule = createGuildModule(prisma);
@@ -35,6 +36,7 @@ app.route('/api/v1/guilds/:guildId', streamNotifyRoutes(streamNotifyModule));
 app.route('/api/v1/stream-watchers', streamWatcherRoutes(streamNotifyModule));
 app.route('/api/v1/tier-limits', tierLimitRoutes(guildModule));
 app.route('/api/v1/bot-state', botStateRoutes(botStateModule));
+app.route('/api/v1/stats', statsRoutes(guildModule));
 
 app.onError((error, c) => {
   if (error instanceof ApiError) {
