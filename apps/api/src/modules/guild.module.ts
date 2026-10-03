@@ -5,6 +5,14 @@ import { DEFAULT_TIER_LIMITS } from './tier-limits';
 const TIER_ORDER: GuildTier[] = ['NORMAL', 'PREMIUM', 'HOME'];
 
 export function createGuildModule(prisma: PrismaClient) {
+  const listTierLimits = async () => {
+    const rows = await prisma.tierLimit.findMany();
+    return TIER_ORDER.map((tier) => ({
+      tier,
+      ...(rows.find((r) => r.tier === tier) ?? DEFAULT_TIER_LIMITS[tier]),
+    }));
+  };
+
   return {
     ensureGuild(guildId: string, guildName?: string) {
       return prisma.guild.upsert({
@@ -76,12 +84,30 @@ export function createGuildModule(prisma: PrismaClient) {
       return prisma.guild.findMany({ orderBy: { createdAt: 'desc' } });
     },
 
-    async listTierLimits() {
-      const rows = await prisma.tierLimit.findMany();
-      return TIER_ORDER.map((tier) => ({
-        tier,
-        ...(rows.find((r) => r.tier === tier) ?? DEFAULT_TIER_LIMITS[tier]),
-      }));
+    listTierLimits,
+
+    async getStats() {
+      const [guilds, tierGroups, watchers, liveWatchers, keywordRules, reactionRolePanels] =
+        await Promise.all([
+          prisma.guild.count(),
+          prisma.guild.groupBy({ by: ['tier'], _count: { _all: true } }),
+          prisma.streamWatcher.count(),
+          prisma.streamWatcher.count({ where: { isLive: true } }),
+          prisma.keywordRule.count(),
+          prisma.reactionRolePanel.count(),
+        ]);
+      const tierCounts = Object.fromEntries(
+        TIER_ORDER.map((tier) => [tier, tierGroups.find((g) => g.tier === tier)?._count._all ?? 0])
+      );
+      return {
+        guilds,
+        tierCounts,
+        watchers,
+        liveWatchers,
+        keywordRules,
+        reactionRolePanels,
+        limits: await listTierLimits(),
+      };
     },
 
     setTierLimit(tier: GuildTier, patch: Partial<Record<LimitFeature, number>>) {

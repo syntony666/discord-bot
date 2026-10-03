@@ -162,5 +162,9 @@ export const botCommand = defineCommand()({
         },
       ],
     },
+    {
+      name: 'stats',
+      description: '全域統計',
+    },
   ],
 });

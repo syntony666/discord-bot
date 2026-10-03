@@ -300,5 +300,58 @@ export function useBotHandlers(deps: BotDeps) {
     });
   });
 
+  h.handler('stats', async (ctx) => {
+    const [stats, guilds] = await Promise.all([botApi.getStats(), discord.getBotGuilds()]);
+    const cap = (n: number) => (n < 0 ? '∞' : String(n));
+    const up = process.uptime();
+    const uptime =
+      up >= 86400
+        ? `${Math.floor(up / 86400)}d ${Math.floor((up % 86400) / 3600)}h`
+        : up >= 3600
+          ? `${Math.floor(up / 3600)}h ${Math.floor((up % 3600) / 60)}m`
+          : `${Math.floor(up / 60)}m`;
+
+    await ctx.reply({
+      embeds: [
+        {
+          title: '全域統計',
+          color: Colors.INFO,
+          fields: [
+            {
+              name: '伺服器',
+              value: `Discord **${guilds.length}** · 資料庫 **${stats.guilds}**`,
+            },
+            {
+              name: '監控',
+              value: `**${stats.watchers}** 個（🔴 ${stats.liveWatchers} 直播中）`,
+            },
+            { name: '關鍵字', value: `**${stats.keywordRules}** 條` },
+            { name: '面板', value: `**${stats.reactionRolePanels}** 個` },
+            {
+              name: '級別分佈',
+              value:
+                `⚪ NORMAL × ${stats.tierCounts['NORMAL'] ?? 0}\n` +
+                `🟣 PREMIUM × ${stats.tierCounts['PREMIUM'] ?? 0}\n` +
+                `🟡 HOME × ${stats.tierCounts['HOME'] ?? 0}`,
+            },
+            {
+              name: '額度',
+              value: stats.limits
+                .map(
+                  (l) =>
+                    `**${l.tier}**　監控 ${cap(l.streamWatchers)} · 關鍵字 ${cap(l.keywordRules)} · 面板 ${cap(l.reactionRolePanels)}`
+                )
+                .join('\n'),
+            },
+            {
+              name: '狀態',
+              value: `運行 ${uptime} · WS ${discord.wsPing}ms`,
+            },
+          ],
+        },
+      ],
+    });
+  });
+
   return h.collect();
 }
