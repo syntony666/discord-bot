@@ -242,9 +242,25 @@ export function useBotHandlers(deps: BotDeps) {
     const targets = (await api.listGuilds()).filter((g) => !tier || g.tier === tier);
     if (targets.length === 0) return ctx.error('沒有符合條件的伺服器');
 
+    // Resolve owners first and dedupe — one user may own several guilds.
+    const owners = new Map<string, string[]>();
+    const failed: string[] = [];
+    for (const g of targets) {
+      try {
+        const guild = await discord.getGuild(g.id);
+        owners.set(guild.owner_id, [...(owners.get(guild.owner_id) ?? []), g.name]);
+      } catch (err) {
+        log.warn({ err, guildId: g.id }, 'Failed to fetch guild for announce');
+        failed.push(g.name);
+      }
+    }
+    if (owners.size === 0) return ctx.error('無法取得任何伺服器擁有者資訊');
+
     const ok = await ctx.confirm({
       title: '📢 發送公告',
-      description: `將私訊 ${targets.length} 個伺服器的擁有者${tier ? `（級別 ${tier}）` : ''}。`,
+      description:
+        `將私訊 ${owners.size} 位擁有者（共 ${targets.length} 個伺服器` +
+        `${tier ? `，級別 ${tier}` : ''}）。`,
       fields: [{ name: '公告內容', value: message }],
       confirmLabel: '發送',
       cancelLabel: '取消',
@@ -257,11 +273,9 @@ export function useBotHandlers(deps: BotDeps) {
     }
 
     let sent = 0;
-    const failed: string[] = [];
-    for (const g of targets) {
+    for (const [ownerId, names] of owners) {
       try {
-        const guild = await discord.getGuild(g.id);
-        const dm = await discord.openDm(guild.owner_id);
+        const dm = await discord.openDm(ownerId);
         await discord.sendMessage(dm.id, {
           embeds: [
             {
@@ -276,8 +290,8 @@ export function useBotHandlers(deps: BotDeps) {
         });
         sent++;
       } catch (err) {
-        log.warn({ err, guildId: g.id }, 'Failed to DM guild owner');
-        failed.push(g.name);
+        log.warn({ err, ownerId }, 'Failed to DM guild owner');
+        failed.push(...names);
       }
     }
 
