@@ -4,6 +4,8 @@ import type { EmbedTheme } from './internal/embeds';
 
 export interface BotOptions {
   appId: string;
+  /** Explicit owner ids for owner-only commands; falls back to Discord application lookup. */
+  ownerIds?: string[];
   onError?: (err: unknown) => void;
   theme: EmbedTheme;
 }

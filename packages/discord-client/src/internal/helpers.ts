@@ -1,6 +1,8 @@
 import type {
   APIMessage,
+  GatewayPresenceUpdateData,
   RESTPatchAPIChannelMessageJSONBody,
+  RESTPatchCurrentApplicationJSONBody,
   RESTPostAPIChannelMessageJSONBody,
 } from 'discord-api-types/v10';
 import { DiscordSnowflake } from '@sapphire/snowflake';
@@ -8,8 +10,13 @@ import type { Resources } from './resources';
 
 const BULK_DELETE_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
 
-export function createHelpers(resources: Resources, getPing: () => number) {
+export function createHelpers(
+  resources: Resources,
+  getPing: () => number,
+  sendPresence?: (data: GatewayPresenceUpdateData) => Promise<void>
+) {
   const commandIds = new Map<string, string>();
+  const ownerIds = new Set<string>();
 
   return {
     get wsPing() {
@@ -20,6 +27,12 @@ export function createHelpers(resources: Resources, getPing: () => number) {
     },
     get botUser() {
       return resources.botUser;
+    },
+
+    isOwner: (userId: string) => ownerIds.has(userId),
+    setOwnerIds: (ids: readonly string[]) => {
+      ownerIds.clear();
+      for (const id of ids) ownerIds.add(id);
     },
 
     /** Called by sync() after commands.overwrite resolves. */
@@ -102,5 +115,15 @@ export function createHelpers(resources: Resources, getPing: () => number) {
       resources.guild(guildId).member(userId).roles.remove(roleId, reason),
 
     getUser: (userId: string) => resources.user(userId).get(),
+    getBotGuilds: () => resources.me.guilds(),
+    leaveGuild: (guildId: string) => resources.me.leaveGuild(guildId),
+    openDm: (userId: string) => resources.me.openDm(userId),
+
+    updatePresence: async (data: GatewayPresenceUpdateData) => {
+      if (!sendPresence) throw new Error('gateway is not connected');
+      await sendPresence(data);
+    },
+    editApplication: (body: RESTPatchCurrentApplicationJSONBody) =>
+      resources.editCurrentApplication(body),
   };
 }

@@ -56,6 +56,8 @@ export interface CommandDef {
   nsfw?: boolean;
   name_localizations?: Record<string, string> | null;
   description_localizations?: Record<string, string> | null;
+  /** Restrict the command to bot owners; local-only metadata, never sent to Discord. */
+  ownerOnly?: boolean;
   /** Flat options for commands without subcommands. */
   options?: readonly OptionDef[];
   subcommands?: readonly SubcommandDef[];

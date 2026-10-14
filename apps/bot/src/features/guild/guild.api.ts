@@ -1,4 +1,4 @@
-import { ApiRequest, GuildData, orNull } from '@discord-bot/shared';
+import { ApiRequest, GuildData, GuildDetail, orNull } from '@discord-bot/shared';
 
 const BASE = '/api/v1/guilds';
 
@@ -11,7 +11,13 @@ export function createGuildApi(request: ApiRequest) {
       });
     },
     getGuild(guildId: string) {
-      return orNull(request<GuildData>(`${BASE}/${guildId}`));
+      return orNull(request<GuildDetail>(`${BASE}/${guildId}`));
+    },
+    setTier(guildId: string, tier: string) {
+      return request<GuildData>(`${BASE}/${guildId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ tier }),
+      });
     },
     deleteGuild(guildId: string) {
       return request<void>(`${BASE}/${guildId}`, { method: 'DELETE' });
