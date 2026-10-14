@@ -1,7 +1,7 @@
-import { Formatters, useHandlers } from '@discord-bot/discord-client';
-import { RESTJSONErrorCodes } from 'discord-api-types/v10';
+import { button, Formatters, row, useHandlers } from '@discord-bot/discord-client';
+import { ButtonStyle, RESTJSONErrorCodes } from 'discord-api-types/v10';
 import { KeywordMatchType } from '@discord-bot/shared';
-import type { KeywordRule } from '@discord-bot/shared';
+import type { KeywordRule, UpdateKeywordRuleInput } from '@discord-bot/shared';
 import type { CommandContext, DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
@@ -31,6 +31,19 @@ export function useKeywordHandlers(deps: KeywordDeps) {
 
   const formatRule = (r: KeywordRule) =>
     `**${truncate(r.pattern, 150)}** ⭢ ${responsePreview(r.response, 150)}\n\`${r.matchType}\` ${Formatters.userMention(r.editorId)}`;
+
+  const applyUpdate = async (input: UpdateKeywordRuleInput) => {
+    const rule = await api.updateRule(input);
+    return {
+      embeds: [
+        {
+          title: '關鍵字已更新',
+          description: `\`${rule.matchType}\` **${input.pattern}** ⭢ ${responsePreview(input.response, 900)}`,
+          color: Colors.SUCCESS,
+        },
+      ],
+    };
+  };
 
   const paginateRules = (
     ctx: CommandContext,
@@ -120,22 +133,9 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const existing = await api.getRuleByPattern(guildId, pattern);
     if (!existing) return ctx.error('找不到此關鍵字。');
 
-    await api.updateRule({
-      guildId,
-      pattern,
-      response,
-      matchType,
-      editorId: ctx.user.id,
-    });
-    await ctx.reply({
-      embeds: [
-        {
-          title: '關鍵字已更新',
-          description: `\`${matchType}\` **${pattern}** ⭢ ${responsePreview(response, 900)}`,
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.reply(
+      await applyUpdate({ guildId, pattern, response, matchType, editorId: ctx.user.id })
+    );
     log.info({ pattern, guildId }, 'Keyword updated');
   });
 
@@ -163,6 +163,12 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const arrow =
       candidates.length > 1 ? `**${rule.pattern}** ⭢\n${shown}` : `**${rule.pattern}** ⭢ ${shown}`;
 
+    // Button opens an edit modal; skip it when the pattern can't round-trip
+    // through a custom_id (no ':', <= 100 chars) or the response won't fit.
+    const customId = `kw:edit:${pattern}`;
+    const canEdit =
+      !pattern.includes(':') && customId.length <= 100 && rule.response.length <= 4000;
+
     await ctx.reply({
       embeds: [
         {
@@ -171,8 +177,51 @@ export function useKeywordHandlers(deps: KeywordDeps) {
           color: Colors.INFO,
         },
       ],
+      components: canEdit ? [row(button(customId, '複製 / 修改回覆', ButtonStyle.Secondary))] : [],
     });
     log.info({ guildId: ctx.guildId, pattern }, 'Keyword rule viewed');
+  });
+
+  h.component('kw:edit:{pattern}', async (ctx) => {
+    if (!ctx.guildId) return;
+    const guildId = ctx.guildId;
+    const pattern = ctx.params.pattern ?? '';
+
+    const rule = await api.getRuleByPattern(guildId, pattern);
+    if (!rule) {
+      return ctx.reply(
+        {
+          embeds: [
+            {
+              title: '❌ 錯誤',
+              description: '找不到此關鍵字，可能已被刪除。',
+              color: Colors.ERROR,
+            },
+          ],
+        },
+        true
+      );
+    }
+
+    const values = await ctx.modal({
+      title: '修改關鍵字回覆',
+      fields: [
+        {
+          id: 'response',
+          label: '回覆內容（以 ;; 分隔多個候選）',
+          style: 'paragraph',
+          value: rule.response,
+          maxLength: 4000,
+        },
+      ],
+    });
+    if (!values) return;
+
+    const response = values.response;
+    if (!response || response === rule.response) return;
+
+    await ctx.followUp(await applyUpdate({ guildId, pattern, response, editorId: ctx.user.id }));
+    log.info({ pattern, guildId }, 'Keyword updated via view modal');
   });
 
   h.handler('search', async (ctx) => {
