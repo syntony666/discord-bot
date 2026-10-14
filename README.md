@@ -40,6 +40,22 @@ npm run format         # prettier --write .
 npm run format:check   # prettier --check (CI gate)
 ```
 
+## Owner commands
+
+`/bot` is gated at runtime to the application owner (personal app: `owner.id`; team app: owner + accepted admin/developer members). `DISCORD_OWNER_IDS` overrides the lookup; when resolution fails the gate fails closed.
+
+Guilds carry a tier — `NORMAL`, `PREMIUM`, or `HOME` (only one `HOME` at a time) — and the API enforces per-tier caps on stream watchers, keyword rules, and reaction-role panels (`-1` = unlimited, editable via `/bot limit`).
+
+```text
+/bot guild   list | info [guild_id] | tier <tier> [guild_id] | leave <guild_id> | sync
+/bot profile activity <type> <text> [url] | about <text>
+/bot limit   <tier> [watchers] [keywords] [panels]
+/bot announce <message> [tier]     # DMs every guild owner
+/bot stats                         # guilds, usage, tier distribution, uptime/ping
+```
+
+`profile activity` persists through `BotState` and is re-applied on every gateway Ready.
+
 ## Useful Resources
 
 - [example.env](./example.env) — all environment variables with comments
