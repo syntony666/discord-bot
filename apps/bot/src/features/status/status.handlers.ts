@@ -6,6 +6,8 @@ import type {
   APIEmbed,
 } from 'discord-api-types/v10';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
+import type { GuildApi } from '@features/guild/guild.api';
+import { TIER_ICON, formatUsage } from '@features/guild/guild.tier';
 import type { KeywordApi } from '@features/keyword/keyword.api';
 import type { MemberNotifyApi } from '@features/notify/member.api';
 import type { ReactionRoleApi } from '@features/reaction-role/reaction-role.api';
@@ -23,6 +25,7 @@ const log = createLogger('Status');
 export interface StatusDeps {
   discord: DiscordHelpers;
   api: {
+    guild: GuildApi;
     memberNotify: MemberNotifyApi;
     streamNotify: StreamNotifyApi;
     keyword: KeywordApi;
@@ -98,40 +101,56 @@ export function useStatusHandlers(deps: StatusDeps) {
   h.handler('guild', async (ctx) => {
     if (!ctx.guildId) return ctx.error('無法取得伺服器資訊');
 
-    const guild = await discord.getGuild(ctx.guildId);
+    const [guild, record] = await Promise.all([
+      discord.getGuild(ctx.guildId),
+      deps.api.guild.getGuild(ctx.guildId),
+    ]);
     const owner = await discord.getUser(guild.owner_id);
     const icon = guildIconUrl(guild.id, guild.icon);
+
+    const fields: APIEmbed['fields'] = [
+      {
+        name: '創立時間',
+        value: Formatters.time(
+          new Date(DiscordSnowflake.timestampFrom(guild.id)),
+          Formatters.TimestampStyles.LongDateShortTime
+        ),
+        inline: false,
+      },
+      {
+        name: '成員',
+        value: `${guild.approximate_member_count || 0} 人`,
+        inline: true,
+      },
+      {
+        name: '在線',
+        value: `${guild.approximate_presence_count || 0} 人`,
+        inline: true,
+      },
+      {
+        name: '擁有者',
+        value: Formatters.userMention(owner.id),
+        inline: false,
+      },
+    ];
+    if (record) {
+      const { limits, counts } = record;
+      fields.push({
+        name: '用量',
+        value:
+          `監控 ${formatUsage(counts.streamWatchers, limits.streamWatchers)} · ` +
+          `關鍵字 ${formatUsage(counts.keywordRules, limits.keywordRules)} · ` +
+          `面板 ${formatUsage(counts.reactionRolePanels, limits.reactionRolePanels)}`,
+        inline: false,
+      });
+    }
 
     await ctx.reply({
       embeds: [
         {
-          title: guild.name,
+          title: record ? `${TIER_ICON[record.tier]} ${guild.name}` : guild.name,
           thumbnail: icon ? { url: icon } : undefined,
-          fields: [
-            {
-              name: '創立時間',
-              value: Formatters.time(
-                new Date(DiscordSnowflake.timestampFrom(guild.id)),
-                Formatters.TimestampStyles.LongDateShortTime
-              ),
-              inline: false,
-            },
-            {
-              name: '成員',
-              value: `${guild.approximate_member_count || 0} 人`,
-              inline: true,
-            },
-            {
-              name: '在線',
-              value: `${guild.approximate_presence_count || 0} 人`,
-              inline: true,
-            },
-            {
-              name: '擁有者',
-              value: Formatters.userMention(owner.id),
-              inline: false,
-            },
-          ],
+          fields,
           footer: {
             text: `${guild.id}`,
             icon_url: appConfig.footerIconUrl,
