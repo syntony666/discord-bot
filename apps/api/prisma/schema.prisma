@@ -18,9 +18,10 @@ datasource db {
  * Tracks guild membership and member count
  */
 model Guild {
-  id        String   @id
+  id        String    @id
   name      String
-  createdAt DateTime @default(now())
+  tier      GuildTier @default(NORMAL)
+  createdAt DateTime  @default(now())
   
   keywordRules              KeywordRule[]
   notificationChannels      NotificationChannel[]
@@ -177,4 +178,30 @@ model StreamWatcher {
 
 enum StreamPlatform {
   TWITCH
+}
+
+enum GuildTier {
+  NORMAL
+  PREMIUM
+  HOME
+}
+
+/**
+ * TierLimit - Per-tier feature quotas; seeded with defaults, editable at runtime
+ * A value of -1 means unlimited.
+ */
+model TierLimit {
+  tier               GuildTier @id
+  streamWatchers     Int
+  keywordRules       Int
+  reactionRolePanels Int
+}
+
+/**
+ * BotState - Generic key-value store for bot-wide runtime settings
+ * (e.g. persisted presence activity)
+ */
+model BotState {
+  key   String @id
+  value String
 }

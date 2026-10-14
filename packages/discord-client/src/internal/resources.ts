@@ -1,6 +1,7 @@
 import type { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
 import type {
+  APIApplication,
   APIApplicationCommand,
   APIChannel,
   APIGuild,
@@ -15,6 +16,9 @@ import type {
   RESTPostAPIWebhookWithTokenJSONBody,
   RESTPutAPIApplicationCommandsJSONBody,
   RESTPutAPIApplicationCommandsResult,
+  RESTGetAPICurrentUserGuildsResult,
+  RESTPatchCurrentApplicationJSONBody,
+  RESTPostAPICurrentUserCreateDMChannelJSONBody,
 } from 'discord-api-types/v10';
 
 /** Discord's sentinel id for the original interaction response. */
@@ -126,6 +130,23 @@ export function createResources(rest: REST, getBotUser: () => APIUser | null) {
     },
     get botUser() {
       return getBotUser();
+    },
+    currentApplication: () =>
+      rest.get(Routes.oauth2CurrentApplication()) as Promise<APIApplication>,
+    editCurrentApplication: (body: RESTPatchCurrentApplicationJSONBody) =>
+      rest.patch(Routes.currentApplication(), {
+        body,
+      }) as Promise<APIApplication>,
+    me: {
+      guilds: () =>
+        rest.get(
+          `${Routes.userGuilds()}?with_counts=true&limit=200`
+        ) as Promise<RESTGetAPICurrentUserGuildsResult>,
+      leaveGuild: (guildId: string) => rest.delete(Routes.userGuild(guildId)),
+      openDm: (userId: string) =>
+        rest.post(Routes.userChannels(), {
+          body: { recipient_id: userId } satisfies RESTPostAPICurrentUserCreateDMChannelJSONBody,
+        }) as Promise<APIChannel>,
     },
     channel,
     guild,

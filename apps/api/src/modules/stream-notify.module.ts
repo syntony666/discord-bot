@@ -1,4 +1,5 @@
 import { PrismaClient } from '../.prisma/client';
+import { assertGuildFeatureLimit } from './tier-limits';
 import type {
   CreateStreamNotifyConfigInput,
   CreateStreamWatcherInput,
@@ -54,7 +55,9 @@ export function createStreamNotifyModule(prisma: PrismaClient) {
       });
     },
 
-    addWatcher(input: CreateStreamWatcherInput) {
+    async addWatcher(input: CreateStreamWatcherInput) {
+      const count = await prisma.streamWatcher.count({ where: { guildId: input.guildId } });
+      await assertGuildFeatureLimit(prisma, input.guildId, 'streamWatchers', count, '實況監控');
       return prisma.streamWatcher.create({
         data: {
           guildId: input.guildId,

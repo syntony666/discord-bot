@@ -1,4 +1,5 @@
 import { PrismaClient } from '../.prisma/client';
+import { assertGuildFeatureLimit } from './tier-limits';
 import type {
   CreateReactionRoleInput,
   CreateReactionRolePanelInput,
@@ -20,7 +21,17 @@ export function createReactionRoleModule(prisma: PrismaClient) {
       });
     },
 
-    createPanel(input: CreateReactionRolePanelInput) {
+    async createPanel(input: CreateReactionRolePanelInput) {
+      const count = await prisma.reactionRolePanel.count({
+        where: { guildId: input.guildId },
+      });
+      await assertGuildFeatureLimit(
+        prisma,
+        input.guildId,
+        'reactionRolePanels',
+        count,
+        '身分組面板'
+      );
       return prisma.reactionRolePanel.create({
         data: {
           guildId: input.guildId,
