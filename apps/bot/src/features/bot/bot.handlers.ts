@@ -3,6 +3,7 @@ import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import type { GuildApi } from '@features/guild/guild.api';
+import { TIER_ICON, tierName, formatUsage } from '@features/guild/guild.tier';
 import { botCommand } from './bot.command';
 import type { BotApi } from './bot.api';
 import { ACTIVITY_LABEL, buildPresence } from './bot.presence';
@@ -20,9 +21,6 @@ export function useBotHandlers(deps: BotDeps) {
   const api = deps.api.guild;
   const botApi = deps.api.bot;
   const h = useHandlers(botCommand);
-
-  const TIER_ICON: Record<string, string> = { NORMAL: '⚪', PREMIUM: '🟣', HOME: '🟡' };
-  const tierName = (tier: string) => `${TIER_ICON[tier] ?? ''} ${tier}`;
 
   h.handler('guild.list', async (ctx) => {
     const [guilds, records] = await Promise.all([discord.getBotGuilds(), api.listGuilds()]);
@@ -51,7 +49,6 @@ export function useBotHandlers(deps: BotDeps) {
     const guild = await api.getGuild(guildId);
     if (!guild) return ctx.error('此伺服器不在資料庫中（可用 /bot guild sync 補登）');
 
-    const cap = (n: number) => (n < 0 ? '∞' : String(n));
     const flag = (on: boolean) => (on ? '✅' : '❌');
     const { limits, counts, features } = guild;
     await ctx.reply({
@@ -66,9 +63,9 @@ export function useBotHandlers(deps: BotDeps) {
             {
               name: '用量',
               value:
-                `監控 ${counts.streamWatchers}/${cap(limits.streamWatchers)}\n` +
-                `關鍵字 ${counts.keywordRules}/${cap(limits.keywordRules)}\n` +
-                `面板 ${counts.reactionRolePanels}/${cap(limits.reactionRolePanels)}`,
+                `監控 ${formatUsage(counts.streamWatchers, limits.streamWatchers)}\n` +
+                `關鍵字 ${formatUsage(counts.keywordRules, limits.keywordRules)}\n` +
+                `面板 ${formatUsage(counts.reactionRolePanels, limits.reactionRolePanels)}`,
             },
             {
               name: '功能',
