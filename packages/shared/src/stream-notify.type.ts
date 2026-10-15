@@ -22,24 +22,6 @@ export interface StreamNotifyConfig {
   updatedAt: string;
 }
 
-export type StreamWatcherRuntime = Pick<
-  StreamWatcher,
-  | 'id'
-  | 'guildId'
-  | 'platformId'
-  | 'platform'
-  | 'displayName'
-  | 'avatarImageUrl'
-  | 'isLive'
-  | 'lastChecked'
-  | 'createdAt'
->;
-
-export type StreamNotifyConfigRuntime = Pick<
-  StreamNotifyConfig,
-  'guildId' | 'channelId' | 'enabled' | 'message' | 'createdAt' | 'updatedAt'
->;
-
 export interface CreateStreamNotifyConfigInput {
   guildId: string;
   channelId: string;
