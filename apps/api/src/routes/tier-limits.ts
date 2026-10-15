@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { ApiError, GuildTier, LimitFeature } from '@discord-bot/shared';
+import { ApiError, GuildTier, LimitFeature, UNLIMITED_LIMIT } from '@discord-bot/shared';
 import type { GuildModule } from '../modules/guild.module';
 
 const TIERS = Object.values(GuildTier) as string[];
@@ -20,7 +20,7 @@ export function tierLimitRoutes(module: GuildModule) {
     for (const key of FEATURES) {
       const v = body[key];
       if (v === undefined) continue;
-      if (typeof v !== 'number' || !Number.isInteger(v) || v < -1) {
+      if (typeof v !== 'number' || !Number.isInteger(v) || v < UNLIMITED_LIMIT) {
         throw new ApiError(400, `${key} must be an integer >= -1`, 'BAD_REQUEST');
       }
       patch[key] = v;

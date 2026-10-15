@@ -1,6 +1,6 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import type { GuildCommandContext } from '@discord-bot/discord-client';
-import { NotificationType } from '@discord-bot/shared';
+import { DEFAULT_MEMBER_MESSAGES, NotificationType } from '@discord-bot/shared';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
@@ -23,11 +23,6 @@ export interface MemberNotifyDeps {
 const typeName = (type: 'join' | 'leave') => (type === 'join' ? '加入通知' : '離開通知');
 
 const typeEmoji = (enabled: boolean) => (enabled ? '✅' : '❌');
-
-const DEFAULT_TEMPLATES = {
-  join: '📥 {user} 加入了 {server}！目前共 {memberCount} 位成員',
-  leave: '📤 {username} 離開了 {server}。目前剩餘 {memberCount} 位成員',
-} as const;
 
 export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
   const { discord } = deps;
@@ -167,8 +162,8 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     const guild = await discord.getGuild(ctx.guildId);
     const template =
       type === 'join'
-        ? templates?.joinMessage || DEFAULT_TEMPLATES.join
-        : templates?.leaveMessage || DEFAULT_TEMPLATES.leave;
+        ? templates?.joinMessage || DEFAULT_MEMBER_MESSAGES.join
+        : templates?.leaveMessage || DEFAULT_MEMBER_MESSAGES.leave;
 
     const testMessage = service.formatMessage(template, {
       user: Formatters.userMention(ctx.user.id),
@@ -269,12 +264,15 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
 
       const templates = await api.getMessageTemplates(guildId);
       const guild = await discord.getGuild(guildId);
-      const message = service.formatMessage(templates?.joinMessage || DEFAULT_TEMPLATES.join, {
-        user: Formatters.userMention(user.id),
-        username: user.username || 'Unknown',
-        server: guild.name,
-        memberCount: guild.approximate_member_count || 0,
-      });
+      const message = service.formatMessage(
+        templates?.joinMessage || DEFAULT_MEMBER_MESSAGES.join,
+        {
+          user: Formatters.userMention(user.id),
+          username: user.username || 'Unknown',
+          server: guild.name,
+          memberCount: guild.approximate_member_count || 0,
+        }
+      );
 
       await discord.sendMessage(joinChannel!.channelId, {
         embeds: [
@@ -300,12 +298,15 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
 
       const templates = await api.getMessageTemplates(guildId);
       const guild = await discord.getGuild(guildId);
-      const message = service.formatMessage(templates?.leaveMessage || DEFAULT_TEMPLATES.leave, {
-        user: Formatters.userMention(user.id),
-        username: user.username || 'Unknown',
-        server: guild.name,
-        memberCount: guild.approximate_member_count || 0,
-      });
+      const message = service.formatMessage(
+        templates?.leaveMessage || DEFAULT_MEMBER_MESSAGES.leave,
+        {
+          user: Formatters.userMention(user.id),
+          username: user.username || 'Unknown',
+          server: guild.name,
+          memberCount: guild.approximate_member_count || 0,
+        }
+      );
 
       await discord.sendMessage(leaveChannel!.channelId, {
         embeds: [

@@ -1,4 +1,5 @@
 import { ActivityType, ApplicationCommandOptionType } from 'discord-api-types/v10';
+import { UNLIMITED_LIMIT } from '@discord-bot/shared';
 import { defineCommand } from '@discord-bot/discord-client';
 
 const guildIdOption = {
@@ -124,19 +125,19 @@ export const botCommand = defineCommand()({
           name: 'watchers',
           type: ApplicationCommandOptionType.Integer,
           description: '直播監控上限（-1 為無限）',
-          min_value: -1,
+          min_value: UNLIMITED_LIMIT,
         },
         {
           name: 'keywords',
           type: ApplicationCommandOptionType.Integer,
           description: '關鍵字規則上限（-1 為無限）',
-          min_value: -1,
+          min_value: UNLIMITED_LIMIT,
         },
         {
           name: 'panels',
           type: ApplicationCommandOptionType.Integer,
           description: '身分組選單上限（-1 為無限）',
-          min_value: -1,
+          min_value: UNLIMITED_LIMIT,
         },
       ],
     },

@@ -79,6 +79,7 @@ enum NotificationType {
 /**
  * MemberNotifyMessage - Message templates for member notifications
  */
+// Defaults mirror DEFAULT_MEMBER_MESSAGES in packages/shared/src/constants.ts.
 model MemberNotifyMessage {
   guildId     String   @id
   joinMessage String   @default("📥 {user} 加入了 {server}！目前共 {memberCount} 位成員")
