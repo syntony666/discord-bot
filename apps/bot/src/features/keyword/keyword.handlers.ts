@@ -1,6 +1,6 @@
 import { button, Formatters, row, useHandlers } from '@discord-bot/discord-client';
 import { ButtonStyle, RESTJSONErrorCodes } from 'discord-api-types/v10';
-import { KeywordMatchType } from '@discord-bot/shared';
+import { KeywordMatchType, splitKeywordResponse } from '@discord-bot/shared';
 import type { KeywordRule, UpdateKeywordRuleInput } from '@discord-bot/shared';
 import type { CommandContext, DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
@@ -150,7 +150,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const rule = await api.getRuleByPattern(ctx.guildId, pattern);
     if (!rule) return ctx.error('找不到此關鍵字。');
 
-    const candidates = rule.response.split(';;').filter((p) => p.length > 0);
+    const candidates = splitKeywordResponse(rule.response);
     const meta = [`\`${rule.matchType}\``, Formatters.userMention(rule.editorId)];
     if (candidates.length > 1) meta.push(`候選 ${candidates.length} 個`);
 

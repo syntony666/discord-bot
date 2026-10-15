@@ -1,4 +1,4 @@
-const SEPARATOR = ';;';
+import { KEYWORD_RESPONSE_SEPARATOR as SEPARATOR, splitKeywordResponse } from '@discord-bot/shared';
 
 export const truncate = (s: string, maxLen: number) =>
   s.length > maxLen ? `${s.slice(0, maxLen)}…` : s;
@@ -8,7 +8,7 @@ export const truncate = (s: string, maxLen: number) =>
  * `;;` candidates show as many as fit plus a total count.
  */
 export const responsePreview = (response: string, maxLen: number) => {
-  const parts = response.split(SEPARATOR).filter((p) => p.length > 0);
+  const parts = splitKeywordResponse(response);
   if (parts.length <= 1) return truncate(response, maxLen);
 
   const suffix = ` (共 ${parts.length} 個候選)`;
