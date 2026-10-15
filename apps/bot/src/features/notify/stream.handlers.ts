@@ -56,7 +56,6 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     displayName.toLowerCase() === platformId ? platformId : `${platformId} (${displayName})`;
 
   h.handler('stream.enable', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const channelId = ctx.options.channel.id;
     const message = ctx.options.message;
@@ -94,7 +93,6 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
   });
 
   h.handler('stream.disable', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
 
     const existingConfig = await api.getConfig(guildId);
@@ -124,7 +122,6 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
   });
 
   h.handler('stream.watch', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const platform = ctx.options.platform;
     const id = ctx.options.id;
@@ -179,7 +176,6 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
   });
 
   h.handler('stream.unwatch', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const platform = ctx.options.platform;
     const id = ctx.options.id;
@@ -217,7 +213,6 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
   });
 
   h.handler('stream.list', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
 
     const [config, watchers] = await Promise.all([

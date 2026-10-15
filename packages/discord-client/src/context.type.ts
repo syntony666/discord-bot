@@ -77,6 +77,15 @@ export interface CommandContext<
   prompt(options: PromptOptions): Promise<APIMessage | null>;
 }
 
+/** Same as CommandContext but with guildId guaranteed non-undefined. */
+export interface GuildCommandContext<
+  TOptions = Record<string, unknown>,
+  TSubcommand extends string = string,
+  TGroup extends string = string,
+> extends CommandContext<TOptions, TSubcommand, TGroup> {
+  readonly guildId: string;
+}
+
 export interface ComponentContext {
   readonly interaction: APIMessageComponentInteraction | APIModalSubmitInteraction;
   readonly customId: string;

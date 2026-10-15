@@ -41,7 +41,6 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
   const h = useHandlers(reactionRoleCommand);
 
   h.handler('panel.create', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const channelId = ctx.options.channel.id;
     const title = ctx.options.title;
@@ -94,7 +93,6 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
   });
 
   h.handler('panel.list', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
 
     const panels = await api.getPanelsByGuild(guildId);
@@ -141,7 +139,6 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
   });
 
   h.handler('panel.delete', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const panelId = ctx.options.panel_id;
 
@@ -214,7 +211,6 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
   });
 
   h.handler('panel.edit', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const panelId = ctx.options.panel_id;
     const title = ctx.options.title;
@@ -300,7 +296,6 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
   });
 
   h.handler('add', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const panelId = ctx.options.panel_id;
     const roleId = ctx.options.role.id;
@@ -379,7 +374,6 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
   });
 
   h.handler('remove', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const panelId = ctx.options.panel_id;
     const emoji = normalizeEmojiForStorage(ctx.options.emoji);
@@ -477,7 +471,6 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
   });
 
   h.handler('role-list', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const panelId = ctx.options.panel_id;
 

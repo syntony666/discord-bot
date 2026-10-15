@@ -4,7 +4,7 @@ export * as Formatters from '@discordjs/formatters';
 export { defineCommand } from './commands';
 export { defineFeature, useHandlers } from './features';
 export { button, row } from './internal/sessions/components';
-export type { CommandContext, ComponentContext } from './context.type';
+export type { CommandContext, GuildCommandContext, ComponentContext } from './context.type';
 export type { DiscordHelpers } from './helpers.type';
 export { createDiscordClient } from './client';
 export type { DiscordClient } from './client';
