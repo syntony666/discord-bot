@@ -18,7 +18,7 @@ import type {
 } from '../context.type';
 import type { CommandRoute, Interaction, SessionApi } from './context.type';
 import { ORIGINAL_MESSAGE, type Resources } from './resources';
-import { withEmbedDefaults, type EmbedTheme } from './embeds';
+import { avatarUrlOf, withEmbedDefaults, type EmbedTheme } from './embeds';
 
 function normalize(data: ReplyData) {
   return typeof data === 'string' ? { content: data } : data;
@@ -38,7 +38,8 @@ function baseMethods(
   theme: EmbedTheme
 ) {
   let responded = false;
-  const username = interactionUser(i).username;
+  const iUser = interactionUser(i);
+  const username = iUser.username;
 
   const withTheme = (data: ReplyData) => {
     const d = normalize(data);
@@ -72,6 +73,12 @@ function baseMethods(
 
   const confirm = (options: ConfirmOptions) => sessions.confirm(i, options, responded);
 
+  const followUp = (data: ReplyData) =>
+    resources
+      .webhook(appId, i.token)
+      .execute(withTheme(data))
+      .then(() => undefined);
+
   // --- semantic replies -----------------------------------------------------
 
   const embed = (e: APIEmbed, ephemeral = false) => reply({ embeds: [e] }, ephemeral);
@@ -96,15 +103,24 @@ function baseMethods(
   const require = async <T>(
     fetcher: () => Promise<T | null | undefined>,
     errorTitle: string,
-    opts?: { ephemeral?: boolean }
+    opts?: { description?: string; ephemeral?: boolean }
   ): Promise<T | null> => {
     const v = await fetcher();
     if (v == null) {
-      await error(errorTitle, undefined, opts?.ephemeral);
+      await error(errorTitle, opts?.description, opts?.ephemeral);
       return null;
     }
     return v;
   };
+
+  const operatorAuthor = {
+    name: iUser.global_name ?? iUser.username,
+    icon_url: avatarUrlOf(iUser),
+  };
+  const announce = (e: APIEmbed) =>
+    followUp({ embeds: [{ ...e, author: e.author ?? operatorAuthor }] });
+  const announceSuccess = (title: string, description?: string) =>
+    announce({ title, description, color: theme.colors.success });
 
   return {
     reply,
@@ -120,6 +136,8 @@ function baseMethods(
     confirmed,
     require,
     confirm,
+    announce,
+    announceSuccess,
 
     defer: (ephemeral = false) =>
       callback({
@@ -135,11 +153,7 @@ function baseMethods(
 
     deferUpdate: () => callback({ type: InteractionResponseType.DeferredMessageUpdate }),
 
-    followUp: (data: ReplyData) =>
-      resources
-        .webhook(appId, i.token)
-        .execute(withTheme(data))
-        .then(() => undefined),
+    followUp,
 
     paginate: <T>(options: PaginateOptions<T>) => sessions.paginate(i, options, responded),
     modal: (options: ModalOptions) => sessions.modal(i, options, responded),

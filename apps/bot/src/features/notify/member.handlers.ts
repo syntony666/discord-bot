@@ -90,7 +90,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
       return;
 
     await Promise.all(channels.map((ch) => api.toggleChannelEnabled(guildId, ch.type, false)));
-    await ctx.editSuccess(
+    await ctx.announceSuccess(
       '成員通知已關閉',
       `所有成員進出通知已停用。\n使用 ${discord.commandMention('notify member enable')} 可重新啟用。`
     );
@@ -195,7 +195,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     if (enabled !== undefined) {
       await api.toggleChannelEnabled(guildId, notifyType, enabled);
     }
-    await ctx.editSuccess('設定已更新', `${typeName(type)}已更新。`);
+    await ctx.announceSuccess('設定已更新', `${typeName(type)}已更新。`);
     log.info(
       { guildId, type, hasTemplate: template !== undefined, enabled },
       'Notify event updated'
@@ -205,21 +205,30 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
   h.handler('member.join', (ctx) => editEvent(ctx, 'join'));
   h.handler('member.leave', (ctx) => editEvent(ctx, 'leave'));
 
-  h.event('guildMemberAdd', async ({ user, guild_id: guildId }) => {
+  const sendMemberEvent = async (
+    user: { id: string; username?: string } | undefined,
+    guildId: string,
+    type: 'join' | 'leave'
+  ) => {
     if (!user) return;
+    const isJoin = type === 'join';
     try {
-      if (!ensuredGuilds.has(guildId)) {
+      if (isJoin && !ensuredGuilds.has(guildId)) {
         await guildApi.ensureGuild(guildId);
         ensuredGuilds.add(guildId);
       }
 
-      const joinChannel = await api.getNotificationChannel(guildId, NotificationType.MEMBER_JOIN);
-      if (!service.shouldSendJoin(joinChannel)) return;
+      const channel = await api.getNotificationChannel(
+        guildId,
+        isJoin ? NotificationType.MEMBER_JOIN : NotificationType.MEMBER_LEAVE
+      );
+      if (!(isJoin ? service.shouldSendJoin(channel) : service.shouldSendLeave(channel))) return;
 
       const templates = await api.getMessageTemplates(guildId);
       const guild = await discord.getGuild(guildId);
       const message = service.formatMessage(
-        templates?.joinMessage || DEFAULT_MEMBER_MESSAGES.join,
+        (isJoin ? templates?.joinMessage : templates?.leaveMessage) ||
+          DEFAULT_MEMBER_MESSAGES[type],
         {
           user: Formatters.userMention(user.id),
           username: user.username || 'Unknown',
@@ -228,55 +237,24 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
         }
       );
 
-      await discord.sendMessage(joinChannel!.channelId, {
+      await discord.sendMessage(channel!.channelId, {
         embeds: [
           {
-            title: '新成員加入',
+            title: isJoin ? '新成員加入' : '成員離開',
             description: message,
-            color: Colors.MEMBER_JOIN,
+            color: isJoin ? Colors.MEMBER_JOIN : Colors.MEMBER_LEAVE,
             timestamp: new Date().toISOString(),
           },
         ],
       });
-      log.info({ guildId, userId: user.id }, 'Sent join notification');
+      log.info({ guildId, userId: user.id }, `Sent ${type} notification`);
     } catch (error) {
-      log.error({ error, guildId, userId: user.id }, 'Failed to send join notification');
+      log.error({ error, guildId, userId: user.id }, `Failed to send ${type} notification`);
     }
-  });
+  };
 
-  h.event('guildMemberRemove', async ({ user, guild_id: guildId }) => {
-    if (!user) return;
-    try {
-      const leaveChannel = await api.getNotificationChannel(guildId, NotificationType.MEMBER_LEAVE);
-      if (!service.shouldSendLeave(leaveChannel)) return;
-
-      const templates = await api.getMessageTemplates(guildId);
-      const guild = await discord.getGuild(guildId);
-      const message = service.formatMessage(
-        templates?.leaveMessage || DEFAULT_MEMBER_MESSAGES.leave,
-        {
-          user: Formatters.userMention(user.id),
-          username: user.username || 'Unknown',
-          server: guild.name,
-          memberCount: guild.approximate_member_count || 0,
-        }
-      );
-
-      await discord.sendMessage(leaveChannel!.channelId, {
-        embeds: [
-          {
-            title: '成員離開',
-            description: message,
-            color: Colors.MEMBER_LEAVE,
-            timestamp: new Date().toISOString(),
-          },
-        ],
-      });
-      log.info({ guildId, userId: user.id }, 'Sent leave notification');
-    } catch (error) {
-      log.error({ error, guildId, userId: user.id }, 'Failed to send leave notification');
-    }
-  });
+  h.event('guildMemberAdd', ({ user, guild_id }) => sendMemberEvent(user, guild_id, 'join'));
+  h.event('guildMemberRemove', ({ user, guild_id }) => sendMemberEvent(user, guild_id, 'leave'));
 
   return h.collect();
 }

@@ -122,6 +122,7 @@ export function createSessionStore(
             button(`${base}:no`, options.cancelLabel ?? '取消', ButtonStyle.Secondary)
           ),
         ],
+        flags: MessageFlags.Ephemeral,
       },
       responded
     );
