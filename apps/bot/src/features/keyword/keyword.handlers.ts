@@ -52,6 +52,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
       emptyText,
       render: (page) => ({
         title,
+        color: Colors.INFO,
         description: page.map(formatRule).join('\n\n'),
       }),
     });
