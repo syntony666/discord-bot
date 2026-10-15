@@ -1,7 +1,6 @@
-import { StreamInfo } from './stream.types';
+import { StreamInfo, StreamPlatformService } from './platforms/platform.interface';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { StreamNotifyApi } from './stream.api';
-import { StreamPlatformService } from './platforms/platform.interface';
 import type { TwitchService } from './platforms/twitch.service';
 import { createLogger } from '@discord-bot/shared';
 import { StreamWatcher } from '@discord-bot/shared';
@@ -11,12 +10,6 @@ const log = createLogger('StreamNotifyService');
 
 export interface StreamNotifyService {
   checkAllStreams(api: StreamNotifyApi, services: StreamPlatformService[]): Promise<void>;
-  sendNotification(
-    watcher: StreamWatcher,
-    streamInfo: StreamInfo,
-    channelId: string,
-    messageTemplate: string
-  ): Promise<void>;
   refreshTwitchWatcherAvatars(api: StreamNotifyApi, twitchService: TwitchService): Promise<void>;
 }
 
@@ -205,7 +198,6 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
 
   return {
     checkAllStreams,
-    sendNotification,
     refreshTwitchWatcherAvatars,
   };
 }
