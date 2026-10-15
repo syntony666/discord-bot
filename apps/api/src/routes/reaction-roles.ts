@@ -11,7 +11,11 @@ export function reactionRoleRoutes(module: ReactionRoleModule) {
   const routes = new Hono();
 
   routes.get('/reaction-role-panels', async (c) =>
-    c.json(await module.getPanelsByGuild(guildId(c)))
+    c.json(
+      c.req.query('withRoles') === 'true'
+        ? await module.getPanelsWithRoles(guildId(c))
+        : await module.getPanelsByGuild(guildId(c))
+    )
   );
 
   routes.post('/reaction-role-panels', async (c) => {
