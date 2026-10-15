@@ -30,21 +30,11 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
 
   const twitchService = new TwitchService(appConfig.twitch.clientId, appConfig.twitch.clientSecret);
 
-  scheduler.every(TWITCH_TASK_ID, 60_000, async () => {
-    try {
-      await service.checkAllStreams(api, [twitchService]);
-    } catch (error) {
-      log.error({ error }, 'Twitch stream check failed');
-    }
-  });
+  scheduler.every(TWITCH_TASK_ID, 60_000, () => service.checkAllStreams(api, [twitchService]));
 
-  scheduler.every(TWITCH_AVATAR_TASK_ID, 86_400_000, async () => {
-    try {
-      await service.refreshTwitchWatcherAvatars(api, twitchService);
-    } catch (error) {
-      log.error({ error }, 'Twitch avatar refresh failed');
-    }
-  });
+  scheduler.every(TWITCH_AVATAR_TASK_ID, 86_400_000, () =>
+    service.refreshTwitchWatcherAvatars(api, twitchService)
+  );
 
   // Backfill avatars for pre-existing watchers on boot
   void service.refreshTwitchWatcherAvatars(api, twitchService);
