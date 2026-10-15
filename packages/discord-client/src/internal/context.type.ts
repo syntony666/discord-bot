@@ -29,6 +29,8 @@ export interface SessionApi {
     options: PromptOptions,
     responded: boolean
   ): Promise<APIMessage | null>;
+  /** Strip all components from a message after ttlMs. */
+  expireComponents(token: string, messageId: string, ttlMs: number): void;
 }
 
 export type Interaction =
