@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
 import { ApiError, GuildTier, LimitFeature } from '@discord-bot/shared';
 import type { GuildModule } from '../modules/guild.module';
+import { enumParam } from './helpers';
 
-const TIERS = Object.values(GuildTier) as string[];
 const FEATURES = Object.values(LimitFeature) as string[];
 
 export function tierLimitRoutes(module: GuildModule) {
@@ -11,10 +11,7 @@ export function tierLimitRoutes(module: GuildModule) {
   routes.get('/', async (c) => c.json(await module.listTierLimits()));
 
   routes.patch('/:tier', async (c) => {
-    const tier = c.req.param('tier');
-    if (!TIERS.includes(tier)) {
-      throw new ApiError(400, `tier must be one of: ${TIERS.join(', ')}`, 'BAD_REQUEST');
-    }
+    const tier = enumParam(c, 'tier', GuildTier);
     const body = await c.req.json<Record<string, unknown>>();
     const patch: Record<string, number> = {};
     for (const key of FEATURES) {
@@ -28,7 +25,7 @@ export function tierLimitRoutes(module: GuildModule) {
     if (Object.keys(patch).length === 0) {
       throw new ApiError(400, 'provide at least one limit field', 'BAD_REQUEST');
     }
-    return c.json(await module.setTierLimit(tier as GuildTier, patch));
+    return c.json(await module.setTierLimit(tier, patch));
   });
 
   return routes;
