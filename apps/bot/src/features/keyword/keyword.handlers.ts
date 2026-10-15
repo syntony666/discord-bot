@@ -1,5 +1,6 @@
 import { button, Formatters, row, useHandlers } from '@discord-bot/discord-client';
 import { ButtonStyle, RESTJSONErrorCodes } from 'discord-api-types/v10';
+import type { APIEmbed } from 'discord-api-types/v10';
 import { KeywordMatchType, splitKeywordResponse } from '@discord-bot/shared';
 import type { KeywordRule, UpdateKeywordRuleInput } from '@discord-bot/shared';
 import type { CommandContext, DiscordHelpers } from '@discord-bot/discord-client';
@@ -30,16 +31,12 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   const formatRule = (r: KeywordRule) =>
     `**${truncate(r.pattern, 150)}** ⭢ ${responsePreview(r.response, 150)}\n\`${r.matchType}\` ${Formatters.userMention(r.editorId)}`;
 
-  const applyUpdate = async (input: UpdateKeywordRuleInput) => {
+  const applyUpdate = async (input: UpdateKeywordRuleInput): Promise<APIEmbed> => {
     const rule = await api.updateRule(input);
     return {
-      embeds: [
-        {
-          title: '關鍵字已更新',
-          description: `\`${rule.matchType}\` **${input.pattern}** ⭢ ${responsePreview(input.response, 900)}`,
-          color: Colors.SUCCESS,
-        },
-      ],
+      title: '關鍵字已更新',
+      description: `\`${rule.matchType}\` **${input.pattern}** ⭢ ${responsePreview(input.response, 900)}`,
+      color: Colors.SUCCESS,
     };
   };
 
@@ -123,7 +120,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     });
     if (!existing) return;
 
-    await ctx.reply(
+    await ctx.embed(
       await applyUpdate({ guildId, pattern, response, matchType, editorId: ctx.user.id })
     );
     log.info({ pattern, guildId }, 'Keyword updated');
@@ -201,7 +198,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
       const response = values.response;
       if (!response || response === rule.response) return;
 
-      await ctx.followUp(await applyUpdate({ guildId, pattern, response, editorId: ctx.user.id }));
+      await ctx.announce(await applyUpdate({ guildId, pattern, response, editorId: ctx.user.id }));
       log.info({ pattern, guildId }, 'Keyword updated via view modal');
     },
     { sameUser: true }
