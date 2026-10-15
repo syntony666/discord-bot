@@ -35,13 +35,13 @@ export function buildPanelEmbed(options: BuildPanelEmbedOptions) {
                       return `${displayEmoji} → <@&${r.roleId}>${r.description ? ` - ${r.description}` : ''}`;
                     })
                     .join('\n')
-                : '⏳ 尚未添加任何身分組',
+                : '⏳ 尚未新增任何身分組',
             inline: false,
           },
         ],
         footer: messageId
           ? {
-              text: `Panel ID: ${messageId}`,
+              text: `面板 ID: ${messageId}`,
             }
           : undefined,
         timestamp: new Date().toISOString(),

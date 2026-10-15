@@ -8,7 +8,7 @@ import { defineCommand } from '@discord-bot/discord-client';
 const panelIdOption = {
   name: 'panel_id',
   type: ApplicationCommandOptionType.String,
-  description: 'Panel 訊息的 ID',
+  description: '面板訊息的 ID',
   required: true,
 } as const;
 
@@ -20,7 +20,7 @@ export const reactionRoleCommand = defineCommand()({
   subcommands: [
     {
       name: 'add',
-      description: '為 Panel 添加 Reaction Role',
+      description: '為面板新增反應身分組',
       options: [
         panelIdOption,
         {
@@ -45,7 +45,7 @@ export const reactionRoleCommand = defineCommand()({
     },
     {
       name: 'remove',
-      description: '移除 Reaction Role',
+      description: '移除反應身分組',
       options: [
         panelIdOption,
         {
@@ -58,18 +58,18 @@ export const reactionRoleCommand = defineCommand()({
     },
     {
       name: 'role-list',
-      description: '列出 Panel 的所有 Reaction Roles',
+      description: '列出面板的所有反應身分組',
       options: [panelIdOption],
     },
   ],
   groups: [
     {
       name: 'panel',
-      description: '管理 Reaction Role Panel',
+      description: '管理反應身分組面板',
       subcommands: [
         {
           name: 'create',
-          description: '建立新的 Reaction Role Panel',
+          description: '建立新的反應身分組面板',
           options: [
             {
               name: 'channel',
@@ -81,13 +81,13 @@ export const reactionRoleCommand = defineCommand()({
             {
               name: 'title',
               type: ApplicationCommandOptionType.String,
-              description: 'Panel 標題',
+              description: '面板標題',
               max_length: 256,
             },
             {
               name: 'description',
               type: ApplicationCommandOptionType.String,
-              description: 'Panel 說明文字',
+              description: '面板說明文字',
               max_length: 2048,
             },
             {
@@ -102,22 +102,22 @@ export const reactionRoleCommand = defineCommand()({
             },
           ],
         },
-        { name: 'list', description: '列出所有 Reaction Role Panels' },
+        { name: 'list', description: '列出所有反應身分組面板' },
         {
           name: 'delete',
-          description: '刪除 Reaction Role Panel',
+          description: '刪除反應身分組面板',
           options: [
             {
               name: 'panel_id',
               type: ApplicationCommandOptionType.String,
-              description: 'Panel 訊息的 ID（從 panel footer 複製）',
+              description: '面板訊息的 ID（從面板 footer 複製）',
               required: true,
             },
           ],
         },
         {
           name: 'edit',
-          description: '編輯 Panel 設定',
+          description: '編輯面板設定',
           options: [
             panelIdOption,
             {

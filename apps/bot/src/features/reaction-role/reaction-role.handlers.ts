@@ -71,8 +71,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.reply({
         embeds: [
           {
-            title: 'Panel 已建立',
-            description: `Reaction Role Panel 已在 ${Formatters.channelMention(channelId)} 建立。\n\n**Panel ID**: \`${message.id}\`\n\n使用 \`/reaction-role add\` 來添加身分組。`,
+            title: '面板已建立',
+            description: `反應身分組面板已在 ${Formatters.channelMention(channelId)} 建立。\n\n**面板 ID**: \`${message.id}\`\n\n使用 \`/reaction-role add\` 來新增身分組。`,
             color: Colors.SUCCESS,
           },
         ],
@@ -83,8 +83,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.reply({
         embeds: [
           {
-            title: '建立 Panel 失敗',
-            description: '建立 Panel 時發生錯誤，請稍後再試。',
+            title: '建立面板 失敗',
+            description: '建立面板 時發生錯誤，請稍後再試。',
             color: Colors.ERROR,
           },
         ],
@@ -101,9 +101,9 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: 'Panel 列表',
+            title: '面板列表',
             description:
-              '目前沒有任何 Reaction Role Panel。\n使用 `/reaction-role panel create` 建立新的 Panel。',
+              '目前沒有任何反應身分組面板。\n使用 `/reaction-role panel create` 建立新的面板。',
             color: Colors.INFO,
           },
         ],
@@ -127,7 +127,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     await ctx.reply({
       embeds: [
         {
-          title: `Panel 列表 (${panels.length} 個)`,
+          title: `面板列表 (${panels.length} 個)`,
           description: description.join('\n'),
           color: Colors.INFO,
         },
@@ -144,8 +144,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: 'Panel 不存在',
-            description: `找不到 ID 為 \`${panelId}\` 的 Panel。`,
+            title: '面板不存在',
+            description: `找不到 ID 為 \`${panelId}\` 的面板。`,
             color: Colors.ERROR,
           },
         ],
@@ -156,11 +156,11 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     const messageUrl = Formatters.messageLink(panel.channelId, panelId, guildId);
 
     const ok = await ctx.confirm({
-      title: '⚠️ 確認刪除 Panel',
-      description: `即將刪除 Panel 及其所有 Reaction Roles，此操作無法復原。`,
+      title: '⚠️ 確認刪除面板',
+      description: `即將刪除面板 及其所有反應身分組，此操作無法復原。`,
       fields: [
         {
-          name: 'Panel 資訊',
+          name: '面板資訊',
           value: [
             `**標題**: ${panel.title}`,
             `**ID**: \`${panelId}\``,
@@ -184,8 +184,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.editReply({
         embeds: [
           {
-            title: 'Panel 已刪除',
-            description: `Panel \`${panelId}\` 及其 ${roles.length} 個 Reaction Roles 已全部刪除。`,
+            title: '面板已刪除',
+            description: `Panel \`${panelId}\` 及其 ${roles.length} 個反應身分組已全部刪除。`,
             color: Colors.WARNING,
           },
         ],
@@ -197,8 +197,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.editReply({
         embeds: [
           {
-            title: '刪除 Panel 失敗',
-            description: '刪除 Panel 時發生錯誤，請稍後再試。',
+            title: '刪除面板 失敗',
+            description: '刪除面板 時發生錯誤，請稍後再試。',
             color: Colors.ERROR,
           },
         ],
@@ -219,8 +219,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: 'Panel 不存在',
-            description: `找不到 ID 為 \`${panelId}\` 的 Panel。`,
+            title: '面板不存在',
+            description: `找不到 ID 為 \`${panelId}\` 的面板。`,
             color: Colors.ERROR,
           },
         ],
@@ -250,8 +250,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     }
 
     const ok = await ctx.confirm({
-      title: '📝 確認更新 Panel',
-      description: `即將更新 Panel 設定。\n[跳轉至訊息](${messageUrl})`,
+      title: '📝 確認更新面板',
+      description: `即將更新面板 設定。\n[跳轉至訊息](${messageUrl})`,
       fields: [
         { name: '目前設定', value: currentFields.join('\n'), inline: true },
         { name: '新的設定', value: newFields.join('\n'), inline: true },
@@ -269,7 +269,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.editReply({
         embeds: [
           {
-            title: 'Panel 已更新',
+            title: '面板已更新',
             description: `Panel \`${panelId}\` 已成功更新。`,
             color: Colors.SUCCESS,
           },
@@ -282,8 +282,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.editReply({
         embeds: [
           {
-            title: '更新 Panel 失敗',
-            description: '更新 Panel 時發生錯誤，請稍後再試。',
+            title: '更新面板 失敗',
+            description: '更新面板 時發生錯誤，請稍後再試。',
             color: Colors.ERROR,
           },
         ],
@@ -304,8 +304,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: 'Panel 不存在',
-            description: `找不到 ID 為 \`${panelId}\` 的 Panel。\n請先使用 \`/reaction-role panel create\` 建立 Panel。`,
+            title: '面板不存在',
+            description: `找不到 ID 為 \`${panelId}\` 的面板。\n請先使用 \`/reaction-role panel create\` 建立面板。`,
             color: Colors.ERROR,
           },
         ],
@@ -349,8 +349,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.reply({
         embeds: [
           {
-            title: 'Reaction Role 已添加',
-            description: `${displayEmoji} → ${Formatters.roleMention(roleId)} 已添加到 Panel。`,
+            title: '反應身分組已新增',
+            description: `${displayEmoji} → ${Formatters.roleMention(roleId)} 已新增到面板。`,
             color: Colors.SUCCESS,
           },
         ],
@@ -361,8 +361,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.reply({
         embeds: [
           {
-            title: '添加 Reaction Role 失敗',
-            description: '添加 Reaction Role 時發生錯誤，請確認 emoji 格式正確。',
+            title: '新增 反應身分組失敗',
+            description: '新增 反應身分組時發生錯誤，請確認 emoji 格式正確。',
             color: Colors.ERROR,
           },
         ],
@@ -381,8 +381,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: 'Reaction Role 不存在',
-            description: `在 Panel \`${panelId}\` 中找不到 ${emojiInput} 的綁定。\n\n**提示**: 請使用 \`/reaction-role role-list\` 查看正確的 emoji 格式。`,
+            title: '反應身分組不存在',
+            description: `在面板 \`${panelId}\` 中找不到 ${emojiInput} 的綁定。\n\n**提示**: 請使用 \`/reaction-role role-list\` 查看正確的 emoji 格式。`,
             color: Colors.ERROR,
           },
         ],
@@ -394,8 +394,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: 'Panel 不存在',
-            description: `找不到 ID 為 \`${panelId}\` 的 Panel。`,
+            title: '面板不存在',
+            description: `找不到 ID 為 \`${panelId}\` 的面板。`,
             color: Colors.ERROR,
           },
         ],
@@ -405,11 +405,11 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     const displayEmoji = formatEmojiForDisplay(emoji);
 
     const ok = await ctx.confirm({
-      title: '⚠️ 確認移除 Reaction Role',
-      description: `即將從 Panel 中移除此 Reaction Role。`,
+      title: '⚠️ 確認移除 反應身分組',
+      description: `即將從面板中移除此反應身分組。`,
       fields: [
         {
-          name: 'Reaction Role 資訊',
+          name: '反應身分組資訊',
           value: [
             `**Panel**: ${panel.title} (\`${panelId}\`)`,
             `**Emoji**: ${displayEmoji}`,
@@ -444,8 +444,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.editReply({
         embeds: [
           {
-            title: 'Reaction Role 已移除',
-            description: `${displayEmoji} 的綁定已從 Panel 中移除。`,
+            title: '反應身分組已移除',
+            description: `${displayEmoji} 的綁定已從面板中移除。`,
             color: Colors.SUCCESS,
           },
         ],
@@ -457,8 +457,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.editReply({
         embeds: [
           {
-            title: '移除 Reaction Role 失敗',
-            description: '移除 Reaction Role 時發生錯誤，請稍後再試。',
+            title: '移除 反應身分組失敗',
+            description: '移除 反應身分組時發生錯誤，請稍後再試。',
             color: Colors.ERROR,
           },
         ],
@@ -476,8 +476,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: 'Panel 不存在',
-            description: `找不到 ID 為 \`${panelId}\` 的 Panel。`,
+            title: '面板不存在',
+            description: `找不到 ID 為 \`${panelId}\` 的面板。`,
             color: Colors.ERROR,
           },
         ],
@@ -490,9 +490,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: `${panel.title} - Reaction Roles`,
-            description:
-              '此 Panel 尚未添加任何 Reaction Role。\n使用 `/reaction-role add` 來添加。',
+            title: `${panel.title} - 反應身分組`,
+            description: '此面板尚未新增任何反應身分組。\n使用 `/reaction-role add` 來新增。',
             color: Colors.INFO,
           },
         ],
@@ -515,7 +514,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     await ctx.reply({
       embeds: [
         {
-          title: `${panel.title} - Reaction Roles (${roles.length} 個)`,
+          title: `${panel.title} - 反應身分組 (${roles.length} 個)`,
           description: description + '\n\n**提示**: 移除時請複製上方的 `emoji:` 值使用。',
           color: Colors.INFO,
         },

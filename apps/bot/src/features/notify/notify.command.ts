@@ -39,7 +39,7 @@ const platformOption = {
 const streamerIdOption = {
   name: 'id',
   type: ApplicationCommandOptionType.String,
-  description: '實況主 ID 或用戶名',
+  description: '實況主 ID 或使用者名稱',
   required: true,
 } as const;
 
