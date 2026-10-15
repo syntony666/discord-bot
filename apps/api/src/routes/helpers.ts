@@ -54,10 +54,67 @@ export function enumQuery<E extends Record<string, string>>(
   return value;
 }
 
-export function requireFields(body: Record<string, unknown>, ...fields: string[]): void {
+// `body` is `object` so interface-typed json bodies are assignable
+// (interfaces lack implicit index signatures required by Record).
+const fieldOf = (body: object, field: string): unknown =>
+  (body as Record<string, unknown> | null)?.[field];
+
+export function requireFields(body: object, ...fields: string[]): void {
   for (const field of fields) {
-    if (body == null || body[field] === undefined) {
+    if (fieldOf(body, field) === undefined) {
       throw new ApiError(400, `missing field: ${field}`, 'BAD_REQUEST');
     }
   }
+}
+
+// Body field validated against a shared enum object.
+export function enumBody<E extends Record<string, string>>(
+  body: object,
+  field: string,
+  e: E
+): E[keyof E];
+export function enumBody<E extends Record<string, string>>(
+  body: object,
+  field: string,
+  e: E,
+  opts: { optional: true }
+): E[keyof E] | undefined;
+export function enumBody<E extends Record<string, string>>(
+  body: object,
+  field: string,
+  e: E,
+  opts?: { optional?: boolean }
+): E[keyof E] | undefined {
+  const value = fieldOf(body, field);
+  if (value === undefined) {
+    if (opts?.optional) return undefined;
+    throw new ApiError(400, `missing field: ${field}`, 'BAD_REQUEST');
+  }
+  if (!isEnumValue(e, value)) {
+    throw new ApiError(
+      400,
+      `${field} must be one of: ${Object.values(e).join(', ')}`,
+      'BAD_REQUEST'
+    );
+  }
+  return value;
+}
+
+// Body field validated against a literal union (e.g. 'join' | 'leave').
+export function oneOfBody<T extends string>(body: object, field: string, allowed: readonly T[]): T {
+  const value = fieldOf(body, field);
+  if (typeof value !== 'string' || !(allowed as readonly string[]).includes(value)) {
+    throw new ApiError(400, `${field} must be one of: ${allowed.join(', ')}`, 'BAD_REQUEST');
+  }
+  return value as T;
+}
+
+// Optional boolean body field must be an actual boolean when present.
+export function boolBody(body: object, field: string): boolean | undefined {
+  const value = fieldOf(body, field);
+  if (value === undefined) return undefined;
+  if (typeof value !== 'boolean') {
+    throw new ApiError(400, `${field} must be a boolean`, 'BAD_REQUEST');
+  }
+  return value;
 }

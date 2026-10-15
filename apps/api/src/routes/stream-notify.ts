@@ -6,7 +6,7 @@ import {
   UpdateStreamNotifyConfigInput,
 } from '@discord-bot/shared';
 import { StreamNotifyModule, StreamWatcherPatch } from '../modules/stream-notify.module';
-import { enumParam, guildId, jsonOr404 } from './helpers';
+import { boolBody, enumBody, enumParam, guildId, jsonOr404, requireFields } from './helpers';
 
 export function streamNotifyRoutes(module: StreamNotifyModule) {
   const routes = new Hono();
@@ -17,11 +17,13 @@ export function streamNotifyRoutes(module: StreamNotifyModule) {
 
   routes.post('/stream-notify-config', async (c) => {
     const body = await c.req.json<Omit<CreateStreamNotifyConfigInput, 'guildId'>>();
+    requireFields(body, 'channelId');
     return c.json(await module.createConfig({ ...body, guildId: guildId(c) }), 201);
   });
 
   routes.patch('/stream-notify-config', async (c) => {
     const body = await c.req.json<UpdateStreamNotifyConfigInput>();
+    boolBody(body, 'enabled');
     return c.json(await module.updateConfig(guildId(c), body));
   });
 
@@ -34,7 +36,9 @@ export function streamNotifyRoutes(module: StreamNotifyModule) {
 
   routes.post('/stream-watchers', async (c) => {
     const body = await c.req.json<Omit<CreateStreamWatcherInput, 'guildId'>>();
-    return c.json(await module.addWatcher({ ...body, guildId: guildId(c) }), 201);
+    requireFields(body, 'platform', 'platformId', 'displayName');
+    const platform = enumBody(body, 'platform', StreamPlatform);
+    return c.json(await module.addWatcher({ ...body, platform, guildId: guildId(c) }), 201);
   });
 
   routes.get('/stream-watchers/:platform/:platformId', async (c) =>
@@ -67,6 +71,7 @@ export function streamWatcherRoutes(module: StreamNotifyModule) {
 
   routes.patch('/:id', async (c) => {
     const body = await c.req.json<StreamWatcherPatch>();
+    boolBody(body, 'isLive');
     return c.json(await module.updateWatcher(c.req.param('id'), body));
   });
 
