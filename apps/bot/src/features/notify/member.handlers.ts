@@ -222,7 +222,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
         guildId,
         isJoin ? NotificationType.MEMBER_JOIN : NotificationType.MEMBER_LEAVE
       );
-      if (!(isJoin ? service.shouldSendJoin(channel) : service.shouldSendLeave(channel))) return;
+      if (!service.shouldSend(channel)) return;
 
       const templates = await api.getMessageTemplates(guildId);
       const guild = await discord.getGuild(guildId);
