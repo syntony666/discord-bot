@@ -54,6 +54,15 @@ export function enumQuery<E extends Record<string, string>>(
   return value;
 }
 
+// Required query param; a missing value is a 400 rather than an empty-string query.
+export function requireQuery(c: Context, name: string): string {
+  const value = c.req.query(name);
+  if (value === undefined) {
+    throw new ApiError(400, `missing query param: ${name}`, 'BAD_REQUEST');
+  }
+  return value;
+}
+
 // `body` is `object` so interface-typed json bodies are assignable
 // (interfaces lack implicit index signatures required by Record).
 const fieldOf = (body: object, field: string): unknown =>
