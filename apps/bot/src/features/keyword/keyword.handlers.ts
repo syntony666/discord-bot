@@ -12,6 +12,9 @@ import { keywordCommand } from './keyword.command';
 
 const log = createLogger('Keyword');
 
+// Discord embed description limit is 4096; leave room for the truncation suffix.
+const MAX_VIEW_LENGTH = 3900;
+
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface KeywordDeps {
   discord: DiscordHelpers;
@@ -159,7 +162,8 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     if (candidates.length > 1) meta.push(`候選 ${candidates.length} 個`);
 
     const body = candidates.length > 1 ? candidates.join('、') : rule.response;
-    const shown = body.length > 3900 ? `${body.slice(0, 3900)}… (已截斷)` : body;
+    const shown =
+      body.length > MAX_VIEW_LENGTH ? `${body.slice(0, MAX_VIEW_LENGTH)}… (已截斷)` : body;
     const arrow =
       candidates.length > 1 ? `**${rule.pattern}** ⭢\n${shown}` : `**${rule.pattern}** ⭢ ${shown}`;
 
