@@ -250,7 +250,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     }
 
     const ok = await ctx.confirm({
-      title: '📝 確認更新面板',
+      title: '確認更新面板',
       description: `即將更新面板 設定。\n[跳轉至訊息](${messageUrl})`,
       fields: [
         { name: '目前設定', value: currentFields.join('\n'), inline: true },
