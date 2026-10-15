@@ -11,6 +11,9 @@ import { notifyCommand } from './notify.command';
 
 const log = createLogger('MemberNotify');
 
+// Self-heal: ensure guild row exists at most once per guild per process.
+const ensuredGuilds = new Set<string>();
+
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface MemberNotifyDeps {
   discord: DiscordHelpers;
@@ -259,7 +262,10 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
   h.event('guildMemberAdd', async ({ user, guild_id: guildId }) => {
     if (!user) return;
     try {
-      await guildApi.ensureGuild(guildId);
+      if (!ensuredGuilds.has(guildId)) {
+        await guildApi.ensureGuild(guildId);
+        ensuredGuilds.add(guildId);
+      }
 
       const joinChannel = await api.getNotificationChannel(guildId, NotificationType.MEMBER_JOIN);
       if (!service.shouldSendJoin(joinChannel)) return;
