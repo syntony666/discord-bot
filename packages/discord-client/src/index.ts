@@ -5,14 +5,8 @@ export { defineCommand } from './commands';
 export { defineFeature, mergeCollected, useHandlers } from './features';
 export { button, linkButton, row } from './internal/sessions/components';
 export type { CtxFor } from './features.type';
-export type {
-  CommandContext,
-  GuildCommandContext,
-  ComponentContext,
-  SemanticReplies,
-} from './context.type';
+export type { CommandContext } from './context.type';
 export type { DiscordHelpers } from './helpers.type';
 export { createDiscordClient } from './client';
 export type { DiscordClient } from './client';
 export type { GatewaySession } from './client.type';
-export type { Bot } from './bot.type';

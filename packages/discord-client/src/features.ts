@@ -47,13 +47,13 @@ export function mergeCollected(...cols: Collected[]): Collected {
 
 // --- defineFeature ----------------------------------------------------------
 
-export function defineFeature() {
-  return <Deps, C extends CommandDef | undefined = undefined>(
-    spec: FeatureSpec<Deps, C>
-  ): Feature<Deps> => ({
+export function defineFeature<Deps, C extends CommandDef | undefined = undefined>(
+  spec: FeatureSpec<Deps, C>
+): Feature<Deps> {
+  return {
     name: spec.name ?? spec.command?.command ?? '',
     command: spec.command,
     useHandlers: spec.useHandlers,
     deps: spec.deps,
-  });
+  };
 }

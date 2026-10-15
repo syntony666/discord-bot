@@ -17,8 +17,7 @@ import type {
 } from 'discord-api-types/v10';
 import { ORIGINAL_MESSAGE, type Resources } from '../resources';
 import type { PaginateOptions } from '../../context.type';
-import type { SessionApi } from '../context.type';
-import type { PaginatePending, Pending, Waiter } from './store.type';
+import type { PaginatePending, Pending, SessionApi, Waiter } from './store.type';
 import { button, modalFieldValues, paginateEmbed, paginateRow, row } from './components';
 import { usernameOf, withEmbedDefaults, type EmbedTheme } from '../embeds';
 
@@ -458,5 +457,3 @@ export function createSessionStore(
     close,
   };
 }
-
-export type SessionStore = ReturnType<typeof createSessionStore>;

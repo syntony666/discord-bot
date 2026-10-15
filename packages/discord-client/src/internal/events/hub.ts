@@ -67,5 +67,3 @@ export function createEventHub(
 
   return { on, stream, dispatch, close };
 }
-
-export type EventHub = ReturnType<typeof createEventHub>;
