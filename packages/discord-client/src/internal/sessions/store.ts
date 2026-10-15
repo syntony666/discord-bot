@@ -27,6 +27,8 @@ const DEFAULT_CONFIRM_TIMEOUT = 120_000;
 const DEFAULT_PAGINATE_TIMEOUT = 5 * 60_000;
 const DEFAULT_MODAL_TIMEOUT = 5 * 60_000;
 const DEFAULT_PROMPT_TIMEOUT = 60_000;
+/** Route components (h.component) on replies expire after this age. */
+export const COMPONENT_MAX_AGE_MS = 5 * 60_000;
 
 export function createSessionStore(
   resources: Resources,
@@ -76,6 +78,12 @@ export function createSessionStore(
     messageId: string,
     data: APIInteractionResponseCallbackData
   ) => resources.webhook(appId, token).message(messageId).edit(data).catch(fail);
+
+  const expireComponents = (token: string, messageId: string, ttlMs: number) => {
+    setTimeout(() => {
+      void editMessage(token, messageId, { components: [] });
+    }, ttlMs);
+  };
 
   const expirePaginate = (id: string, s: PaginatePending) => {
     clearTimeout(s.timer);
@@ -446,6 +454,7 @@ export function createSessionStore(
     claims,
     dispatch,
     tryMessage,
+    expireComponents,
     close,
   };
 }
