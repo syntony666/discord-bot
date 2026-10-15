@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { ApiError, GuildTier } from '@discord-bot/shared';
+import { ApiError, GuildTier, isEnumValue } from '@discord-bot/shared';
 import { GuildModule } from '../modules/guild.module';
 import { guildId, jsonOr404 } from './helpers';
 
@@ -19,10 +19,10 @@ export function guildRoutes(module: GuildModule) {
 
   routes.patch('/:guildId', async (c) => {
     const body = await c.req.json<{ tier?: string }>();
-    if (!body.tier || !TIERS.includes(body.tier)) {
+    if (!isEnumValue(GuildTier, body.tier)) {
       throw new ApiError(400, `tier must be one of: ${TIERS.join(', ')}`, 'BAD_REQUEST');
     }
-    return c.json(await module.setTier(guildId(c), body.tier as GuildTier));
+    return c.json(await module.setTier(guildId(c), body.tier));
   });
 
   routes.delete('/:guildId', async (c) => {
