@@ -15,11 +15,7 @@ import {
   sanitizeUpdates,
   updatePanelMessage,
 } from './lib/operations';
-import {
-  formatEmojiForDisplay,
-  formatEmojiForReaction,
-  normalizeEmojiForStorage,
-} from './lib/emoji.helper';
+import { formatEmojiForDisplay, normalizeEmojiForStorage } from './lib/emoji.helper';
 
 const log = createLogger('ReactionRole');
 
@@ -229,8 +225,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     if (!panel) return;
 
     try {
-      const reactionEmoji = formatEmojiForReaction(emoji);
-      await addDiscordReaction(discord, panel.channelId, panelId, reactionEmoji, {
+      await addDiscordReaction(discord, panel.channelId, panelId, emoji, {
         guildId,
         panelId,
       });
@@ -318,8 +313,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return;
 
     try {
-      const reactionEmoji = formatEmojiForReaction(emoji);
-      await deleteDiscordReaction(discord, panel.channelId, panelId, reactionEmoji, {
+      await deleteDiscordReaction(discord, panel.channelId, panelId, emoji, {
         guildId,
         panelId,
       });

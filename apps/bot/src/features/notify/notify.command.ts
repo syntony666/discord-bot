@@ -66,7 +66,7 @@ const enabledOption = {
   description: '是否啟用',
 } as const;
 
-export const notifyCommand = defineCommand()({
+export const notifyCommand = defineCommand({
   command: 'notify',
   description: '統一通知設定',
   default_member_permissions: String(PermissionFlagsBits.ManageGuild),

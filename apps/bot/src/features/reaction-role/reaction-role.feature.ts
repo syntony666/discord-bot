@@ -4,7 +4,7 @@ import { createReactionRoleApi } from './reaction-role.api';
 import { reactionRoleCommand } from './reaction-role.command';
 import { useReactionRoleHandlers } from './reaction-role.handlers';
 
-export const reactionRoleFeature = defineFeature()({
+export const reactionRoleFeature = defineFeature({
   command: reactionRoleCommand,
   useHandlers: useReactionRoleHandlers,
   deps: { api: { reactionRole: createReactionRoleApi(request) } },

@@ -17,7 +17,8 @@ import type {
   PromptOptions,
   ReplyData,
 } from '../context.type';
-import type { CommandRoute, Interaction, SessionApi } from './context.type';
+import type { CommandRoute, Interaction } from './router.type';
+import type { SessionApi } from './sessions/store.type';
 import { ORIGINAL_MESSAGE, type Resources } from './resources';
 import { avatarUrlOf, withEmbedDefaults, type EmbedTheme } from './embeds';
 import { COMPONENT_MAX_AGE_MS } from './sessions/store';

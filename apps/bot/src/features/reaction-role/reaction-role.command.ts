@@ -12,7 +12,7 @@ const panelIdOption = {
   required: true,
 } as const;
 
-export const reactionRoleCommand = defineCommand()({
+export const reactionRoleCommand = defineCommand({
   command: 'reaction-role',
   description: '管理反應身分組',
   default_member_permissions: String(PermissionFlagsBits.ManageRoles),

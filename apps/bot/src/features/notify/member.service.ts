@@ -9,8 +9,7 @@ export interface MessageVariables {
 
 export interface MemberNotifyService {
   formatMessage(template: string, vars: MessageVariables): string;
-  shouldSendJoin(channel: NotificationChannel | null): boolean;
-  shouldSendLeave(channel: NotificationChannel | null): boolean;
+  shouldSend(channel: NotificationChannel | null): boolean;
 }
 
 export function createMemberNotifyService(): MemberNotifyService {
@@ -23,11 +22,7 @@ export function createMemberNotifyService(): MemberNotifyService {
         .replace(/\{memberCount\}/g, vars.memberCount.toString());
     },
 
-    shouldSendJoin(channel: NotificationChannel | null): boolean {
-      return Boolean(channel?.enabled && channel?.channelId);
-    },
-
-    shouldSendLeave(channel: NotificationChannel | null): boolean {
+    shouldSend(channel: NotificationChannel | null): boolean {
       return Boolean(channel?.enabled && channel?.channelId);
     },
   };
