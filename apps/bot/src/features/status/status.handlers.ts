@@ -14,6 +14,7 @@ import type { ReactionRoleApi } from '@features/reaction-role/reaction-role.api'
 import type { StreamNotifyApi } from '@features/notify/stream.api';
 import { getBotVersion, getUptime } from './bot-info';
 import { appConfig } from '@core/config';
+import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import { statusCommand } from './status.command';
 import { avatarUrl, guildIconUrl } from './status.utils';
@@ -67,6 +68,7 @@ export function useStatusHandlers(deps: StatusDeps) {
 
     const embed = (latency: string | number): APIEmbed => ({
       title: botUser.username,
+      color: Colors.INFO,
       description:
         '你想知道什麼呢？\n\n製作：@sakurashigure_retry ‧ [Twitter(X)](https://x.com/SakuraShigure99)',
       thumbnail: botIcon ? { url: botIcon } : undefined,
@@ -147,6 +149,7 @@ export function useStatusHandlers(deps: StatusDeps) {
       embeds: [
         {
           title: record ? `${TIER_ICON[record.tier]} ${guild.name}` : guild.name,
+          color: Colors.INFO,
           thumbnail: icon ? { url: icon } : undefined,
           fields,
           footer: {
@@ -164,8 +167,8 @@ export function useStatusHandlers(deps: StatusDeps) {
     await ctx.reply({
       embeds: [
         fields.length > 0
-          ? { title: '功能狀態總覽', fields }
-          : { title: '功能狀態總覽', description: '目前沒有啟用任何功能' },
+          ? { title: '功能狀態總覽', color: Colors.INFO, fields }
+          : { title: '功能狀態總覽', color: Colors.INFO, description: '目前沒有啟用任何功能' },
       ],
     });
     log.info({ guildId: ctx.guildId }, 'Features status displayed');
