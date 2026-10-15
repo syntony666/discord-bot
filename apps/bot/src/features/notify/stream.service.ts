@@ -105,8 +105,6 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
             if (watcher.isLive && !isStillLive) {
               await api.updateWatcherStatus(watcher.id, false);
             }
-
-            await api.updateLastChecked(watcher.id);
           }
         } catch (error) {
           log.error({ error, platform: platformName }, 'Failed to check stream status');

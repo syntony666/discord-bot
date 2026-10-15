@@ -78,12 +78,6 @@ export function createStreamNotifyApi(request: ApiRequest) {
         body: JSON.stringify({ avatarImageUrl }),
       });
     },
-    updateLastChecked(id: string) {
-      return request<StreamWatcher>(`${WATCHERS}/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ touch: true }),
-      });
-    },
   };
 }
 
