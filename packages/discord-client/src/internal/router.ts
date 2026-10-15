@@ -8,7 +8,7 @@ import type {
 } from 'discord-api-types/v10';
 import { ApplicationCommandOptionType } from 'discord-api-types/v10';
 import type { Resources } from './resources';
-import { buildCommandContext, buildComponentContext } from './context';
+import { buildCommandContext, buildComponentContext, interactionUser } from './context';
 import type { CommandRoute, SessionApi } from './context.type';
 import type {
   CommandHandler,
@@ -122,9 +122,13 @@ export function createCommandRouter(
     commands.set(def.command, { def, handlers });
   };
 
-  const addComponent = (pattern: string, handler: ComponentHandler) => {
+  const addComponent = (
+    pattern: string,
+    handler: ComponentHandler,
+    opts?: { sameUser?: boolean }
+  ) => {
     const compiled = compilePattern(pattern);
-    components.push({ ...compiled, handler });
+    components.push({ ...compiled, handler, sameUser: opts?.sameUser });
   };
 
   const handleChatInput = async (i: APIChatInputApplicationCommandInteraction) => {
@@ -185,6 +189,29 @@ export function createCommandRouter(
         params[name] = m[idx + 1]!;
       });
       const ctx = buildComponentContext(resources, appId, sessions, i, params, theme);
+      if (route.sameUser) {
+        // Owner of the message this component lives on — resolvable only for
+        // message-component interactions. Fail closed when unresolvable.
+        const owner =
+          i.type === InteractionType.MessageComponent
+            ? (i.message?.interaction_metadata?.user?.id ?? i.message?.interaction?.user?.id)
+            : undefined;
+        if (!owner || interactionUser(i).id !== owner) {
+          await ctx.reply(
+            {
+              embeds: [
+                {
+                  title: '🔒',
+                  description: '此操作僅限指令原使用者',
+                  color: theme.colors.error,
+                },
+              ],
+            },
+            true
+          );
+          return true;
+        }
+      }
       await route.handler(ctx);
       return true;
     }

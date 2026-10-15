@@ -26,12 +26,22 @@ export function useHandlers<C extends CommandDef = CommandDef>(_def?: C) {
     stream<K extends EventName>(name: K, fn: StreamBuilder<K>): void {
       collected.stream[name] = fn as never;
     },
-    component(pattern: string, fn: ComponentHandler): void {
-      collected.component[pattern] = fn;
+    component(pattern: string, fn: ComponentHandler, opts?: { sameUser?: boolean }): void {
+      collected.component[pattern] = { handler: fn, sameUser: opts?.sameUser };
     },
     collect(): Collected {
       return collected;
     },
+  };
+}
+
+/** Shallow-merge the four maps of several `Collected` results into one. */
+export function mergeCollected(...cols: Collected[]): Collected {
+  return {
+    handler: Object.assign({}, ...cols.map((c) => c.handler)),
+    event: Object.assign({}, ...cols.map((c) => c.event)),
+    stream: Object.assign({}, ...cols.map((c) => c.stream)),
+    component: Object.assign({}, ...cols.map((c) => c.component)),
   };
 }
 

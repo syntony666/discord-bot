@@ -130,7 +130,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const matchType = ctx.options.match_type ?? KeywordMatchType.EXACT;
 
     const existing = await api.getRuleByPattern(guildId, pattern);
-    if (!existing) return ctx.error('找不到此關鍵字。');
+    if (!existing) return ctx.error('錯誤', '找不到此關鍵字。');
 
     await ctx.reply(
       await applyUpdate({ guildId, pattern, response, matchType, editorId: ctx.user.id })
@@ -148,7 +148,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const { pattern } = ctx.options;
 
     const rule = await api.getRuleByPattern(ctx.guildId, pattern);
-    if (!rule) return ctx.error('找不到此關鍵字。');
+    if (!rule) return ctx.error('錯誤', '找不到此關鍵字。');
 
     const candidates = rule.response.split(';;').filter((p) => p.length > 0);
     const meta = [`\`${rule.matchType}\``, Formatters.userMention(rule.editorId)];
@@ -179,47 +179,51 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     log.info({ guildId: ctx.guildId, pattern }, 'Keyword rule viewed');
   });
 
-  h.component('kw:edit:{pattern}', async (ctx) => {
-    if (!ctx.guildId) return;
-    const guildId = ctx.guildId;
-    const pattern = ctx.params.pattern ?? '';
+  h.component(
+    'kw:edit:{pattern}',
+    async (ctx) => {
+      if (!ctx.guildId) return;
+      const guildId = ctx.guildId;
+      const pattern = ctx.params.pattern ?? '';
 
-    const rule = await api.getRuleByPattern(guildId, pattern);
-    if (!rule) {
-      return ctx.reply(
-        {
-          embeds: [
-            {
-              title: '❌ 錯誤',
-              description: '找不到此關鍵字，可能已被刪除。',
-              color: Colors.ERROR,
-            },
-          ],
-        },
-        true
-      );
-    }
+      const rule = await api.getRuleByPattern(guildId, pattern);
+      if (!rule) {
+        return ctx.reply(
+          {
+            embeds: [
+              {
+                title: '❌ 錯誤',
+                description: '找不到此關鍵字，可能已被刪除。',
+                color: Colors.ERROR,
+              },
+            ],
+          },
+          true
+        );
+      }
 
-    const values = await ctx.modal({
-      title: '修改關鍵字回覆',
-      fields: [
-        {
-          id: 'response',
-          label: '回覆內容（以 ;; 分隔多個候選）',
-          style: 'paragraph',
-          value: rule.response,
-          maxLength: 4000,
-        },
-      ],
-    });
-    if (!values) return;
+      const values = await ctx.modal({
+        title: '修改關鍵字回覆',
+        fields: [
+          {
+            id: 'response',
+            label: '回覆內容（以 ;; 分隔多個候選）',
+            style: 'paragraph',
+            value: rule.response,
+            maxLength: 4000,
+          },
+        ],
+      });
+      if (!values) return;
 
-    const response = values.response;
-    if (!response || response === rule.response) return;
+      const response = values.response;
+      if (!response || response === rule.response) return;
 
-    await ctx.followUp(await applyUpdate({ guildId, pattern, response, editorId: ctx.user.id }));
-    log.info({ pattern, guildId }, 'Keyword updated via view modal');
-  });
+      await ctx.followUp(await applyUpdate({ guildId, pattern, response, editorId: ctx.user.id }));
+      log.info({ pattern, guildId }, 'Keyword updated via view modal');
+    },
+    { sameUser: true }
+  );
 
   h.handler('search', async (ctx) => {
     const guildId = ctx.guildId;
@@ -241,7 +245,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const editorId = ctx.user.id;
 
     const rule = await api.getRuleByPattern(guildId, pattern);
-    if (!rule) return ctx.error('找不到此關鍵字，可能已被其他人刪除。');
+    if (!rule) return ctx.error('錯誤', '找不到此關鍵字，可能已被其他人刪除。');
 
     const ok = await ctx.confirm({
       title: '⚠️ 確認刪除關鍵字',

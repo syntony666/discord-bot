@@ -8,6 +8,8 @@ export interface ComponentRoute {
   pattern: RegExp;
   params: string[];
   handler: ComponentHandler;
+  /** Restrict the interaction to the user who ran the original command. */
+  sameUser?: boolean;
 }
 
 export interface SessionDispatcher {
