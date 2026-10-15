@@ -99,8 +99,6 @@ export function useStatusHandlers(deps: StatusDeps) {
   });
 
   h.handler('guild', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('無法取得伺服器資訊');
-
     const [guild, record] = await Promise.all([
       discord.getGuild(ctx.guildId),
       deps.api.guild.getGuild(ctx.guildId),
@@ -162,8 +160,6 @@ export function useStatusHandlers(deps: StatusDeps) {
   });
 
   h.handler('features', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('無法取得伺服器資訊');
-
     const fields = await buildFeaturesStatusFields(ctx.guildId, deps.api, discord.commandMention);
     await ctx.reply({
       embeds: [

@@ -1,5 +1,5 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
-import type { CommandContext } from '@discord-bot/discord-client';
+import type { GuildCommandContext } from '@discord-bot/discord-client';
 import { NotificationType } from '@discord-bot/shared';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
@@ -39,7 +39,6 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
   };
 
   h.handler('member.enable', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const channelId = ctx.options.channel.id;
 
@@ -70,7 +69,6 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
   });
 
   h.handler('member.disable', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
 
     const channels = await api.getNotificationChannels(guildId);
@@ -124,7 +122,6 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
   });
 
   h.handler('member.status', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
 
     const [joinChannel, leaveChannel, templates] = await Promise.all([
@@ -165,7 +162,6 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
   });
 
   h.handler('member.test', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const type = ctx.options.type; // 'join' | 'leave'
 
     const templates = await api.getMessageTemplates(ctx.guildId);
@@ -194,10 +190,9 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
   });
 
   const editEvent = async (
-    ctx: CommandContext<{ template?: string; enabled?: boolean }>,
+    ctx: GuildCommandContext<{ template?: string; enabled?: boolean }>,
     type: 'join' | 'leave'
   ) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const { template, enabled } = ctx.options;
     const notifyType =

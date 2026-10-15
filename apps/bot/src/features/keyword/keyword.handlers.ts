@@ -65,7 +65,6 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     });
 
   h.handler('add', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const { pattern, response } = ctx.options;
     const matchType = ctx.options.match_type ?? KeywordMatchType.EXACT;
@@ -128,7 +127,6 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   });
 
   h.handler('edit', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const { pattern, response } = ctx.options;
     const matchType = ctx.options.match_type ?? KeywordMatchType.EXACT;
@@ -143,15 +141,12 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   });
 
   h.handler('list', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
-
     const rules = await api.getRulesForList(ctx.guildId);
     await paginateRules(ctx, rules, '關鍵字規則列表', '目前沒有任何關鍵字規則。');
     log.info({ guildId: ctx.guildId }, 'Keyword list displayed');
   });
 
   h.handler('view', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const { pattern } = ctx.options;
 
     const rule = await api.getRuleByPattern(ctx.guildId, pattern);
@@ -229,7 +224,6 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   });
 
   h.handler('search', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const { query } = ctx.options;
 
@@ -239,7 +233,6 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   });
 
   h.handler('delete', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const { pattern } = ctx.options;
     const editorId = ctx.user.id;
