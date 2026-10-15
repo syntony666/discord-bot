@@ -39,7 +39,9 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
   // Backfill avatars for pre-existing watchers on boot
   void service.refreshTwitchWatcherAvatars(api, twitchService);
 
-  const toPlatform = (platform: string) => platform.toUpperCase() as StreamPlatform;
+  // Slash choices narrow ctx.options.platform to literals; a missing key here
+  // is a compile error, not a runtime surprise.
+  const PLATFORMS = { twitch: StreamPlatform.TWITCH } satisfies Record<string, StreamPlatform>;
 
   // 'login' or 'login (display_name)' when they differ
   const nameOf = (platformId: string, displayName: string) =>
@@ -102,12 +104,12 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
       profile = { platformUserId: user.id, avatarImageUrl: user.profile_image_url };
     }
 
-    const existingWatcher = await api.getWatcher(guildId, toPlatform(platform), platformId);
+    const existingWatcher = await api.getWatcher(guildId, PLATFORMS[platform], platformId);
     if (existingWatcher) {
       return ctx.info('監控已存在', `已在監控此 ${platform} 頻道`);
     }
 
-    await api.addWatcher(guildId, toPlatform(platform), platformId, displayName, profile);
+    await api.addWatcher(guildId, PLATFORMS[platform], platformId, displayName, profile);
     await ctx.success('已新增監控', `開始監控 ${platform} 頻道 ${nameOf(platformId, displayName)}`);
     log.info({ guildId, platform, platformId }, 'Stream watcher added');
   });
@@ -123,12 +125,12 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
       platformId = user?.login ?? id;
     }
 
-    const existingWatcher = await api.getWatcher(guildId, toPlatform(platform), platformId);
+    const existingWatcher = await api.getWatcher(guildId, PLATFORMS[platform], platformId);
     if (!existingWatcher) {
       return ctx.info('監控不存在', `未找到此 ${platform} 頻道的監控`);
     }
 
-    await api.removeWatcher(guildId, toPlatform(platform), platformId);
+    await api.removeWatcher(guildId, PLATFORMS[platform], platformId);
     await ctx.success(
       '已移除監控',
       `已停止監控 ${platform} 頻道 ${nameOf(existingWatcher.platformId, existingWatcher.displayName)}`
