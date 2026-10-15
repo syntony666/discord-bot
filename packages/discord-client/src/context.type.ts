@@ -73,8 +73,12 @@ export interface SemanticReplies {
   require<T>(
     fetcher: () => Promise<T | null | undefined>,
     errorTitle: string,
-    opts?: { ephemeral?: boolean }
+    opts?: { description?: string; ephemeral?: boolean }
   ): Promise<T | null>;
+  /** Public followUp embed; stamps the invoking user as embed author. */
+  announce(embed: APIEmbed): Promise<void>;
+  /** announce({title, description, color: success}) shorthand. */
+  announceSuccess(title: string, description?: string): Promise<void>;
 }
 
 export interface CommandContext<
