@@ -106,7 +106,7 @@ export interface Collected {
   handler?: Record<string, CommandHandler>;
   event?: { [K in EventName]?: EventHandler<K> };
   stream?: { [K in EventName]?: StreamBuilder<K> };
-  component?: Record<string, ComponentHandler>;
+  component?: Record<string, { handler: ComponentHandler; sameUser?: boolean }>;
 }
 
 // --- defineFeature ----------------------------------------------------------
