@@ -1,5 +1,36 @@
-import type { APIMessage } from 'discord-api-types/v10';
-import type { PaginateOptions } from '../../context.type';
+import type { APIInteraction, APIMessage } from 'discord-api-types/v10';
+import type {
+  ConfirmOptions,
+  ModalOptions,
+  PaginateOptions,
+  PromptOptions,
+} from '../../context.type';
+
+/** Implemented by the session store (created in store.ts). */
+export interface SessionApi {
+  confirm(
+    interaction: APIInteraction,
+    options: ConfirmOptions,
+    responded: boolean
+  ): Promise<boolean>;
+  paginate<T>(
+    interaction: APIInteraction,
+    options: PaginateOptions<T>,
+    responded: boolean
+  ): Promise<void>;
+  modal(
+    interaction: APIInteraction,
+    options: ModalOptions,
+    responded: boolean
+  ): Promise<Record<string, string> | null>;
+  prompt(
+    interaction: APIInteraction,
+    options: PromptOptions,
+    responded: boolean
+  ): Promise<APIMessage | null>;
+  /** Strip all components from a message after ttlMs. */
+  expireComponents(token: string, messageId: string, ttlMs: number): void;
+}
 
 export type Pending =
   | {

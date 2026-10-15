@@ -11,7 +11,7 @@ const matchTypeOption = {
   ],
 } as const;
 
-export const keywordCommand = defineCommand()({
+export const keywordCommand = defineCommand({
   command: 'keyword',
   description: '管理關鍵字自動回覆',
   guildOnly: true,
