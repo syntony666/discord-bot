@@ -95,7 +95,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
   h.handler('panel.list', async (ctx) => {
     const guildId = ctx.guildId;
 
-    const panels = await api.getPanelsByGuild(guildId);
+    const panels = await api.getPanelsWithRoles(guildId);
 
     if (panels.length === 0) {
       return ctx.reply({
@@ -110,22 +110,19 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       });
     }
 
-    const description = await Promise.all(
-      panels.map(async (panel) => {
-        const roles = await api.getReactionRolesByMessage(guildId, panel.messageId);
-        const messageUrl = Formatters.messageLink(panel.channelId, panel.messageId, guildId);
+    const description = panels.map((panel) => {
+      const messageUrl = Formatters.messageLink(panel.channelId, panel.messageId, guildId);
 
-        return [
-          `**${panel.title}**`,
-          `ID: \`${panel.messageId}\``,
-          `頻道: ${Formatters.channelMention(panel.channelId)}`,
-          `模式: ${getModeText(panel.mode)}`,
-          `身分組數量: ${roles.length} 個`,
-          `[跳轉至訊息](${messageUrl})`,
-          '',
-        ].join('\n');
-      })
-    );
+      return [
+        `**${panel.title}**`,
+        `ID: \`${panel.messageId}\``,
+        `頻道: ${Formatters.channelMention(panel.channelId)}`,
+        `模式: ${getModeText(panel.mode)}`,
+        `身分組數量: ${panel.reactionRoles.length} 個`,
+        `[跳轉至訊息](${messageUrl})`,
+        '',
+      ].join('\n');
+    });
 
     await ctx.reply({
       embeds: [
