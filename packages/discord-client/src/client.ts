@@ -3,6 +3,7 @@ import { WebSocketManager, WebSocketShardEvents } from '@discordjs/ws';
 import { GatewayOpcodes } from 'discord-api-types/v10';
 import type { APIUser, GatewayPresenceUpdateData } from 'discord-api-types/v10';
 import { createResources } from './internal/resources';
+import { createHelpers } from './internal/helpers';
 import { createBot } from './bot';
 import type { BotOptions } from './bot.type';
 import type { GatewayConnectOptions } from './client.type';
@@ -22,6 +23,13 @@ export function createDiscordClient(options: { token: string }) {
     }
   };
 
+  const helpers = createHelpers(
+    rest,
+    () => botUser,
+    () => latestPing,
+    updatePresence
+  );
+
   return {
     async connect({ intents, onDispatch, onReady, onLog }: GatewayConnectOptions) {
       const ws = new WebSocketManager({ token: options.token, intents, rest });
@@ -39,8 +47,7 @@ export function createDiscordClient(options: { token: string }) {
       return { close: () => void ws.destroy() };
     },
     updatePresence,
-    createBot: (botOptions: BotOptions) =>
-      createBot(resources, botOptions, () => latestPing, updatePresence),
+    createBot: (botOptions: BotOptions) => createBot(resources, botOptions, helpers),
   };
 }
 
