@@ -44,10 +44,10 @@ export function useBotHandlers(deps: BotDeps) {
 
   h.handler('guild.info', async (ctx) => {
     const guildId = ctx.options.guild_id ?? ctx.guildId;
-    if (!guildId) return ctx.error('請提供 guild_id，或在伺服器中使用此指令');
+    if (!guildId) return ctx.error('錯誤', '請提供 guild_id，或在伺服器中使用此指令');
 
     const guild = await api.getGuild(guildId);
-    if (!guild) return ctx.error('此伺服器不在資料庫中（可用 /bot guild sync 補登）');
+    if (!guild) return ctx.error('錯誤', '此伺服器不在資料庫中（可用 /bot guild sync 補登）');
 
     const flag = (on: boolean) => (on ? '✅' : '❌');
     const { limits, counts, features } = guild;
@@ -83,11 +83,11 @@ export function useBotHandlers(deps: BotDeps) {
 
   h.handler('guild.tier', async (ctx) => {
     const guildId = ctx.options.guild_id ?? ctx.guildId;
-    if (!guildId) return ctx.error('請提供 guild_id，或在伺服器中使用此指令');
+    if (!guildId) return ctx.error('錯誤', '請提供 guild_id，或在伺服器中使用此指令');
     const tier = ctx.options.tier;
 
     const guild = await api.getGuild(guildId);
-    if (!guild) return ctx.error('此伺服器不在資料庫中（可用 /bot guild sync 補登）');
+    if (!guild) return ctx.error('錯誤', '此伺服器不在資料庫中（可用 /bot guild sync 補登）');
 
     const wasHome = (await api.listGuilds()).find((g) => g.tier === 'HOME' && g.id !== guildId);
     await api.setTier(guildId, tier);
@@ -217,7 +217,7 @@ export function useBotHandlers(deps: BotDeps) {
     if (keywords !== undefined) patch.keywordRules = keywords;
     if (panels !== undefined) patch.reactionRolePanels = panels;
     if (Object.keys(patch).length === 0) {
-      return ctx.error('請提供至少一個要調整的額度');
+      return ctx.error('錯誤', '請提供至少一個要調整的額度');
     }
 
     const updated = await botApi.updateTierLimit(tier, patch);
@@ -238,7 +238,7 @@ export function useBotHandlers(deps: BotDeps) {
   h.handler('announce', async (ctx) => {
     const { message, tier } = ctx.options;
     const targets = (await api.listGuilds()).filter((g) => !tier || g.tier === tier);
-    if (targets.length === 0) return ctx.error('沒有符合條件的伺服器');
+    if (targets.length === 0) return ctx.error('錯誤', '沒有符合條件的伺服器');
 
     // Resolve owners first and dedupe — one user may own several guilds.
     const owners = new Map<string, string[]>();
@@ -252,7 +252,7 @@ export function useBotHandlers(deps: BotDeps) {
         failed.push(g.name);
       }
     }
-    if (owners.size === 0) return ctx.error('無法取得任何伺服器擁有者資訊');
+    if (owners.size === 0) return ctx.error('錯誤', '無法取得任何伺服器擁有者資訊');
 
     const ok = await ctx.confirm({
       title: '發送公告',

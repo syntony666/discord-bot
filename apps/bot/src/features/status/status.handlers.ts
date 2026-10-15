@@ -42,7 +42,7 @@ export function useStatusHandlers(deps: StatusDeps) {
     const version = getBotVersion();
     const botUser = discord.botUser;
     if (!botUser) {
-      return ctx.error('機器人尚未就緒');
+      return ctx.error('錯誤', '機器人尚未就緒');
     }
     const botIcon = avatarUrl(botUser.id, botUser.avatar);
 

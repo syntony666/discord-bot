@@ -51,11 +51,37 @@ export interface PromptOptions {
 
 export type ReplyData = APIInteractionResponseCallbackData | string;
 
+/** Intent-reply helpers shared by command and component contexts. */
+export interface SemanticReplies {
+  /** SUCCESS color, plain title (no emoji). */
+  success(title: string, description?: string): Promise<void>;
+  /** ERROR color, title prefixed '❌ ', ephemeral by default. */
+  error(title: string, description?: string, ephemeral?: boolean): Promise<void>;
+  /** INFO color, plain title. */
+  info(title: string, description?: string): Promise<void>;
+  /** reply({embeds: [embed]}) shorthand. */
+  embed(embed: APIEmbed, ephemeral?: boolean): Promise<void>;
+  /** editReply({embeds: [embed], components: []}) shorthand — clears buttons. */
+  editEmbed(embed: APIEmbed): Promise<void>;
+  editSuccess(title: string, description?: string): Promise<void>;
+  editError(title: string, description?: string): Promise<void>;
+  /** Standard '已取消' edit payload. */
+  cancelled(): Promise<void>;
+  /** confirm() + auto-cancelled edit when declined. */
+  confirmed(options: ConfirmOptions): Promise<boolean>;
+  /** Run fetcher; on nullish, reply `error(errorTitle)` and return null. */
+  require<T>(
+    fetcher: () => Promise<T | null | undefined>,
+    errorTitle: string,
+    opts?: { ephemeral?: boolean }
+  ): Promise<T | null>;
+}
+
 export interface CommandContext<
   TOptions = Record<string, unknown>,
   TSubcommand extends string = string,
   TGroup extends string = string,
-> {
+> extends SemanticReplies {
   readonly interaction: APIChatInputApplicationCommandInteraction;
   readonly command: string;
   readonly subcommand?: TSubcommand;
@@ -65,8 +91,6 @@ export interface CommandContext<
   readonly user: APIUser;
 
   reply(data: ReplyData, ephemeral?: boolean): Promise<void>;
-  success(description: string): Promise<void>;
-  error(description: string): Promise<void>;
   defer(ephemeral?: boolean): Promise<void>;
   followUp(data: ReplyData): Promise<void>;
   editReply(data: ReplyData): Promise<void>;
@@ -86,7 +110,7 @@ export interface GuildCommandContext<
   readonly guildId: string;
 }
 
-export interface ComponentContext {
+export interface ComponentContext extends SemanticReplies {
   readonly interaction: APIMessageComponentInteraction | APIModalSubmitInteraction;
   readonly customId: string;
   readonly params: Record<string, string>;
@@ -94,9 +118,11 @@ export interface ComponentContext {
   readonly user: APIUser;
 
   reply(data: ReplyData, ephemeral?: boolean): Promise<void>;
+  defer(ephemeral?: boolean): Promise<void>;
   update(data: ReplyData): Promise<void>;
   deferUpdate(): Promise<void>;
   followUp(data: ReplyData): Promise<void>;
+  editReply(data: ReplyData): Promise<void>;
 
   confirm(options: ConfirmOptions): Promise<boolean>;
   paginate<T>(options: PaginateOptions<T>): Promise<void>;

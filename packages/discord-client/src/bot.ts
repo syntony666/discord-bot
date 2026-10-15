@@ -72,8 +72,8 @@ export function createBot(
       for (const [name, fn] of Object.entries(collected.stream ?? {})) {
         hub.stream(name as never, fn as never);
       }
-      for (const [pattern, fn] of Object.entries(collected.component ?? {})) {
-        router.addComponent(pattern, fn);
+      for (const [pattern, entry] of Object.entries(collected.component ?? {})) {
+        router.addComponent(pattern, entry.handler, { sameUser: entry.sameUser });
       }
     }
   };
