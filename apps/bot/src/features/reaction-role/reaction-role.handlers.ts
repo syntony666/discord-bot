@@ -71,8 +71,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.reply({
         embeds: [
           {
-            title: '面板已建立',
-            description: `反應身分組面板已在 ${Formatters.channelMention(channelId)} 建立。\n\n**面板 ID**: \`${message.id}\`\n\n使用 ${discord.commandMention('reaction-role add')} 來新增身分組。`,
+            title: '選單已建立',
+            description: `身分組選單已在 ${Formatters.channelMention(channelId)} 建立。\n\n**選單 ID**: \`${message.id}\`\n\n使用 ${discord.commandMention('reaction-role add')} 來新增身分組。`,
             color: Colors.SUCCESS,
           },
         ],
@@ -83,8 +83,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.reply({
         embeds: [
           {
-            title: '建立面板 失敗',
-            description: '建立面板 時發生錯誤，請稍後再試。',
+            title: '建立選單失敗',
+            description: '建立選單時發生錯誤，請稍後再試。',
             color: Colors.ERROR,
           },
         ],
@@ -101,8 +101,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: '面板列表',
-            description: `目前沒有任何反應身分組面板。\n使用 ${discord.commandMention('reaction-role panel create')} 建立新的面板。`,
+            title: '選單列表',
+            description: `目前沒有任何身分組選單。\n使用 ${discord.commandMention('reaction-role panel create')} 建立新的選單。`,
             color: Colors.INFO,
           },
         ],
@@ -126,7 +126,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     await ctx.reply({
       embeds: [
         {
-          title: `面板列表 (${panels.length} 個)`,
+          title: `選單列表 (${panels.length} 個)`,
           description: description.join('\n'),
           color: Colors.INFO,
         },
@@ -143,8 +143,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: '面板不存在',
-            description: `找不到 ID 為 \`${panelId}\` 的面板。`,
+            title: '選單不存在',
+            description: `找不到 ID 為 \`${panelId}\` 的選單。`,
             color: Colors.ERROR,
           },
         ],
@@ -155,11 +155,11 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     const messageUrl = Formatters.messageLink(panel.channelId, panelId, guildId);
 
     const ok = await ctx.confirm({
-      title: '⚠️ 確認刪除面板',
-      description: `即將刪除面板 及其所有反應身分組，此操作無法復原。`,
+      title: '⚠️ 確認刪除選單',
+      description: `即將刪除選單及其所有反應身分組，此操作無法復原。`,
       fields: [
         {
-          name: '面板資訊',
+          name: '選單資訊',
           value: [
             `**標題**: ${panel.title}`,
             `**ID**: \`${panelId}\``,
@@ -183,8 +183,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.editReply({
         embeds: [
           {
-            title: '面板已刪除',
-            description: `Panel \`${panelId}\` 及其 ${roles.length} 個反應身分組已全部刪除。`,
+            title: '選單已刪除',
+            description: `選單 \`${panelId}\` 及其 ${roles.length} 個反應身分組已全部刪除。`,
             color: Colors.WARNING,
           },
         ],
@@ -196,8 +196,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.editReply({
         embeds: [
           {
-            title: '刪除面板 失敗',
-            description: '刪除面板 時發生錯誤，請稍後再試。',
+            title: '刪除選單失敗',
+            description: '刪除選單時發生錯誤，請稍後再試。',
             color: Colors.ERROR,
           },
         ],
@@ -218,8 +218,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: '面板不存在',
-            description: `找不到 ID 為 \`${panelId}\` 的面板。`,
+            title: '選單不存在',
+            description: `找不到 ID 為 \`${panelId}\` 的選單。`,
             color: Colors.ERROR,
           },
         ],
@@ -249,8 +249,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     }
 
     const ok = await ctx.confirm({
-      title: '確認更新面板',
-      description: `即將更新面板 設定。\n[跳轉至訊息](${messageUrl})`,
+      title: '確認更新選單',
+      description: `即將更新選單設定。\n[跳轉至訊息](${messageUrl})`,
       fields: [
         { name: '目前設定', value: currentFields.join('\n'), inline: true },
         { name: '新的設定', value: newFields.join('\n'), inline: true },
@@ -268,8 +268,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.editReply({
         embeds: [
           {
-            title: '面板已更新',
-            description: `Panel \`${panelId}\` 已成功更新。`,
+            title: '選單已更新',
+            description: `選單 \`${panelId}\` 已成功更新。`,
             color: Colors.SUCCESS,
           },
         ],
@@ -281,8 +281,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await ctx.editReply({
         embeds: [
           {
-            title: '更新面板 失敗',
-            description: '更新面板 時發生錯誤，請稍後再試。',
+            title: '更新選單失敗',
+            description: '更新選單時發生錯誤，請稍後再試。',
             color: Colors.ERROR,
           },
         ],
@@ -303,8 +303,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: '面板不存在',
-            description: `找不到 ID 為 \`${panelId}\` 的面板。\n請先使用 ${discord.commandMention('reaction-role panel create')} 建立面板。`,
+            title: '選單不存在',
+            description: `找不到 ID 為 \`${panelId}\` 的選單。\n請先使用 ${discord.commandMention('reaction-role panel create')} 建立選單。`,
             color: Colors.ERROR,
           },
         ],
@@ -349,7 +349,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         embeds: [
           {
             title: '反應身分組已新增',
-            description: `${displayEmoji} → ${Formatters.roleMention(roleId)} 已新增到面板。`,
+            description: `${displayEmoji} → ${Formatters.roleMention(roleId)} 已新增到選單。`,
             color: Colors.SUCCESS,
           },
         ],
@@ -381,7 +381,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         embeds: [
           {
             title: '反應身分組不存在',
-            description: `在面板 \`${panelId}\` 中找不到 ${emojiInput} 的綁定。\n\n**提示**: 請使用 ${discord.commandMention('reaction-role role-list')} 查看正確的 emoji 格式。`,
+            description: `在選單 \`${panelId}\` 中找不到 ${emojiInput} 的綁定。\n\n**提示**: 請使用 ${discord.commandMention('reaction-role role-list')} 查看正確的 emoji 格式。`,
             color: Colors.ERROR,
           },
         ],
@@ -393,8 +393,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: '面板不存在',
-            description: `找不到 ID 為 \`${panelId}\` 的面板。`,
+            title: '選單不存在',
+            description: `找不到 ID 為 \`${panelId}\` 的選單。`,
             color: Colors.ERROR,
           },
         ],
@@ -405,12 +405,12 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
 
     const ok = await ctx.confirm({
       title: '⚠️ 確認移除 反應身分組',
-      description: `即將從面板中移除此反應身分組。`,
+      description: `即將從選單中移除此反應身分組。`,
       fields: [
         {
           name: '反應身分組資訊',
           value: [
-            `**Panel**: ${panel.title} (\`${panelId}\`)`,
+            `**選單**: ${panel.title} (\`${panelId}\`)`,
             `**Emoji**: ${displayEmoji}`,
             `**身分組**: ${Formatters.roleMention(reactionRole.roleId)}`,
             reactionRole.description ? `**說明**: ${reactionRole.description}` : '',
@@ -444,7 +444,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         embeds: [
           {
             title: '反應身分組已移除',
-            description: `${displayEmoji} 的綁定已從面板中移除。`,
+            description: `${displayEmoji} 的綁定已從選單中移除。`,
             color: Colors.SUCCESS,
           },
         ],
@@ -475,8 +475,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return ctx.reply({
         embeds: [
           {
-            title: '面板不存在',
-            description: `找不到 ID 為 \`${panelId}\` 的面板。`,
+            title: '選單不存在',
+            description: `找不到 ID 為 \`${panelId}\` 的選單。`,
             color: Colors.ERROR,
           },
         ],
@@ -490,7 +490,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         embeds: [
           {
             title: `${panel.title} - 反應身分組`,
-            description: `此面板尚未新增任何反應身分組。\n使用 ${discord.commandMention('reaction-role add')} 來新增。`,
+            description: `此選單尚未新增任何反應身分組。\n使用 ${discord.commandMention('reaction-role add')} 來新增。`,
             color: Colors.INFO,
           },
         ],
