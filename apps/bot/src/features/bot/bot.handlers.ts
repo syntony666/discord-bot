@@ -113,7 +113,7 @@ export function useBotHandlers(deps: BotDeps) {
       return;
 
     await discord.leaveGuild(guildId);
-    await ctx.editSuccess('已退出伺服器', `已退出 **${name}**`);
+    await ctx.announceSuccess('已退出伺服器', `已退出 **${name}**`);
   });
 
   h.handler('guild.sync', async (ctx) => {
@@ -251,7 +251,7 @@ export function useBotHandlers(deps: BotDeps) {
       }
     }
 
-    await ctx.editSuccess(
+    await ctx.announceSuccess(
       '公告已送出',
       `已發送給 ${sent} 位擁有者` +
         (failed.length

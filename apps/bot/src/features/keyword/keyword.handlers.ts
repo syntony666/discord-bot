@@ -99,20 +99,16 @@ export function useKeywordHandlers(deps: KeywordDeps) {
       return;
 
     await api.updateRule({ guildId, pattern, response, matchType, editorId });
-    await ctx.editReply({
-      embeds: [
+    await ctx.announce({
+      title: '關鍵字已更新',
+      description: `${Formatters.userMention(editorId)} 已覆蓋更新關鍵字 \`${pattern}\``,
+      fields: [
         {
-          title: '關鍵字已更新',
-          description: `${Formatters.userMention(editorId)} 已覆蓋更新關鍵字 \`${pattern}\``,
-          fields: [
-            {
-              name: '新設定',
-              value: `\`${matchType}\` **${pattern}** ⭢ ${responsePreview(response, 900)}`,
-            },
-          ],
-          color: Colors.SUCCESS,
+          name: '新設定',
+          value: `\`${matchType}\` **${pattern}** ⭢ ${responsePreview(response, 900)}`,
         },
       ],
+      color: Colors.SUCCESS,
     });
     log.info({ pattern, guildId }, 'Keyword overwritten');
   });
@@ -122,8 +118,10 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const { pattern, response } = ctx.options;
     const matchType = ctx.options.match_type ?? KeywordMatchType.EXACT;
 
-    const existing = await api.getRuleByPattern(guildId, pattern);
-    if (!existing) return ctx.error('錯誤', '找不到此關鍵字。');
+    const existing = await ctx.require(() => api.getRuleByPattern(guildId, pattern), '錯誤', {
+      description: '找不到此關鍵字。',
+    });
+    if (!existing) return;
 
     await ctx.reply(
       await applyUpdate({ guildId, pattern, response, matchType, editorId: ctx.user.id })
@@ -140,8 +138,10 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   h.handler('view', async (ctx) => {
     const { pattern } = ctx.options;
 
-    const rule = await api.getRuleByPattern(ctx.guildId, pattern);
-    if (!rule) return ctx.error('錯誤', '找不到此關鍵字。');
+    const rule = await ctx.require(() => api.getRuleByPattern(ctx.guildId, pattern), '錯誤', {
+      description: '找不到此關鍵字。',
+    });
+    if (!rule) return;
 
     const candidates = splitKeywordResponse(rule.response);
     const meta = [`\`${rule.matchType}\``, Formatters.userMention(rule.editorId)];
@@ -226,8 +226,10 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const { pattern } = ctx.options;
     const editorId = ctx.user.id;
 
-    const rule = await api.getRuleByPattern(guildId, pattern);
-    if (!rule) return ctx.error('錯誤', '找不到此關鍵字，可能已被其他人刪除。');
+    const rule = await ctx.require(() => api.getRuleByPattern(guildId, pattern), '錯誤', {
+      description: '找不到此關鍵字，可能已被其他人刪除。',
+    });
+    if (!rule) return;
 
     if (
       !(await ctx.confirmed({
@@ -247,20 +249,16 @@ export function useKeywordHandlers(deps: KeywordDeps) {
       return;
 
     await api.deleteRule(guildId, pattern);
-    await ctx.editReply({
-      embeds: [
+    await ctx.announce({
+      title: '關鍵字已刪除',
+      description: `${Formatters.userMention(editorId)} 已刪除關鍵字 \`${pattern}\``,
+      fields: [
         {
-          title: '關鍵字已刪除',
-          description: `${Formatters.userMention(editorId)} 已刪除關鍵字 \`${pattern}\``,
-          fields: [
-            {
-              name: '已刪除的設定',
-              value: `\`${rule.matchType}\` **${truncate(rule.pattern, 150)}** ⭢ ${responsePreview(rule.response, 900)}`,
-            },
-          ],
-          color: Colors.WARNING,
+          name: '已刪除的設定',
+          value: `\`${rule.matchType}\` **${truncate(rule.pattern, 150)}** ⭢ ${responsePreview(rule.response, 900)}`,
         },
       ],
+      color: Colors.WARNING,
     });
     log.info({ pattern, guildId }, 'Keyword deleted');
   });
