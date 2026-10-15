@@ -27,10 +27,6 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   const service = createKeywordService(api);
   const h = useHandlers(keywordCommand);
 
-  const cancelled = {
-    embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
-  };
-
   const formatRule = (r: KeywordRule) =>
     `**${truncate(r.pattern, 150)}** ⭢ ${responsePreview(r.response, 150)}\n\`${r.matchType}\` ${Formatters.userMention(r.editorId)}`;
 
@@ -73,37 +69,34 @@ export function useKeywordHandlers(deps: KeywordDeps) {
 
     if (!existing) {
       await api.createRule({ guildId, pattern, matchType, response, editorId });
-      await ctx.reply({
-        embeds: [
-          {
-            title: '關鍵字已新增',
-            description: `\`${matchType}\` **${pattern}** ⭢ ${responsePreview(response, 900)}`,
-            color: Colors.SUCCESS,
-          },
-        ],
-      });
+      await ctx.success(
+        '關鍵字已新增',
+        `\`${matchType}\` **${pattern}** ⭢ ${responsePreview(response, 900)}`
+      );
       log.info({ pattern, guildId }, 'Keyword added');
       return;
     }
 
-    const ok = await ctx.confirm({
-      title: '⚠️ 確認覆寫關鍵字',
-      description: `關鍵字 \`${pattern}\` 已存在。是否要覆寫？`,
-      fields: [
-        {
-          name: '目前設定',
-          value: `**回覆**: ${responsePreview(existing.response, 900)}\n**比對類型**: ${existing.matchType}`,
-        },
-        {
-          name: '新設定',
-          value: `**回覆**: ${responsePreview(response, 900)}\n**比對類型**: ${matchType}`,
-        },
-      ],
-      confirmLabel: '確認覆寫',
-      cancelLabel: '取消',
-      danger: true,
-    });
-    if (!ok) return ctx.editReply(cancelled);
+    if (
+      !(await ctx.confirmed({
+        title: '⚠️ 確認覆寫關鍵字',
+        description: `關鍵字 \`${pattern}\` 已存在。是否要覆寫？`,
+        fields: [
+          {
+            name: '目前設定',
+            value: `**回覆**: ${responsePreview(existing.response, 900)}\n**比對類型**: ${existing.matchType}`,
+          },
+          {
+            name: '新設定',
+            value: `**回覆**: ${responsePreview(response, 900)}\n**比對類型**: ${matchType}`,
+          },
+        ],
+        confirmLabel: '確認覆寫',
+        cancelLabel: '取消',
+        danger: true,
+      }))
+    )
+      return;
 
     await api.updateRule({ guildId, pattern, response, matchType, editorId });
     await ctx.editReply({
@@ -188,18 +181,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
 
       const rule = await api.getRuleByPattern(guildId, pattern);
       if (!rule) {
-        return ctx.reply(
-          {
-            embeds: [
-              {
-                title: '❌ 錯誤',
-                description: '找不到此關鍵字，可能已被刪除。',
-                color: Colors.ERROR,
-              },
-            ],
-          },
-          true
-        );
+        return ctx.error('錯誤', '找不到此關鍵字，可能已被刪除。');
       }
 
       const values = await ctx.modal({
@@ -247,20 +229,22 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const rule = await api.getRuleByPattern(guildId, pattern);
     if (!rule) return ctx.error('錯誤', '找不到此關鍵字，可能已被其他人刪除。');
 
-    const ok = await ctx.confirm({
-      title: '⚠️ 確認刪除關鍵字',
-      description: `即將刪除關鍵字 \`${pattern}\`，此操作無法復原。`,
-      fields: [
-        {
-          name: '關鍵字資訊',
-          value: `**回覆**: ${responsePreview(rule.response, 900)}\n**比對類型**: ${rule.matchType}`,
-        },
-      ],
-      confirmLabel: '確認刪除',
-      cancelLabel: '取消',
-      danger: true,
-    });
-    if (!ok) return ctx.editReply(cancelled);
+    if (
+      !(await ctx.confirmed({
+        title: '⚠️ 確認刪除關鍵字',
+        description: `即將刪除關鍵字 \`${pattern}\`，此操作無法復原。`,
+        fields: [
+          {
+            name: '關鍵字資訊',
+            value: `**回覆**: ${responsePreview(rule.response, 900)}\n**比對類型**: ${rule.matchType}`,
+          },
+        ],
+        confirmLabel: '確認刪除',
+        cancelLabel: '取消',
+        danger: true,
+      }))
+    )
+      return;
 
     await api.deleteRule(guildId, pattern);
     await ctx.editReply({
