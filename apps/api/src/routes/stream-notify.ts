@@ -6,7 +6,7 @@ import {
   UpdateStreamNotifyConfigInput,
 } from '@discord-bot/shared';
 import { StreamNotifyModule, StreamWatcherPatch } from '../modules/stream-notify.module';
-import { guildId, jsonOr404 } from './helpers';
+import { enumParam, guildId, jsonOr404 } from './helpers';
 
 export function streamNotifyRoutes(module: StreamNotifyModule) {
   const routes = new Hono();
@@ -42,7 +42,7 @@ export function streamNotifyRoutes(module: StreamNotifyModule) {
       c,
       await module.getWatcher(
         guildId(c),
-        c.req.param('platform') as StreamPlatform,
+        enumParam(c, 'platform', StreamPlatform),
         c.req.param('platformId')
       )
     )
@@ -51,7 +51,7 @@ export function streamNotifyRoutes(module: StreamNotifyModule) {
   routes.delete('/stream-watchers/:platform/:platformId', async (c) => {
     await module.removeWatcher(
       guildId(c),
-      c.req.param('platform') as StreamPlatform,
+      enumParam(c, 'platform', StreamPlatform),
       c.req.param('platformId')
     );
     return c.body(null, 204);
