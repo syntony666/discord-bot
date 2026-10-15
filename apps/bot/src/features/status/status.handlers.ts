@@ -1,5 +1,5 @@
-import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
-import { DiscordSnowflake, Formatters, useHandlers } from '@discord-bot/discord-client';
+import { ComponentType } from 'discord-api-types/v10';
+import { DiscordSnowflake, Formatters, linkButton, useHandlers } from '@discord-bot/discord-client';
 import type {
   APIActionRowComponent,
   APIButtonComponentWithURL,
@@ -50,18 +50,11 @@ export function useStatusHandlers(deps: StatusDeps) {
       {
         type: ComponentType.ActionRow,
         components: [
-          {
-            type: ComponentType.Button,
-            style: ButtonStyle.Link,
-            label: '使用說明',
-            url: 'https://discord-bot.syntony666.com',
-          },
-          {
-            type: ComponentType.Button,
-            style: ButtonStyle.Link,
-            label: '邀請連結',
-            url: `https://discord.com/api/oauth2/authorize?client_id=${discord.botId}&permissions=8&scope=bot%20applications.commands`,
-          },
+          linkButton('使用說明', 'https://discord-bot.syntony666.com'),
+          linkButton(
+            '邀請連結',
+            `https://discord.com/api/oauth2/authorize?client_id=${discord.botId}&permissions=8&scope=bot%20applications.commands`
+          ),
         ],
       },
     ];
