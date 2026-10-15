@@ -17,7 +17,7 @@ export function createMemberNotifyModule(prisma: PrismaClient) {
     setNotificationChannel(input: CreateNotificationChannelInput) {
       return prisma.notificationChannel.upsert({
         where: { guildId_type: { guildId: input.guildId, type: input.type } },
-        update: { channelId: input.channelId, enabled: true },
+        update: { channelId: input.channelId },
         create: {
           guildId: input.guildId,
           type: input.type,
