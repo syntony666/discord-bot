@@ -241,8 +241,8 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       newFields.push(`**標題**: ${title}`);
     }
     if (description !== undefined) {
-      currentFields.push(`**說明**: ${panel.description || '*(無)*'}`);
-      newFields.push(`**說明**: ${description || '*(無)*'}`);
+      currentFields.push(`**說明**: ${panel.description || '—'}`);
+      newFields.push(`**說明**: ${description || '—'}`);
     }
     if (mode !== undefined) {
       currentFields.push(`**模式**: ${getModeText(panel.mode)}`);
