@@ -15,7 +15,7 @@ const guildIdRequiredOption = {
   required: true,
 } as const;
 
-export const botCommand = defineCommand()({
+export const botCommand = defineCommand({
   command: 'bot',
   description: '機器人管理指令（僅限作者）',
   ownerOnly: true,

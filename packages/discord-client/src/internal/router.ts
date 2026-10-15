@@ -14,10 +14,11 @@ import type {
 import { ApplicationCommandOptionType } from 'discord-api-types/v10';
 import type { Resources } from './resources';
 import { buildCommandContext, buildComponentContext, interactionUser } from './context';
-import type { CommandRoute, SessionApi } from './context.type';
+import type { SessionApi } from './sessions/store.type';
 import { COMPONENT_MAX_AGE_MS } from './sessions/store';
 import type {
   CommandHandler,
+  CommandRoute,
   ComponentHandler,
   ComponentRoute,
   SessionDispatcher,
@@ -268,5 +269,3 @@ export function createCommandRouter(
     handle: (i: APIInteraction) => handle(i).catch((err) => (onError(err), true)),
   };
 }
-
-export type CommandRouter = ReturnType<typeof createCommandRouter>;

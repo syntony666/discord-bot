@@ -12,7 +12,7 @@ import type { StreamNotifyDeps } from './stream.handlers';
 
 type NotifyDeps = MemberNotifyDeps & StreamNotifyDeps;
 
-export const notifyFeature = defineFeature()({
+export const notifyFeature = defineFeature({
   command: notifyCommand,
   useHandlers: (deps: NotifyDeps) => {
     const member = useMemberNotifyHandlers(deps);

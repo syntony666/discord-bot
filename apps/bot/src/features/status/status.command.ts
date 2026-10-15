@@ -1,6 +1,6 @@
 import { defineCommand } from '@discord-bot/discord-client';
 
-export const statusCommand = defineCommand()({
+export const statusCommand = defineCommand({
   command: 'status',
   description: '顯示狀態資訊',
   guildOnly: true,
