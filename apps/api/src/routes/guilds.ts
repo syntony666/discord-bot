@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { ApiError, GuildTier, isEnumValue } from '@discord-bot/shared';
 import { GuildModule } from '../modules/guild.module';
-import { guildId, jsonOr404 } from './helpers';
+import { guildId, jsonOr404, requireFields } from './helpers';
 
 const TIERS = Object.values(GuildTier) as string[];
 
@@ -12,6 +12,7 @@ export function guildRoutes(module: GuildModule) {
 
   routes.post('/ensure', async (c) => {
     const body = await c.req.json<{ guildId: string; guildName?: string }>();
+    requireFields(body, 'guildId');
     return c.json(await module.ensureGuild(body.guildId, body.guildName));
   });
 
