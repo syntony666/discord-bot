@@ -144,14 +144,14 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
 
     const description = [
       `**${typeName('join')}:** ${typeEmoji(joinChannel?.enabled || false)} ${joinChannel?.enabled ? '已啟用' : '已停用'}`,
-      joinChannel ? `通知頻道: ${Formatters.channelMention(joinChannel.channelId)}` : '*(未設定)*',
-      `訊息模板: \`${templates?.joinMessage || '預設訊息'}\``,
+      joinChannel ? `通知頻道：${Formatters.channelMention(joinChannel.channelId)}` : '*(未設定)*',
+      `訊息模板：\`${templates?.joinMessage || '預設訊息'}\``,
       '',
       `**${typeName('leave')}:** ${typeEmoji(leaveChannel?.enabled || false)} ${leaveChannel?.enabled ? '已啟用' : '已停用'}`,
       leaveChannel
-        ? `通知頻道: ${Formatters.channelMention(leaveChannel.channelId)}`
+        ? `通知頻道：${Formatters.channelMention(leaveChannel.channelId)}`
         : '*(未設定)*',
-      `訊息模板: \`${templates?.leaveMessage || '預設訊息'}\``,
+      `訊息模板：\`${templates?.leaveMessage || '預設訊息'}\``,
       '',
       '**可用變數**: `{user}`, `{username}`, `{server}`, `{memberCount}`',
     ].join('\n');
@@ -209,11 +209,11 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
           {
             title: `${typeName(type)}設定`,
             description: [
-              `狀態: ${typeEmoji(!!channel?.enabled)} ${channel?.enabled ? '已啟用' : '已停用'}`,
+              `狀態：${typeEmoji(!!channel?.enabled)} ${channel?.enabled ? '已啟用' : '已停用'}`,
               channel
-                ? `通知頻道: ${Formatters.channelMention(channel.channelId)}`
+                ? `通知頻道：${Formatters.channelMention(channel.channelId)}`
                 : '*(未設定頻道)*',
-              `訊息模板: \`${current || '預設訊息'}\``,
+              `訊息模板：\`${current || '預設訊息'}\``,
             ].join('\n'),
             color: Colors.INFO,
           },
