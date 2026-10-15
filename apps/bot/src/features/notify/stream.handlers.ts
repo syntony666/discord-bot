@@ -3,6 +3,7 @@ import { StreamPlatform } from '@discord-bot/shared';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import type { Scheduler } from '@core/scheduler';
 import { Colors } from '@core/config/colors.config';
+import { appConfig } from '@core/config';
 import { createLogger } from '@discord-bot/shared';
 import type { StreamNotifyApi } from './stream.api';
 import { createStreamNotifyService } from './stream.service';
@@ -27,10 +28,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
   const service = createStreamNotifyService(discord);
   const h = useHandlers(notifyCommand);
 
-  const twitchService = new TwitchService(
-    process.env.TWITCH_CLIENT_ID || '',
-    process.env.TWITCH_CLIENT_SECRET || ''
-  );
+  const twitchService = new TwitchService(appConfig.twitch.clientId, appConfig.twitch.clientSecret);
 
   scheduler.every(TWITCH_TASK_ID, 60_000, async () => {
     try {

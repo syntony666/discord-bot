@@ -24,5 +24,9 @@ export const appConfig = {
   api: {
     url: process.env.API_URL ?? 'http://localhost:3001',
   },
+  twitch: {
+    clientId: process.env.TWITCH_CLIENT_ID ?? '',
+    clientSecret: process.env.TWITCH_CLIENT_SECRET ?? '',
+  },
   footerIconUrl: 'https://cdn.jsdelivr.net/gh/syntony666/cdn/logo-128x128.png',
 } as const;
