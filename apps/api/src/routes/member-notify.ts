@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { NotificationType, UpdateMessageInput } from '@discord-bot/shared';
 import { MemberNotifyModule } from '../modules/member-notify.module';
-import { enumParam, enumQuery, guildId, jsonOr404, requireFields } from './helpers';
+import { enumParam, enumQuery, guildId, jsonOr404, oneOfBody, requireFields } from './helpers';
 
 export function memberNotifyRoutes(module: MemberNotifyModule) {
   const routes = new Hono();
@@ -49,7 +49,9 @@ export function memberNotifyRoutes(module: MemberNotifyModule) {
 
   routes.patch('/member-notify-message', async (c) => {
     const body = await c.req.json<Omit<UpdateMessageInput, 'guildId'>>();
-    return c.json(await module.updateMessage({ ...body, guildId: guildId(c) }));
+    requireFields(body, 'type', 'message');
+    const type = oneOfBody(body, 'type', ['join', 'leave'] as const);
+    return c.json(await module.updateMessage({ guildId: guildId(c), type, message: body.message }));
   });
 
   routes.delete('/member-notify-message', async (c) => {
