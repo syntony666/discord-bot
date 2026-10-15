@@ -72,7 +72,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         embeds: [
           {
             title: '面板已建立',
-            description: `反應身分組面板已在 ${Formatters.channelMention(channelId)} 建立。\n\n**面板 ID**: \`${message.id}\`\n\n使用 \`/reaction-role add\` 來新增身分組。`,
+            description: `反應身分組面板已在 ${Formatters.channelMention(channelId)} 建立。\n\n**面板 ID**: \`${message.id}\`\n\n使用 ${discord.commandMention('reaction-role add')} 來新增身分組。`,
             color: Colors.SUCCESS,
           },
         ],
@@ -102,8 +102,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         embeds: [
           {
             title: '面板列表',
-            description:
-              '目前沒有任何反應身分組面板。\n使用 `/reaction-role panel create` 建立新的面板。',
+            description: `目前沒有任何反應身分組面板。\n使用 ${discord.commandMention('reaction-role panel create')} 建立新的面板。`,
             color: Colors.INFO,
           },
         ],
@@ -305,7 +304,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         embeds: [
           {
             title: '面板不存在',
-            description: `找不到 ID 為 \`${panelId}\` 的面板。\n請先使用 \`/reaction-role panel create\` 建立面板。`,
+            description: `找不到 ID 為 \`${panelId}\` 的面板。\n請先使用 ${discord.commandMention('reaction-role panel create')} 建立面板。`,
             color: Colors.ERROR,
           },
         ],
@@ -382,7 +381,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         embeds: [
           {
             title: '反應身分組不存在',
-            description: `在面板 \`${panelId}\` 中找不到 ${emojiInput} 的綁定。\n\n**提示**: 請使用 \`/reaction-role role-list\` 查看正確的 emoji 格式。`,
+            description: `在面板 \`${panelId}\` 中找不到 ${emojiInput} 的綁定。\n\n**提示**: 請使用 ${discord.commandMention('reaction-role role-list')} 查看正確的 emoji 格式。`,
             color: Colors.ERROR,
           },
         ],
@@ -491,7 +490,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
         embeds: [
           {
             title: `${panel.title} - 反應身分組`,
-            description: '此面板尚未新增任何反應身分組。\n使用 `/reaction-role add` 來新增。',
+            description: `此面板尚未新增任何反應身分組。\n使用 ${discord.commandMention('reaction-role add')} 來新增。`,
             color: Colors.INFO,
           },
         ],
