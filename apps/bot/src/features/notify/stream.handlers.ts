@@ -95,15 +95,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     if (platform === 'twitch') {
       const [user] = await twitchService.getUsersByField('login', [id]);
       if (!user) {
-        return ctx.reply({
-          embeds: [
-            {
-              title: '找不到使用者',
-              description: `Twitch 上找不到使用者 ${id}`,
-              color: Colors.ERROR,
-            },
-          ],
-        });
+        return ctx.error('找不到使用者', `Twitch 上找不到使用者 ${id}`);
       }
       platformId = user.login;
       displayName = name || user.display_name || user.login;
