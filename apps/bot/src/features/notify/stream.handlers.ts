@@ -102,7 +102,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
           {
             title: '直播通知未啟用',
             description: '此伺服器尚未啟用直播通知功能',
-            color: Colors.SUCCESS,
+            color: Colors.INFO,
           },
         ],
       });
@@ -156,7 +156,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
           {
             title: '監控已存在',
             description: `已在監控此 ${platform} 頻道`,
-            color: Colors.SUCCESS,
+            color: Colors.INFO,
           },
         ],
       });
@@ -193,7 +193,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
           {
             title: '監控不存在',
             description: `未找到此 ${platform} 頻道的監控`,
-            color: Colors.SUCCESS,
+            color: Colors.INFO,
           },
         ],
       });
