@@ -222,7 +222,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
       ...(enabled !== undefined ? [{ name: '通知狀態', value: enabled ? '啟用' : '停用' }] : []),
     ];
     const ok = await ctx.confirm({
-      title: `📝 確認更新${typeName(type)}`,
+      title: `確認更新${typeName(type)}`,
       description: '即將套用以下變更。',
       fields,
       confirmLabel: '確認更新',
