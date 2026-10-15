@@ -119,7 +119,6 @@ export function useBotHandlers(deps: BotDeps) {
     if (!ok) {
       return ctx.editReply({
         embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
-        components: [],
       });
     }
 
@@ -132,7 +131,6 @@ export function useBotHandlers(deps: BotDeps) {
           color: Colors.SUCCESS,
         },
       ],
-      components: [],
     });
   });
 
@@ -268,7 +266,6 @@ export function useBotHandlers(deps: BotDeps) {
     if (!ok) {
       return ctx.editReply({
         embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
-        components: [],
       });
     }
 
@@ -307,7 +304,6 @@ export function useBotHandlers(deps: BotDeps) {
           color: Colors.SUCCESS,
         },
       ],
-      components: [],
     });
   });
 

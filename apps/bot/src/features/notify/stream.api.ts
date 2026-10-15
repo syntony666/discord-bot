@@ -4,6 +4,7 @@ import {
   StreamNotifyConfig,
   StreamPlatform,
   StreamWatcher,
+  UpdateStreamNotifyConfigInput,
 } from '@discord-bot/shared';
 
 const base = (guildId: string) => `/api/v1/guilds/${guildId}`;
@@ -20,7 +21,7 @@ export function createStreamNotifyApi(request: ApiRequest) {
         body: JSON.stringify({ channelId, message }),
       });
     },
-    updateConfig(guildId: string, data: Partial<StreamNotifyConfig>) {
+    updateConfig(guildId: string, data: UpdateStreamNotifyConfigInput) {
       return request<StreamNotifyConfig>(`${base(guildId)}/stream-notify-config`, {
         method: 'PATCH',
         body: JSON.stringify(data),

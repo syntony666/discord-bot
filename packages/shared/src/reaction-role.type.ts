@@ -23,8 +23,6 @@ export interface ReactionRolePanelWithRoles extends ReactionRolePanel {
   reactionRoles: ReactionRole[];
 }
 
-export type ReactionRoleRuntime = Pick<ReactionRole, 'guildId' | 'messageId' | 'emoji' | 'roleId'>;
-
 export interface ReactionRoleMatch {
   roleId: string;
   mode: ReactionRoleMode;

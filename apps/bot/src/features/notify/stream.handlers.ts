@@ -30,21 +30,11 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
 
   const twitchService = new TwitchService(appConfig.twitch.clientId, appConfig.twitch.clientSecret);
 
-  scheduler.every(TWITCH_TASK_ID, 60_000, async () => {
-    try {
-      await service.checkAllStreams(api, [twitchService]);
-    } catch (error) {
-      log.error({ error }, 'Twitch stream check failed');
-    }
-  });
+  scheduler.every(TWITCH_TASK_ID, 60_000, () => service.checkAllStreams(api, [twitchService]));
 
-  scheduler.every(TWITCH_AVATAR_TASK_ID, 86_400_000, async () => {
-    try {
-      await service.refreshTwitchWatcherAvatars(api, twitchService);
-    } catch (error) {
-      log.error({ error }, 'Twitch avatar refresh failed');
-    }
-  });
+  scheduler.every(TWITCH_AVATAR_TASK_ID, 86_400_000, () =>
+    service.refreshTwitchWatcherAvatars(api, twitchService)
+  );
 
   // Backfill avatars for pre-existing watchers on boot
   void service.refreshTwitchWatcherAvatars(api, twitchService);
@@ -102,7 +92,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
           {
             title: '直播通知未啟用',
             description: '此伺服器尚未啟用直播通知功能',
-            color: Colors.SUCCESS,
+            color: Colors.INFO,
           },
         ],
       });
@@ -156,7 +146,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
           {
             title: '監控已存在',
             description: `已在監控此 ${platform} 頻道`,
-            color: Colors.SUCCESS,
+            color: Colors.INFO,
           },
         ],
       });
@@ -193,7 +183,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
           {
             title: '監控不存在',
             description: `未找到此 ${platform} 頻道的監控`,
-            color: Colors.SUCCESS,
+            color: Colors.INFO,
           },
         ],
       });

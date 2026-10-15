@@ -29,7 +29,6 @@ export function useKeywordHandlers(deps: KeywordDeps) {
 
   const cancelled = {
     embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
-    components: [],
   };
 
   const formatRule = (r: KeywordRule) =>
@@ -121,7 +120,6 @@ export function useKeywordHandlers(deps: KeywordDeps) {
           color: Colors.SUCCESS,
         },
       ],
-      components: [],
     });
     log.info({ pattern, guildId }, 'Keyword overwritten');
   });
@@ -275,7 +273,6 @@ export function useKeywordHandlers(deps: KeywordDeps) {
           color: Colors.WARNING,
         },
       ],
-      components: [],
     });
     log.info({ pattern, guildId }, 'Keyword deleted');
   });

@@ -17,13 +17,6 @@ export interface MemberNotifyMessage {
   updatedAt: string;
 }
 
-export interface MemberNotifyRuntime {
-  id: string;
-  name: string;
-  notificationChannels: Pick<NotificationChannel, 'type' | 'channelId' | 'enabled'>[];
-  memberNotifyMessage: Pick<MemberNotifyMessage, 'joinMessage' | 'leaveMessage'> | null;
-}
-
 export interface CreateNotificationChannelInput {
   guildId: string;
   type: NotificationType;
