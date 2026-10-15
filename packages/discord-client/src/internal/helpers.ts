@@ -1,17 +1,32 @@
+import type { REST } from '@discordjs/rest';
+import { Routes } from 'discord-api-types/v10';
 import type {
+  APIApplication,
+  APIChannel,
+  APIGuild,
+  APIGuildMember,
   APIMessage,
+  APIUser,
   GatewayPresenceUpdateData,
+  RESTGetAPICurrentUserGuildsResult,
   RESTPatchAPIChannelMessageJSONBody,
   RESTPatchCurrentApplicationJSONBody,
   RESTPostAPIChannelMessageJSONBody,
+  RESTPostAPICurrentUserCreateDMChannelJSONBody,
 } from 'discord-api-types/v10';
 import { DiscordSnowflake } from '@sapphire/snowflake';
-import type { Resources } from './resources';
 
 const BULK_DELETE_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
 
+const ownReactionRoute = (channelId: string, messageId: string, emoji: string) =>
+  Routes.channelMessageOwnReaction(channelId, messageId, encodeURIComponent(emoji));
+
+const userReactionRoute = (channelId: string, messageId: string, userId: string, emoji: string) =>
+  Routes.channelMessageUserReaction(channelId, messageId, encodeURIComponent(emoji), userId);
+
 export function createHelpers(
-  resources: Resources,
+  rest: REST,
+  getBotUser: () => APIUser | null,
   getPing: () => number,
   sendPresence?: (data: GatewayPresenceUpdateData) => Promise<void>
 ) {
@@ -23,10 +38,10 @@ export function createHelpers(
       return getPing();
     },
     get botId() {
-      return resources.botId;
+      return getBotUser()?.id ?? '';
     },
     get botUser() {
-      return resources.botUser;
+      return getBotUser();
     },
 
     isOwner: (userId: string) => ownerIds.has(userId),
@@ -48,8 +63,8 @@ export function createHelpers(
     },
 
     sendMessage: (channelId: string, body: RESTPostAPIChannelMessageJSONBody) =>
-      resources.channel(channelId).send(body),
-    getChannel: (channelId: string) => resources.channel(channelId).get(),
+      rest.post(Routes.channelMessages(channelId), { body }) as Promise<APIMessage>,
+    getChannel: (channelId: string) => rest.get(Routes.channel(channelId)) as Promise<APIChannel>,
     /** Fetches up to `limit` recent messages, paginating in chunks of 100. */
     getChannelMessages: async (
       channelId: string,
@@ -59,10 +74,12 @@ export function createHelpers(
       const out: APIMessage[] = [];
       let before = opts.before;
       while (out.length < limit) {
-        const page = await resources.channel(channelId).messages.list({
-          limit: Math.min(100, limit - out.length),
-          before,
-        });
+        const params = new URLSearchParams();
+        params.set('limit', String(Math.min(100, limit - out.length)));
+        if (before !== undefined) params.set('before', before);
+        const page = (await rest.get(
+          `${Routes.channelMessages(channelId)}?${params.toString()}`
+        )) as APIMessage[];
         if (page.length === 0) break;
         out.push(...page);
         before = page[page.length - 1]!.id;
@@ -88,42 +105,59 @@ export function createHelpers(
       for (let i = 0; i < deleted.length; i += 100) {
         const chunk = deleted.slice(i, i + 100);
         if (chunk.length === 1) {
-          await resources.channel(channelId).message(chunk[0]!).delete(reason);
+          await rest.delete(Routes.channelMessage(channelId, chunk[0]!), { reason });
         } else if (chunk.length > 1) {
-          await resources.channel(channelId).messages.bulkDelete(chunk, reason);
+          await rest.post(Routes.channelBulkDelete(channelId), {
+            body: { messages: chunk },
+            reason,
+          });
         }
       }
       return { deleted, skipped };
     },
     getMessage: (channelId: string, messageId: string) =>
-      resources.channel(channelId).message(messageId).get(),
+      rest.get(Routes.channelMessage(channelId, messageId)) as Promise<APIMessage>,
     editMessage: (channelId: string, messageId: string, body: RESTPatchAPIChannelMessageJSONBody) =>
-      resources.channel(channelId).message(messageId).edit(body),
+      rest.patch(Routes.channelMessage(channelId, messageId), {
+        body,
+      }) as Promise<APIMessage>,
     deleteMessage: (channelId: string, messageId: string, reason?: string) =>
-      resources.channel(channelId).message(messageId).delete(reason),
+      rest.delete(Routes.channelMessage(channelId, messageId), { reason }),
 
     addReaction: (channelId: string, messageId: string, emoji: string) =>
-      resources.channel(channelId).message(messageId).reactions.add(emoji),
+      rest.put(ownReactionRoute(channelId, messageId, emoji)),
     removeReaction: (channelId: string, messageId: string, emoji: string, userId?: string) =>
-      resources.channel(channelId).message(messageId).reactions.remove(emoji, userId),
+      rest.delete(
+        userId
+          ? userReactionRoute(channelId, messageId, userId, emoji)
+          : ownReactionRoute(channelId, messageId, emoji)
+      ),
 
-    getGuild: (guildId: string) => resources.guild(guildId).get(),
-    getMember: (guildId: string, userId: string) => resources.guild(guildId).member(userId).get(),
+    getGuild: (guildId: string) =>
+      rest.get(`${Routes.guild(guildId)}?with_counts=true`) as Promise<APIGuild>,
+    getMember: (guildId: string, userId: string) =>
+      rest.get(Routes.guildMember(guildId, userId)) as Promise<APIGuildMember>,
     addRole: (guildId: string, userId: string, roleId: string, reason?: string) =>
-      resources.guild(guildId).member(userId).roles.add(roleId, reason),
+      rest.put(Routes.guildMemberRole(guildId, userId, roleId), { reason }),
     removeRole: (guildId: string, userId: string, roleId: string, reason?: string) =>
-      resources.guild(guildId).member(userId).roles.remove(roleId, reason),
+      rest.delete(Routes.guildMemberRole(guildId, userId, roleId), { reason }),
 
-    getUser: (userId: string) => resources.user(userId).get(),
-    getBotGuilds: () => resources.me.guilds(),
-    leaveGuild: (guildId: string) => resources.me.leaveGuild(guildId),
-    openDm: (userId: string) => resources.me.openDm(userId),
+    getUser: (userId: string) => rest.get(Routes.user(userId)) as Promise<APIUser>,
+    getBotGuilds: () =>
+      rest.get(
+        `${Routes.userGuilds()}?with_counts=true&limit=200`
+      ) as Promise<RESTGetAPICurrentUserGuildsResult>,
+    leaveGuild: (guildId: string) => rest.delete(Routes.userGuild(guildId)),
+    openDm: (userId: string) =>
+      rest.post(Routes.userChannels(), {
+        body: { recipient_id: userId } satisfies RESTPostAPICurrentUserCreateDMChannelJSONBody,
+      }) as Promise<APIChannel>,
 
     updatePresence: async (data: GatewayPresenceUpdateData) => {
       if (!sendPresence) throw new Error('gateway is not connected');
       await sendPresence(data);
     },
     editApplication: (body: RESTPatchCurrentApplicationJSONBody) =>
-      resources.editCurrentApplication(body),
+      rest.patch(Routes.currentApplication(), { body }) as Promise<APIApplication>,
   };
 }
