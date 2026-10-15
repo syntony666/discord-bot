@@ -1,4 +1,4 @@
-import { defineFeature } from '@discord-bot/discord-client';
+import { defineFeature, mergeCollected } from '@discord-bot/discord-client';
 import { request } from '@core/request';
 import { scheduler } from '@core/scheduler';
 import { createGuildApi } from '@features/guild/guild.api';
@@ -17,12 +17,7 @@ export const notifyFeature = defineFeature()({
   useHandlers: (deps: NotifyDeps) => {
     const member = useMemberNotifyHandlers(deps);
     const stream = useStreamNotifyHandlers(deps);
-    return {
-      handler: { ...member.handler, ...stream.handler },
-      event: { ...member.event, ...stream.event },
-      stream: { ...member.stream, ...stream.stream },
-      component: { ...member.component, ...stream.component },
-    };
+    return mergeCollected(member, stream);
   },
   deps: {
     api: {

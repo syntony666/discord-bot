@@ -58,26 +58,13 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
         message: message || existingConfig.message,
         enabled: true,
       });
-      await ctx.reply({
-        embeds: [
-          {
-            title: '直播通知已更新',
-            description: `通知頻道已更新至 ${Formatters.channelMention(channelId)}`,
-            color: Colors.SUCCESS,
-          },
-        ],
-      });
+      await ctx.success(
+        '直播通知已更新',
+        `通知頻道已更新至 ${Formatters.channelMention(channelId)}`
+      );
     } else {
       await api.createConfig(guildId, channelId, message);
-      await ctx.reply({
-        embeds: [
-          {
-            title: '直播通知已啟用',
-            description: `通知將發送至 ${Formatters.channelMention(channelId)}`,
-            color: Colors.SUCCESS,
-          },
-        ],
-      });
+      await ctx.success('直播通知已啟用', `通知將發送至 ${Formatters.channelMention(channelId)}`);
     }
     log.info({ guildId, channelId }, 'Stream notify enabled');
   });
@@ -87,27 +74,11 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
 
     const existingConfig = await api.getConfig(guildId);
     if (!existingConfig) {
-      return ctx.reply({
-        embeds: [
-          {
-            title: '直播通知未啟用',
-            description: '此伺服器尚未啟用直播通知功能',
-            color: Colors.INFO,
-          },
-        ],
-      });
+      return ctx.info('直播通知未啟用', '此伺服器尚未啟用直播通知功能');
     }
 
     await api.updateConfig(guildId, { enabled: false });
-    await ctx.reply({
-      embeds: [
-        {
-          title: '直播通知已停用',
-          description: '直播通知功能已暫時停用',
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.success('直播通知已停用', '直播通知功能已暫時停用');
     log.info({ guildId }, 'Stream notify disabled');
   });
 
@@ -141,27 +112,11 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
 
     const existingWatcher = await api.getWatcher(guildId, toPlatform(platform), platformId);
     if (existingWatcher) {
-      return ctx.reply({
-        embeds: [
-          {
-            title: '監控已存在',
-            description: `已在監控此 ${platform} 頻道`,
-            color: Colors.INFO,
-          },
-        ],
-      });
+      return ctx.info('監控已存在', `已在監控此 ${platform} 頻道`);
     }
 
     await api.addWatcher(guildId, toPlatform(platform), platformId, displayName, profile);
-    await ctx.reply({
-      embeds: [
-        {
-          title: '已新增監控',
-          description: `開始監控 ${platform} 頻道 ${nameOf(platformId, displayName)}`,
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.success('已新增監控', `開始監控 ${platform} 頻道 ${nameOf(platformId, displayName)}`);
     log.info({ guildId, platform, platformId }, 'Stream watcher added');
   });
 
@@ -178,27 +133,14 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
 
     const existingWatcher = await api.getWatcher(guildId, toPlatform(platform), platformId);
     if (!existingWatcher) {
-      return ctx.reply({
-        embeds: [
-          {
-            title: '監控不存在',
-            description: `未找到此 ${platform} 頻道的監控`,
-            color: Colors.INFO,
-          },
-        ],
-      });
+      return ctx.info('監控不存在', `未找到此 ${platform} 頻道的監控`);
     }
 
     await api.removeWatcher(guildId, toPlatform(platform), platformId);
-    await ctx.reply({
-      embeds: [
-        {
-          title: '已移除監控',
-          description: `已停止監控 ${platform} 頻道 ${nameOf(existingWatcher.platformId, existingWatcher.displayName)}`,
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.success(
+      '已移除監控',
+      `已停止監控 ${platform} 頻道 ${nameOf(existingWatcher.platformId, existingWatcher.displayName)}`
+    );
     log.info({ guildId, platform, platformId }, 'Stream watcher removed');
   });
 
@@ -211,15 +153,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     ]);
 
     if (!config && watchers.length === 0) {
-      await ctx.reply({
-        embeds: [
-          {
-            title: '直播通知設定',
-            description: '尚未設定任何直播通知',
-            color: Colors.INFO,
-          },
-        ],
-      });
+      await ctx.info('直播通知設定', '尚未設定任何直播通知');
       return;
     }
 
