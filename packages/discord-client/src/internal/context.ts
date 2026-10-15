@@ -108,8 +108,6 @@ function baseMethods(
     embed({ title: `❌ ${title}`, description, color: theme.colors.error }, ephemeral);
   const info = (title: string, description?: string) =>
     embed({ title, description, color: theme.colors.info });
-  const editSuccess = (title: string, description?: string) =>
-    editEmbed({ title, description, color: theme.colors.success });
   const editError = (title: string, description?: string) =>
     editEmbed({ title: `❌ ${title}`, description, color: theme.colors.error });
   const cancelled = () =>
@@ -148,8 +146,6 @@ function baseMethods(
     error,
     info,
     embed,
-    editEmbed,
-    editSuccess,
     editError,
     cancelled,
     confirmed,
