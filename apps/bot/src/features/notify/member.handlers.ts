@@ -90,7 +90,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
       return;
 
     await Promise.all(channels.map((ch) => api.toggleChannelEnabled(guildId, ch.type, false)));
-    await ctx.editSuccess(
+    await ctx.announceSuccess(
       '成員通知已關閉',
       `所有成員進出通知已停用。\n使用 ${discord.commandMention('notify member enable')} 可重新啟用。`
     );
@@ -195,7 +195,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     if (enabled !== undefined) {
       await api.toggleChannelEnabled(guildId, notifyType, enabled);
     }
-    await ctx.editSuccess('設定已更新', `${typeName(type)}已更新。`);
+    await ctx.announceSuccess('設定已更新', `${typeName(type)}已更新。`);
     log.info(
       { guildId, type, hasTemplate: template !== undefined, enabled },
       'Notify event updated'

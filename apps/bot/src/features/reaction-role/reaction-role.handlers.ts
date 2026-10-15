@@ -1,6 +1,5 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
 import { concatMap } from 'rxjs';
-import type { APIEmbed } from 'discord-api-types/v10';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
@@ -29,18 +28,6 @@ export interface ReactionRoleDeps {
   discord: DiscordHelpers;
   api: { reactionRole: ReactionRoleApi };
 }
-
-const panelNotFoundEmbed = (panelId: string, extraLine?: string): APIEmbed => ({
-  title: '選單不存在',
-  description: `找不到 ID 為 \`${panelId}\` 的選單。${extraLine ? `\n${extraLine}` : ''}`,
-  color: Colors.ERROR,
-});
-
-const failEmbed = (action: string, hint = '請稍後再試。'): APIEmbed => ({
-  title: `${action}失敗`,
-  description: `${action}時發生錯誤，${hint}`,
-  color: Colors.ERROR,
-});
 
 export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
   const { discord } = deps;
@@ -83,7 +70,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       log.info({ guildId, channelId, messageId: message.id }, 'Panel created');
     } catch (error) {
       log.error({ error, guildId, channelId }, 'Failed to create panel');
-      await ctx.embed(failEmbed('建立選單'));
+      await ctx.error('建立選單失敗', '建立選單時發生錯誤，請稍後再試。');
     }
   });
 
@@ -120,8 +107,10 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     const guildId = ctx.guildId;
     const panelId = ctx.options.panel_id;
 
-    const panel = await api.getPanel(guildId, panelId);
-    if (!panel) return ctx.embed(panelNotFoundEmbed(panelId));
+    const panel = await ctx.require(() => api.getPanel(guildId, panelId), '選單不存在', {
+      description: `找不到 ID 為 \`${panelId}\` 的選單。`,
+    });
+    if (!panel) return;
 
     const roles = await api.getReactionRolesByMessage(guildId, panelId);
     const messageUrl = Formatters.messageLink(panel.channelId, panelId, guildId);
@@ -154,7 +143,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await deleteDiscordMessage(discord, panel.channelId, panelId, { guildId, panelId });
       await api.deletePanel(guildId, panelId);
 
-      await ctx.editEmbed({
+      await ctx.announce({
         title: '選單已刪除',
         description: `選單 \`${panelId}\` 及其 ${roles.length} 個反應身分組已全部刪除。`,
         color: Colors.WARNING,
@@ -162,7 +151,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       log.info({ guildId, panelId, rolesCount: roles.length }, 'Panel deleted successfully');
     } catch (error) {
       log.error({ error, guildId, panelId }, 'Failed to delete panel');
-      await ctx.editEmbed(failEmbed('刪除選單'));
+      await ctx.editError('刪除選單失敗', '刪除選單時發生錯誤，請稍後再試。');
     }
   });
 
@@ -173,8 +162,10 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     const description = ctx.options.description;
     const mode = ctx.options.mode;
 
-    const panel = await api.getPanel(guildId, panelId);
-    if (!panel) return ctx.embed(panelNotFoundEmbed(panelId));
+    const panel = await ctx.require(() => api.getPanel(guildId, panelId), '選單不存在', {
+      description: `找不到 ID 為 \`${panelId}\` 的選單。`,
+    });
+    if (!panel) return;
 
     const updates: { title?: string; description?: string; mode?: ReactionRoleMode } = {};
     if (title !== undefined) updates.title = title;
@@ -217,11 +208,11 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       await updatePanelMessage(discord, panel, roles, updates);
       await api.updatePanel(guildId, panelId, sanitizeUpdates(updates));
 
-      await ctx.editSuccess('選單已更新', `選單 \`${panelId}\` 已成功更新。`);
+      await ctx.announceSuccess('選單已更新', `選單 \`${panelId}\` 已成功更新。`);
       log.info({ guildId, panelId, updates }, 'Panel edited successfully');
     } catch (error) {
       log.error({ error, guildId, panelId }, 'Failed to update panel');
-      await ctx.editEmbed(failEmbed('更新選單'));
+      await ctx.editError('更新選單失敗', '更新選單時發生錯誤，請稍後再試。');
     }
   });
 
@@ -232,14 +223,10 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     const description = ctx.options.description;
     const emoji = normalizeEmojiForStorage(ctx.options.emoji);
 
-    const panel = await api.getPanel(guildId, panelId);
-    if (!panel)
-      return ctx.embed(
-        panelNotFoundEmbed(
-          panelId,
-          `請先使用 ${discord.commandMention('reaction-role panel create')} 建立選單。`
-        )
-      );
+    const panel = await ctx.require(() => api.getPanel(guildId, panelId), '選單不存在', {
+      description: `找不到 ID 為 \`${panelId}\` 的選單。\n請先使用 ${discord.commandMention('reaction-role panel create')} 建立選單。`,
+    });
+    if (!panel) return;
 
     try {
       const reactionEmoji = formatEmojiForReaction(emoji);
@@ -282,7 +269,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       log.info({ guildId, messageId: panelId, emoji, roleId }, 'Reaction role added');
     } catch (error) {
       log.error({ error, guildId, panelId }, 'Failed to add reaction role');
-      await ctx.embed(failEmbed('新增反應身分組', '請確認 emoji 格式正確。'));
+      await ctx.error('新增反應身分組失敗', '新增反應身分組時發生錯誤，請確認 emoji 格式正確。');
     }
   });
 
@@ -294,15 +281,16 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
 
     const reactionRole = await api.getReactionRole(guildId, panelId, emoji);
     if (!reactionRole) {
-      return ctx.embed({
-        title: '反應身分組不存在',
-        description: `在選單 \`${panelId}\` 中找不到 ${emojiInput} 的綁定。\n\n**提示**: 請使用 ${discord.commandMention('reaction-role role-list')} 查看正確的 emoji 格式。`,
-        color: Colors.ERROR,
-      });
+      return ctx.error(
+        '反應身分組不存在',
+        `在選單 \`${panelId}\` 中找不到 ${emojiInput} 的綁定。\n\n**提示**: 請使用 ${discord.commandMention('reaction-role role-list')} 查看正確的 emoji 格式。`
+      );
     }
 
-    const panel = await api.getPanel(guildId, panelId);
-    if (!panel) return ctx.embed(panelNotFoundEmbed(panelId));
+    const panel = await ctx.require(() => api.getPanel(guildId, panelId), '選單不存在', {
+      description: `找不到 ID 為 \`${panelId}\` 的選單。`,
+    });
+    if (!panel) return;
 
     const displayEmoji = formatEmojiForDisplay(emoji);
 
@@ -345,11 +333,11 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
 
       await api.deleteReactionRole(guildId, panelId, emoji);
 
-      await ctx.editSuccess('反應身分組已移除', `${displayEmoji} 的綁定已從選單中移除。`);
+      await ctx.announceSuccess('反應身分組已移除', `${displayEmoji} 的綁定已從選單中移除。`);
       log.info({ guildId, panelId, emoji }, 'Reaction role removed');
     } catch (error) {
       log.error({ error, guildId, panelId }, 'Failed to remove reaction role');
-      await ctx.editEmbed(failEmbed('移除反應身分組'));
+      await ctx.editError('移除反應身分組失敗', '移除反應身分組時發生錯誤，請稍後再試。');
     }
   });
 
@@ -357,8 +345,10 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
     const guildId = ctx.guildId;
     const panelId = ctx.options.panel_id;
 
-    const panel = await api.getPanel(guildId, panelId);
-    if (!panel) return ctx.embed(panelNotFoundEmbed(panelId));
+    const panel = await ctx.require(() => api.getPanel(guildId, panelId), '選單不存在', {
+      description: `找不到 ID 為 \`${panelId}\` 的選單。`,
+    });
+    if (!panel) return;
 
     const roles = await api.getReactionRolesByMessage(guildId, panelId);
 
