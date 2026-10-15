@@ -85,7 +85,7 @@ export const botCommand = defineCommand()({
             {
               name: 'url',
               type: ApplicationCommandOptionType.String,
-              description: '直播連結（僅「直播中」類型使用）',
+              description: '直播連結（僅 **直播中** 類型使用）',
             },
           ],
         },

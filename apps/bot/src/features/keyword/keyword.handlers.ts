@@ -228,7 +228,12 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     const { query } = ctx.options;
 
     const rules = await api.searchRules(guildId, query);
-    await paginateRules(ctx, rules, `關鍵字搜尋：${query}`, `找不到符合「${query}」的關鍵字規則。`);
+    await paginateRules(
+      ctx,
+      rules,
+      `關鍵字搜尋：${query}`,
+      `找不到符合 **${query}** 的關鍵字規則。`
+    );
     log.info({ guildId, query }, 'Keyword search displayed');
   });
 
