@@ -94,15 +94,7 @@ export function useBotHandlers(deps: BotDeps) {
 
     const demoted =
       tier === 'HOME' && wasHome ? `\n（原 HOME 伺服器 **${wasHome.name}** 已降為 NORMAL）` : '';
-    await ctx.reply({
-      embeds: [
-        {
-          title: '級別已更新',
-          description: `**${guild.name}** 已設為 ${tier}${demoted}`,
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.success('級別已更新', `**${guild.name}** 已設為 ${tier}${demoted}`);
   });
 
   h.handler('guild.leave', async (ctx) => {
@@ -110,28 +102,18 @@ export function useBotHandlers(deps: BotDeps) {
     const record = await api.getGuild(guildId);
     const name = record?.name ?? guildId;
 
-    const ok = await ctx.confirm({
-      title: '⚠️ 退出伺服器',
-      description: `確定要退出 **${name}**？其所有設定資料將被刪除。`,
-      confirmLabel: '退出',
-      danger: true,
-    });
-    if (!ok) {
-      return ctx.editReply({
-        embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
-      });
-    }
+    if (
+      !(await ctx.confirmed({
+        title: '⚠️ 退出伺服器',
+        description: `確定要退出 **${name}**？其所有設定資料將被刪除。`,
+        confirmLabel: '退出',
+        danger: true,
+      }))
+    )
+      return;
 
     await discord.leaveGuild(guildId);
-    await ctx.editReply({
-      embeds: [
-        {
-          title: '已退出伺服器',
-          description: `已退出 **${name}**`,
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.editSuccess('已退出伺服器', `已退出 **${name}**`);
   });
 
   h.handler('guild.sync', async (ctx) => {
@@ -147,9 +129,7 @@ export function useBotHandlers(deps: BotDeps) {
     ]);
 
     if (missing.length === 0 && orphans.length === 0) {
-      return ctx.reply({
-        embeds: [{ title: '同步完成', description: '無差異', color: Colors.SUCCESS }],
-      });
+      return ctx.success('同步完成', '無差異');
     }
     await ctx.reply({
       embeds: [
@@ -185,29 +165,16 @@ export function useBotHandlers(deps: BotDeps) {
 
     await discord.updatePresence(buildPresence(cfg));
     await botApi.setState('activity', JSON.stringify(cfg));
-    await ctx.reply({
-      embeds: [
-        {
-          title: '活動狀態已更新',
-          description: `${ACTIVITY_LABEL[type] ?? ''} **${text}**`,
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.success('活動狀態已更新', `${ACTIVITY_LABEL[type] ?? ''} **${text}**`);
   });
 
   h.handler('profile.about', async (ctx) => {
     const { text } = ctx.options;
     await discord.editApplication({ description: text });
-    await ctx.reply({
-      embeds: [
-        {
-          title: '自我介紹已更新',
-          description: `**${text.length > 100 ? `${text.slice(0, 100)}…` : text}**`,
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.success(
+      '自我介紹已更新',
+      `**${text.length > 100 ? `${text.slice(0, 100)}…` : text}**`
+    );
   });
 
   h.handler('limit', async (ctx) => {
@@ -222,17 +189,11 @@ export function useBotHandlers(deps: BotDeps) {
 
     const updated = await botApi.updateTierLimit(tier, patch);
     const cap = (n: number) => (n < 0 ? '∞' : String(n));
-    await ctx.reply({
-      embeds: [
-        {
-          title: '額度已更新',
-          description:
-            `**${updated.tier}**\n` +
-            `監控 ${cap(updated.streamWatchers)} · 關鍵字 ${cap(updated.keywordRules)} · 身分組選單 ${cap(updated.reactionRolePanels)}`,
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.success(
+      '額度已更新',
+      `**${updated.tier}**\n` +
+        `監控 ${cap(updated.streamWatchers)} · 關鍵字 ${cap(updated.keywordRules)} · 身分組選單 ${cap(updated.reactionRolePanels)}`
+    );
   });
 
   h.handler('announce', async (ctx) => {
@@ -254,20 +215,18 @@ export function useBotHandlers(deps: BotDeps) {
     }
     if (owners.size === 0) return ctx.error('錯誤', '無法取得任何伺服器擁有者資訊');
 
-    const ok = await ctx.confirm({
-      title: '發送公告',
-      description:
-        `將私訊 ${owners.size} 位擁有者（共 ${targets.length} 個伺服器` +
-        `${tier ? `，級別 ${tier}` : ''}）。`,
-      fields: [{ name: '公告內容', value: message }],
-      confirmLabel: '發送',
-      cancelLabel: '取消',
-    });
-    if (!ok) {
-      return ctx.editReply({
-        embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
-      });
-    }
+    if (
+      !(await ctx.confirmed({
+        title: '發送公告',
+        description:
+          `將私訊 ${owners.size} 位擁有者（共 ${targets.length} 個伺服器` +
+          `${tier ? `，級別 ${tier}` : ''}）。`,
+        fields: [{ name: '公告內容', value: message }],
+        confirmLabel: '發送',
+        cancelLabel: '取消',
+      }))
+    )
+      return;
 
     let sent = 0;
     for (const [ownerId, names] of owners) {
@@ -292,19 +251,13 @@ export function useBotHandlers(deps: BotDeps) {
       }
     }
 
-    await ctx.editReply({
-      embeds: [
-        {
-          title: '公告已送出',
-          description:
-            `已發送給 ${sent} 位擁有者` +
-            (failed.length
-              ? `\n失敗 ${failed.length} 位：${failed.map((n) => `**${n}**`).join('、')}`
-              : ''),
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.editSuccess(
+      '公告已送出',
+      `已發送給 ${sent} 位擁有者` +
+        (failed.length
+          ? `\n失敗 ${failed.length} 位：${failed.map((n) => `**${n}**`).join('、')}`
+          : '')
+    );
   });
 
   h.handler('stats', async (ctx) => {
