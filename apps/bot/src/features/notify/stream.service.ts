@@ -13,8 +13,8 @@ export interface StreamNotifyService {
   sendNotification(
     watcher: StreamWatcher,
     streamInfo: StreamInfo,
-    messageTemplate: string,
-    api: StreamNotifyApi
+    channelId: string,
+    messageTemplate: string
   ): Promise<void>;
   refreshTwitchWatcherAvatars(api: StreamNotifyApi, twitchService: TwitchService): Promise<void>;
 }
@@ -25,11 +25,10 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
     services: StreamPlatformService[]
   ): Promise<void> => {
     try {
-      // Get all watchers across all guilds
-      const allWatchers: StreamWatcher[] = await api.getAllWatchers();
+      const watchers: StreamWatcher[] = await api.getAllWatchers();
 
       // Handle ID conversion for Twitch watchers that don't have platformUserId yet
-      const twitchWatchersNeedingConversion = allWatchers.filter(
+      const twitchWatchersNeedingConversion = watchers.filter(
         (w) => w.platform === 'TWITCH' && !w.platformUserId
       );
 
@@ -41,23 +40,31 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
           const usernames = twitchWatchersNeedingConversion.map((w) => w.platformId);
           const usernameToIdMap = await twitchService.convertUsernamesToUserIds(usernames);
 
-          // Update watchers with their user IDs
           for (const watcher of twitchWatchersNeedingConversion) {
             const userId = usernameToIdMap.get(watcher.platformId.toLowerCase());
             if (userId) {
               await api.updateWatcherUserId(watcher.id, userId);
-            } else {
+              watcher.platformUserId = userId;
             }
           }
         }
       }
 
-      // Get updated list after conversions
-      const updatedWatchers: StreamWatcher[] = await api.getAllWatchers();
+      const configCache = new Map<
+        string,
+        { channelId: string; enabled: boolean; message: string } | null
+      >();
+
+      const getConfig = async (guildId: string) => {
+        if (!configCache.has(guildId)) {
+          configCache.set(guildId, await api.getConfig(guildId));
+        }
+        return configCache.get(guildId);
+      };
 
       const watchersByPlatform = new Map<string, string[]>();
 
-      for (const watcher of updatedWatchers) {
+      for (const watcher of watchers) {
         const platformServices = services.filter(
           (s) => s.getPlatformName() === watcher.platform.toLowerCase()
         );
@@ -65,7 +72,6 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
           if (!watchersByPlatform.has(watcher.platform.toLowerCase())) {
             watchersByPlatform.set(watcher.platform.toLowerCase(), []);
           }
-          // Use platformUserId if available (for Twitch), otherwise use platformId
           const idToCheck = watcher.platformUserId || watcher.platformId;
           watchersByPlatform.get(watcher.platform.toLowerCase())!.push(idToCheck);
         }
@@ -79,7 +85,7 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
           const liveStreams = await service.checkStreamStatus(platformIds);
 
           for (const streamInfo of liveStreams) {
-            const watcher = updatedWatchers.find((w: StreamWatcher) => {
+            const watcher = watchers.find((w: StreamWatcher) => {
               const watcherId = w.platformUserId || w.platformId;
               return (
                 w.platform.toLowerCase() === platformName && watcherId === streamInfo.platformId
@@ -89,14 +95,14 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
             if (watcher && !watcher.isLive) {
               await api.updateWatcherStatus(watcher.id, true);
 
-              const config = await api.getConfig(watcher.guildId);
+              const config = await getConfig(watcher.guildId);
               if (config && config.enabled) {
-                await sendNotification(watcher, streamInfo, config.message, api);
+                await sendNotification(watcher, streamInfo, config.channelId, config.message);
               }
             }
           }
 
-          for (const watcher of updatedWatchers.filter(
+          for (const watcher of watchers.filter(
             (w: StreamWatcher) => w.platform.toLowerCase() === platformName
           )) {
             const watcherId = watcher.platformUserId || watcher.platformId;
@@ -118,17 +124,13 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
   const sendNotification = async (
     watcher: StreamWatcher,
     streamInfo: StreamInfo,
-    messageTemplate: string,
-    api: StreamNotifyApi
+    channelId: string,
+    messageTemplate: string
   ): Promise<void> => {
     try {
       const message = messageTemplate.replace(/{user}/g, streamInfo.displayName);
 
-      const config = await api.getConfig(watcher.guildId);
-
-      if (!config) return;
-
-      await discord.sendMessage(config.channelId, {
+      await discord.sendMessage(channelId, {
         content: message,
         embeds: [
           {
