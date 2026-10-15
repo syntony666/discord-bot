@@ -1,5 +1,5 @@
 import { Formatters, useHandlers } from '@discord-bot/discord-client';
-import type { GuildCommandContext } from '@discord-bot/discord-client';
+import type { CtxFor } from '@discord-bot/discord-client';
 import { DEFAULT_MEMBER_MESSAGES, NotificationType } from '@discord-bot/shared';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
@@ -31,10 +31,6 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
   const service = createMemberNotifyService();
   const h = useHandlers(notifyCommand);
 
-  const cancelled = {
-    embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
-  };
-
   h.handler('member.enable', async (ctx) => {
     const guildId = ctx.guildId;
     const channelId = ctx.options.channel.id;
@@ -53,15 +49,10 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
       }),
     ]);
 
-    await ctx.reply({
-      embeds: [
-        {
-          title: '成員通知已啟用',
-          description: `通知頻道已設定為 ${Formatters.channelMention(channelId)}\n加入與離開通知已自動開啟。`,
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.success(
+      '成員通知已啟用',
+      `通知頻道已設定為 ${Formatters.channelMention(channelId)}\n加入與離開通知已自動開啟。`
+    );
     log.info({ guildId, channelId }, 'Member notify enabled');
   });
 
@@ -70,50 +61,39 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
 
     const channels = await api.getNotificationChannels(guildId);
     if (channels.length === 0) {
-      return ctx.reply({
-        embeds: [
-          {
-            title: '尚未設定',
-            description: '目前沒有任何通知設定。',
-            color: Colors.INFO,
-          },
-        ],
-      });
+      return ctx.info('尚未設定', '目前沒有任何通知設定。');
     }
 
     const enabledList = channels
       .filter((ch) => ch.enabled)
       .map((ch) => `✅ ${ch.type === 'MEMBER_JOIN' ? '加入' : '離開'}通知`);
 
-    const ok = await ctx.confirm({
-      title: '⚠️ 確認關閉成員通知',
-      description: '即將關閉所有成員進出通知功能。',
-      fields: [
-        {
-          name: '目前啟用的通知',
-          value: enabledList.length > 0 ? enabledList.join('\n') : '—',
-        },
-        {
-          name: '通知頻道',
-          value: channels.map((ch) => Formatters.channelMention(ch.channelId)).join(', '),
-        },
-      ],
-      confirmLabel: '確認關閉',
-      cancelLabel: '取消',
-      danger: true,
-    });
-    if (!ok) return ctx.editReply(cancelled);
+    if (
+      !(await ctx.confirmed({
+        title: '⚠️ 確認關閉成員通知',
+        description: '即將關閉所有成員進出通知功能。',
+        fields: [
+          {
+            name: '目前啟用的通知',
+            value: enabledList.length > 0 ? enabledList.join('\n') : '—',
+          },
+          {
+            name: '通知頻道',
+            value: channels.map((ch) => Formatters.channelMention(ch.channelId)).join(', '),
+          },
+        ],
+        confirmLabel: '確認關閉',
+        cancelLabel: '取消',
+        danger: true,
+      }))
+    )
+      return;
 
     await Promise.all(channels.map((ch) => api.toggleChannelEnabled(guildId, ch.type, false)));
-    await ctx.editReply({
-      embeds: [
-        {
-          title: '成員通知已關閉',
-          description: `所有成員進出通知已停用。\n使用 ${discord.commandMention('notify member enable')} 可重新啟用。`,
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.editSuccess(
+      '成員通知已關閉',
+      `所有成員進出通知已停用。\n使用 ${discord.commandMention('notify member enable')} 可重新啟用。`
+    );
     log.info({ guildId }, 'All member notifications disabled');
   });
 
@@ -127,15 +107,10 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     ]);
 
     if (!joinChannel && !leaveChannel) {
-      return ctx.reply({
-        embeds: [
-          {
-            title: '成員通知狀態',
-            description: `尚未設定成員通知功能。\n使用 ${discord.commandMention('notify member enable')} 開始設定。`,
-            color: Colors.INFO,
-          },
-        ],
-      });
+      return ctx.info(
+        '成員通知狀態',
+        `尚未設定成員通知功能。\n使用 ${discord.commandMention('notify member enable')} 開始設定。`
+      );
     }
 
     const description = [
@@ -150,9 +125,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
       '**可用變數**: `{user}`, `{username}`, `{server}`, `{memberCount}`',
     ].join('\n');
 
-    await ctx.reply({
-      embeds: [{ title: '成員通知狀態', description, color: Colors.INFO }],
-    });
+    await ctx.info('成員通知狀態', description);
   });
 
   h.handler('member.test', async (ctx) => {
@@ -172,19 +145,11 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
       memberCount: guild.approximate_member_count || 0,
     });
 
-    await ctx.reply({
-      embeds: [
-        {
-          title: `${type === 'join' ? '加入' : '離開'}訊息預覽`,
-          description: testMessage,
-          color: Colors.INFO,
-        },
-      ],
-    });
+    await ctx.info(`${type === 'join' ? '加入' : '離開'}訊息預覽`, testMessage);
   });
 
   const editEvent = async (
-    ctx: GuildCommandContext<{ template?: string; enabled?: boolean }>,
+    ctx: CtxFor<typeof notifyCommand, 'member.join' | 'member.leave'>,
     type: 'join' | 'leave'
   ) => {
     const guildId = ctx.guildId;
@@ -198,34 +163,31 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
         api.getMessageTemplates(guildId),
       ]);
       const current = type === 'join' ? templates?.joinMessage : templates?.leaveMessage;
-      return ctx.reply({
-        embeds: [
-          {
-            title: `${typeName(type)}設定`,
-            description: [
-              `狀態：${typeEmoji(!!channel?.enabled)} ${channel?.enabled ? '已啟用' : '已停用'}`,
-              channel ? `通知頻道：${Formatters.channelMention(channel.channelId)}` : '—',
-              `訊息模板：\`${current || '預設訊息'}\``,
-            ].join('\n'),
-            color: Colors.INFO,
-          },
-        ],
-      });
+      return ctx.info(
+        `${typeName(type)}設定`,
+        [
+          `狀態：${typeEmoji(!!channel?.enabled)} ${channel?.enabled ? '已啟用' : '已停用'}`,
+          channel ? `通知頻道：${Formatters.channelMention(channel.channelId)}` : '—',
+          `訊息模板：\`${current || '預設訊息'}\``,
+        ].join('\n')
+      );
     }
 
     const fields = [
       ...(template !== undefined ? [{ name: '新模板', value: `\`${template}\`` }] : []),
       ...(enabled !== undefined ? [{ name: '通知狀態', value: enabled ? '啟用' : '停用' }] : []),
     ];
-    const ok = await ctx.confirm({
-      title: `確認更新${typeName(type)}`,
-      description: '即將套用以下變更。',
-      fields,
-      confirmLabel: '確認更新',
-      cancelLabel: '取消',
-      danger: enabled === false,
-    });
-    if (!ok) return ctx.editReply(cancelled);
+    if (
+      !(await ctx.confirmed({
+        title: `確認更新${typeName(type)}`,
+        description: '即將套用以下變更。',
+        fields,
+        confirmLabel: '確認更新',
+        cancelLabel: '取消',
+        danger: enabled === false,
+      }))
+    )
+      return;
 
     if (template !== undefined) {
       await api.updateMessage({ guildId, type, message: template });
@@ -233,15 +195,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     if (enabled !== undefined) {
       await api.toggleChannelEnabled(guildId, notifyType, enabled);
     }
-    await ctx.editReply({
-      embeds: [
-        {
-          title: '設定已更新',
-          description: `${typeName(type)}已更新。`,
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.editSuccess('設定已更新', `${typeName(type)}已更新。`);
     log.info(
       { guildId, type, hasTemplate: template !== undefined, enabled },
       'Notify event updated'
