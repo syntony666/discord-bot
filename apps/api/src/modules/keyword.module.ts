@@ -1,0 +1,84 @@
+import { PrismaClient } from '../.prisma/client';
+import type { CreateKeywordRuleInput, UpdateKeywordRuleInput } from '@discord-bot/shared';
+import { pickResponse } from './keyword.response';
+import { assertGuildFeatureLimit } from './tier-limits';
+
+const keywordRuntimeSelect = {
+  guildId: true,
+  pattern: true,
+  matchType: true,
+  response: true,
+  enabled: true,
+} as const;
+
+export function createKeywordModule(prisma: PrismaClient) {
+  return {
+    getRulesByGuild(guildId: string) {
+      return prisma.keywordRule
+        .findMany({
+          where: { guildId, enabled: true },
+          orderBy: { createdAt: 'desc' },
+          select: keywordRuntimeSelect,
+        })
+        .then((rules) => rules.map((r) => ({ ...r, response: pickResponse(r.response) })));
+    },
+
+    getRulesForList(guildId: string) {
+      return prisma.keywordRule.findMany({
+        where: { guildId, enabled: true },
+        orderBy: { createdAt: 'desc' },
+      });
+    },
+
+    searchRules(guildId: string, query: string) {
+      return prisma.keywordRule.findMany({
+        where: {
+          guildId,
+          enabled: true,
+          pattern: { contains: query, mode: 'insensitive' },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    },
+
+    getRuleByPattern(guildId: string, pattern: string) {
+      return prisma.keywordRule.findUnique({
+        where: { guildId_pattern: { guildId, pattern } },
+      });
+    },
+
+    async createRule(input: CreateKeywordRuleInput) {
+      const count = await prisma.keywordRule.count({ where: { guildId: input.guildId } });
+      await assertGuildFeatureLimit(prisma, input.guildId, 'keywordRules', count, '關鍵字規則');
+      return prisma.keywordRule.create({
+        data: {
+          guildId: input.guildId,
+          pattern: input.pattern,
+          matchType: input.matchType,
+          response: input.response,
+          editorId: input.editorId,
+          enabled: input.enabled ?? true,
+        },
+      });
+    },
+
+    updateRule(input: UpdateKeywordRuleInput) {
+      return prisma.keywordRule.update({
+        where: { guildId_pattern: { guildId: input.guildId, pattern: input.pattern } },
+        data: {
+          response: input.response,
+          editorId: input.editorId,
+          ...(input.matchType !== undefined && { matchType: input.matchType }),
+        },
+      });
+    },
+
+    async deleteRule(guildId: string, pattern: string) {
+      await prisma.keywordRule.delete({
+        where: { guildId_pattern: { guildId, pattern } },
+      });
+    },
+  };
+}
+
+export type KeywordModule = ReturnType<typeof createKeywordModule>;
