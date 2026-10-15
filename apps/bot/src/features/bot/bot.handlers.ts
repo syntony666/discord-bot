@@ -257,7 +257,7 @@ export function useBotHandlers(deps: BotDeps) {
     if (owners.size === 0) return ctx.error('無法取得任何伺服器擁有者資訊');
 
     const ok = await ctx.confirm({
-      title: '📢 發送公告',
+      title: '發送公告',
       description:
         `將私訊 ${owners.size} 位擁有者（共 ${targets.length} 個伺服器` +
         `${tier ? `，級別 ${tier}` : ''}）。`,
@@ -279,7 +279,7 @@ export function useBotHandlers(deps: BotDeps) {
         await discord.sendMessage(dm.id, {
           embeds: [
             {
-              title: '📢 公告',
+              title: '公告',
               description: message,
               color: Colors.INFO,
               footer: {
