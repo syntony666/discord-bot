@@ -81,7 +81,7 @@ export async function buildFeaturesStatusFields(
       name: '反應身分組',
       value:
         `${mention('reaction-role panel list')}\n` +
-        `**${reactionRolePanels.length} 個 Panel**\n` +
+        `**${reactionRolePanels.length} 個身分組選單**\n` +
         modes,
       inline: false,
     });

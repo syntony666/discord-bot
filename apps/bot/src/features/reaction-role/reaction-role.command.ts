@@ -8,7 +8,7 @@ import { defineCommand } from '@discord-bot/discord-client';
 const panelIdOption = {
   name: 'panel_id',
   type: ApplicationCommandOptionType.String,
-  description: '面板訊息的 ID',
+  description: '選單訊息的 ID',
   required: true,
 } as const;
 
@@ -20,7 +20,7 @@ export const reactionRoleCommand = defineCommand()({
   subcommands: [
     {
       name: 'add',
-      description: '為面板新增反應身分組',
+      description: '為選單新增反應身分組',
       options: [
         panelIdOption,
         {
@@ -58,18 +58,18 @@ export const reactionRoleCommand = defineCommand()({
     },
     {
       name: 'role-list',
-      description: '列出面板的所有反應身分組',
+      description: '列出選單的所有反應身分組',
       options: [panelIdOption],
     },
   ],
   groups: [
     {
       name: 'panel',
-      description: '管理反應身分組面板',
+      description: '管理身分組選單',
       subcommands: [
         {
           name: 'create',
-          description: '建立新的反應身分組面板',
+          description: '建立新的身分組選單',
           options: [
             {
               name: 'channel',
@@ -81,13 +81,13 @@ export const reactionRoleCommand = defineCommand()({
             {
               name: 'title',
               type: ApplicationCommandOptionType.String,
-              description: '面板標題',
+              description: '選單標題',
               max_length: 256,
             },
             {
               name: 'description',
               type: ApplicationCommandOptionType.String,
-              description: '面板說明文字',
+              description: '選單說明文字',
               max_length: 2048,
             },
             {
@@ -102,22 +102,22 @@ export const reactionRoleCommand = defineCommand()({
             },
           ],
         },
-        { name: 'list', description: '列出所有反應身分組面板' },
+        { name: 'list', description: '列出所有身分組選單' },
         {
           name: 'delete',
-          description: '刪除反應身分組面板',
+          description: '刪除身分組選單',
           options: [
             {
               name: 'panel_id',
               type: ApplicationCommandOptionType.String,
-              description: '面板訊息的 ID（從面板 footer 複製）',
+              description: '選單訊息的 ID（從選單 footer 複製）',
               required: true,
             },
           ],
         },
         {
           name: 'edit',
-          description: '編輯面板設定',
+          description: '編輯選單設定',
           options: [
             panelIdOption,
             {

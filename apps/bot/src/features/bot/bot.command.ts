@@ -135,7 +135,7 @@ export const botCommand = defineCommand()({
         {
           name: 'panels',
           type: ApplicationCommandOptionType.Integer,
-          description: '身分組面板上限（-1 為無限）',
+          description: '身分組選單上限（-1 為無限）',
           min_value: -1,
         },
       ],

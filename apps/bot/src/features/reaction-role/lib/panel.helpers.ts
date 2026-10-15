@@ -41,7 +41,7 @@ export function buildPanelEmbed(options: BuildPanelEmbedOptions) {
         ],
         footer: messageId
           ? {
-              text: `面板 ID: ${messageId}`,
+              text: `選單 ID: ${messageId}`,
             }
           : undefined,
         timestamp: new Date().toISOString(),

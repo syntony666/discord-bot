@@ -65,7 +65,7 @@ export function useBotHandlers(deps: BotDeps) {
               value:
                 `監控 ${formatUsage(counts.streamWatchers, limits.streamWatchers)}\n` +
                 `關鍵字 ${formatUsage(counts.keywordRules, limits.keywordRules)}\n` +
-                `面板 ${formatUsage(counts.reactionRolePanels, limits.reactionRolePanels)}`,
+                `身分組選單 ${formatUsage(counts.reactionRolePanels, limits.reactionRolePanels)}`,
             },
             {
               name: '功能',
@@ -73,7 +73,7 @@ export function useBotHandlers(deps: BotDeps) {
                 `${flag(features.memberJoin)} 加入通知\n` +
                 `${flag(features.memberLeave)} 離開通知\n` +
                 `${flag(features.streamNotify)} 直播通知\n` +
-                `${flag(counts.reactionRolePanels > 0)} 身分組面板`,
+                `${flag(counts.reactionRolePanels > 0)} 身分組選單`,
             },
           ],
         },
@@ -230,7 +230,7 @@ export function useBotHandlers(deps: BotDeps) {
           title: '額度已更新',
           description:
             `**${updated.tier}**\n` +
-            `監控 ${cap(updated.streamWatchers)} · 關鍵字 ${cap(updated.keywordRules)} · 面板 ${cap(updated.reactionRolePanels)}`,
+            `監控 ${cap(updated.streamWatchers)} · 關鍵字 ${cap(updated.keywordRules)} · 身分組選單 ${cap(updated.reactionRolePanels)}`,
           color: Colors.SUCCESS,
         },
       ],
@@ -337,7 +337,7 @@ export function useBotHandlers(deps: BotDeps) {
               value: `**${stats.watchers}** 個（🔴 ${stats.liveWatchers} 直播中）`,
             },
             { name: '關鍵字', value: `**${stats.keywordRules}** 條` },
-            { name: '面板', value: `**${stats.reactionRolePanels}** 個` },
+            { name: '身分組選單', value: `**${stats.reactionRolePanels}** 個` },
             {
               name: '級別分佈',
               value:
@@ -350,7 +350,7 @@ export function useBotHandlers(deps: BotDeps) {
               value: stats.limits
                 .map(
                   (l) =>
-                    `**${l.tier}**　監控 ${cap(l.streamWatchers)} · 關鍵字 ${cap(l.keywordRules)} · 面板 ${cap(l.reactionRolePanels)}`
+                    `**${l.tier}**　監控 ${cap(l.streamWatchers)} · 關鍵字 ${cap(l.keywordRules)} · 身分組選單 ${cap(l.reactionRolePanels)}`
                 )
                 .join('\n'),
             },

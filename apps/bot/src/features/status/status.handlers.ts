@@ -138,7 +138,7 @@ export function useStatusHandlers(deps: StatusDeps) {
         value:
           `監控 ${formatUsage(counts.streamWatchers, limits.streamWatchers)} · ` +
           `關鍵字 ${formatUsage(counts.keywordRules, limits.keywordRules)} · ` +
-          `面板 ${formatUsage(counts.reactionRolePanels, limits.reactionRolePanels)}`,
+          `身分組選單 ${formatUsage(counts.reactionRolePanels, limits.reactionRolePanels)}`,
         inline: false,
       });
     }
