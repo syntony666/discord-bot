@@ -1,4 +1,9 @@
-import { ApplicationCommandType, InteractionType } from 'discord-api-types/v10';
+import {
+  ApplicationCommandType,
+  InteractionResponseType,
+  InteractionType,
+  MessageFlags,
+} from 'discord-api-types/v10';
 import type {
   APIApplicationCommandInteractionDataOption,
   APIChatInputApplicationCommandInteraction,
@@ -10,6 +15,7 @@ import { ApplicationCommandOptionType } from 'discord-api-types/v10';
 import type { Resources } from './resources';
 import { buildCommandContext, buildComponentContext, interactionUser } from './context';
 import type { CommandRoute, SessionApi } from './context.type';
+import { COMPONENT_MAX_AGE_MS } from './sessions/store';
 import type {
   CommandHandler,
   ComponentHandler,
@@ -184,6 +190,25 @@ export function createCommandRouter(
     for (const route of components) {
       const m = route.pattern.exec(customId);
       if (!m) continue;
+      // Route components expire with their host message; strip dead buttons
+      // and tell the clicker (covers process restarts — timers are in-memory).
+      if (i.type === InteractionType.MessageComponent) {
+        const ts = i.message?.timestamp;
+        if (ts && Date.now() - Date.parse(ts) > COMPONENT_MAX_AGE_MS) {
+          await resources
+            .interaction(i.id, i.token)
+            .respond({ type: InteractionResponseType.UpdateMessage, data: { components: [] } })
+            .catch(() => undefined);
+          await resources
+            .webhook(appId, i.token)
+            .execute({
+              content: '這個操作已過期，請重新執行指令。',
+              flags: MessageFlags.Ephemeral,
+            })
+            .catch(() => undefined);
+          return true;
+        }
+      }
       const params: Record<string, string> = {};
       route.params.forEach((name, idx) => {
         params[name] = m[idx + 1]!;
