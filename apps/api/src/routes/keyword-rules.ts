@@ -1,7 +1,11 @@
 import { Hono } from 'hono';
-import { CreateKeywordRuleInput, UpdateKeywordRuleInput } from '@discord-bot/shared';
+import {
+  CreateKeywordRuleInput,
+  KeywordMatchType,
+  UpdateKeywordRuleInput,
+} from '@discord-bot/shared';
 import { KeywordModule } from '../modules/keyword.module';
-import { guildId, jsonOr404 } from './helpers';
+import { enumBody, guildId, jsonOr404, requireFields } from './helpers';
 
 export function keywordRuleRoutes(module: KeywordModule) {
   const routes = new Hono();
@@ -19,7 +23,9 @@ export function keywordRuleRoutes(module: KeywordModule) {
 
   routes.post('/', async (c) => {
     const body = await c.req.json<Omit<CreateKeywordRuleInput, 'guildId'>>();
-    return c.json(await module.createRule({ ...body, guildId: guildId(c) }), 201);
+    requireFields(body, 'pattern', 'matchType', 'response', 'editorId');
+    const matchType = enumBody(body, 'matchType', KeywordMatchType);
+    return c.json(await module.createRule({ ...body, matchType, guildId: guildId(c) }), 201);
   });
 
   routes.get('/:pattern', async (c) =>
@@ -28,9 +34,12 @@ export function keywordRuleRoutes(module: KeywordModule) {
 
   routes.put('/:pattern', async (c) => {
     const body = await c.req.json<Omit<UpdateKeywordRuleInput, 'guildId' | 'pattern'>>();
+    requireFields(body, 'response', 'editorId');
+    const matchType = enumBody(body, 'matchType', KeywordMatchType, { optional: true });
     return c.json(
       await module.updateRule({
         ...body,
+        matchType,
         guildId: guildId(c),
         pattern: c.req.param('pattern'),
       })
