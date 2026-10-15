@@ -286,12 +286,9 @@ export function useKeywordHandlers(deps: KeywordDeps) {
 
     try {
       await discord.sendMessage(msg.channel_id, {
-        content: match.rule.response,
+        content: match.response,
       });
-      log.info(
-        { guildId: msg.guild_id, pattern: match.rule.pattern },
-        'Keyword matched and replied'
-      );
+      log.info({ guildId: msg.guild_id, pattern: match.pattern }, 'Keyword matched and replied');
     } catch (error) {
       if ((error as { code?: number }).code === RESTJSONErrorCodes.MissingPermissions) {
         log.warn(
