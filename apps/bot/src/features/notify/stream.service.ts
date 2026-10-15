@@ -5,6 +5,7 @@ import { StreamPlatformService } from './platforms/platform.interface';
 import type { TwitchService } from './platforms/twitch.service';
 import { createLogger } from '@discord-bot/shared';
 import { StreamWatcher } from '@discord-bot/shared';
+import { Colors, StreamLiveColors } from '../../core/config/colors.config';
 
 const log = createLogger('StreamNotifyService');
 
@@ -142,7 +143,7 @@ export function createStreamNotifyService(discord: DiscordHelpers): StreamNotify
             title: `🔴 ${streamInfo.displayName} 正在直播！`,
             description: streamInfo.title,
             url: streamInfo.url,
-            color: 0x6441a5,
+            color: StreamLiveColors[watcher.platform] ?? Colors.INFO,
             ...(watcher.avatarImageUrl ? { thumbnail: { url: watcher.avatarImageUrl } } : {}),
             fields: streamInfo.game
               ? [
