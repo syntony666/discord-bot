@@ -61,9 +61,6 @@ export interface SemanticReplies {
   info(title: string, description?: string): Promise<void>;
   /** reply({embeds: [embed]}) shorthand. */
   embed(embed: APIEmbed, ephemeral?: boolean): Promise<void>;
-  /** editReply({embeds: [embed], components: []}) shorthand — clears buttons. */
-  editEmbed(embed: APIEmbed): Promise<void>;
-  editSuccess(title: string, description?: string): Promise<void>;
   editError(title: string, description?: string): Promise<void>;
   /** Standard '已取消' edit payload. */
   cancelled(): Promise<void>;
