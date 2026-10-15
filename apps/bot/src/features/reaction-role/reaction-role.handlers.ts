@@ -116,9 +116,9 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
       return [
         `**${panel.title}**`,
         `ID: \`${panel.messageId}\``,
-        `頻道: ${Formatters.channelMention(panel.channelId)}`,
-        `模式: ${getModeText(panel.mode)}`,
-        `身分組數量: ${panel.reactionRoles.length} 個`,
+        `頻道：${Formatters.channelMention(panel.channelId)}`,
+        `模式：${getModeText(panel.mode)}`,
+        `身分組數量：${panel.reactionRoles.length} 個`,
         `[跳轉至訊息](${messageUrl})`,
         '',
       ].join('\n');

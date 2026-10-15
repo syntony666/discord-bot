@@ -57,7 +57,7 @@ const typeOption = {
 const templateOption = {
   name: 'template',
   type: ApplicationCommandOptionType.String,
-  description: '訊息模板 (可用變數: {user}, {username}, {server}, {memberCount})',
+  description: '訊息模板 (可用變數：{user}, {username}, {server}, {memberCount})',
 } as const;
 
 const enabledOption = {

@@ -68,7 +68,7 @@ export function useStatusHandlers(deps: StatusDeps) {
     const embed = (latency: string | number): APIEmbed => ({
       title: botUser.username,
       description:
-        '你想知道什麼呢?\n\n製作: @sakurashigure_retry ‧ [Twitter(X)](https://x.com/SakuraShigure99)',
+        '你想知道什麼呢？\n\n製作：@sakurashigure_retry ‧ [Twitter(X)](https://x.com/SakuraShigure99)',
       thumbnail: botIcon ? { url: botIcon } : undefined,
       fields: [
         { name: 'Uptime', value: `\`${getUptime()}\``, inline: false },
