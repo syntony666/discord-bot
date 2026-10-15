@@ -1,8 +1,9 @@
-import { InteractionResponseType, MessageFlags } from 'discord-api-types/v10';
+import { ComponentType, InteractionResponseType, MessageFlags } from 'discord-api-types/v10';
 import type {
   APIChatInputApplicationCommandInteraction,
   APIEmbed,
   APIInteractionResponse,
+  APIMessage,
   APIMessageComponentInteraction,
   APIModalSubmitInteraction,
   APIUser,
@@ -19,10 +20,18 @@ import type {
 import type { CommandRoute, Interaction, SessionApi } from './context.type';
 import { ORIGINAL_MESSAGE, type Resources } from './resources';
 import { avatarUrlOf, withEmbedDefaults, type EmbedTheme } from './embeds';
+import { COMPONENT_MAX_AGE_MS } from './sessions/store';
 
 function normalize(data: ReplyData) {
   return typeof data === 'string' ? { content: data } : data;
 }
+
+const hasInteractiveComponents = (data: ReplyData): boolean =>
+  (normalize(data).components ?? []).some(
+    (r) =>
+      r.type === ComponentType.ActionRow &&
+      r.components.some((c) => 'custom_id' in c && !!c.custom_id)
+  );
 
 export function interactionUser(i: Interaction): APIUser {
   const user = i.user ?? i.member?.user;
@@ -62,6 +71,10 @@ function baseMethods(
         ...withTheme(data),
         ...(ephemeral ? { flags: MessageFlags.Ephemeral } : {}),
       },
+    }).then(() => {
+      if (hasInteractiveComponents(data)) {
+        sessions.expireComponents(i.token, ORIGINAL_MESSAGE, COMPONENT_MAX_AGE_MS);
+      }
     });
 
   const editReply = (data: ReplyData) =>
@@ -73,11 +86,17 @@ function baseMethods(
 
   const confirm = (options: ConfirmOptions) => sessions.confirm(i, options, responded);
 
-  const followUp = (data: ReplyData) =>
-    resources
+  const followUp = (data: ReplyData) => {
+    const interactive = hasInteractiveComponents(data);
+    return resources
       .webhook(appId, i.token)
-      .execute(withTheme(data))
-      .then(() => undefined);
+      .execute(withTheme(data), interactive)
+      .then((msg) => {
+        if (interactive) {
+          sessions.expireComponents(i.token, (msg as APIMessage).id, COMPONENT_MAX_AGE_MS);
+        }
+      });
+  };
 
   // --- semantic replies -----------------------------------------------------
 
@@ -149,6 +168,10 @@ function baseMethods(
       callback({
         type: InteractionResponseType.UpdateMessage,
         data: withTheme(data),
+      }).then(() => {
+        if (hasInteractiveComponents(data)) {
+          sessions.expireComponents(i.token, ORIGINAL_MESSAGE, COMPONENT_MAX_AGE_MS);
+        }
       }),
 
     deferUpdate: () => callback({ type: InteractionResponseType.DeferredMessageUpdate }),
