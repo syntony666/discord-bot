@@ -30,12 +30,6 @@ export interface CreateNotificationChannelInput {
   channelId: string;
 }
 
-export interface UpsertMessageInput {
-  guildId: string;
-  joinMessage?: string;
-  leaveMessage?: string;
-}
-
 export interface UpdateMessageInput {
   guildId: string;
   type: 'join' | 'leave';

@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { NotificationType, UpdateMessageInput, UpsertMessageInput } from '@discord-bot/shared';
+import { NotificationType, UpdateMessageInput } from '@discord-bot/shared';
 import { MemberNotifyModule } from '../modules/member-notify.module';
 import { guildId, jsonOr404 } from './helpers';
 
@@ -44,11 +44,6 @@ export function memberNotifyRoutes(module: MemberNotifyModule) {
   routes.get('/member-notify-message', async (c) =>
     jsonOr404(c, await module.getMessageTemplates(guildId(c)))
   );
-
-  routes.put('/member-notify-message', async (c) => {
-    const body = await c.req.json<Omit<UpsertMessageInput, 'guildId'>>();
-    return c.json(await module.upsertMessageTemplates({ ...body, guildId: guildId(c) }));
-  });
 
   routes.patch('/member-notify-message', async (c) => {
     const body = await c.req.json<Omit<UpdateMessageInput, 'guildId'>>();
