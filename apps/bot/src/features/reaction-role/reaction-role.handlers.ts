@@ -31,7 +31,6 @@ export interface ReactionRoleDeps {
 
 const cancelled = {
   embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
-  components: [],
 };
 
 const panelNotFoundEmbed = (panelId: string, extraLine?: string) => ({
@@ -52,7 +51,6 @@ const failEmbed = (action: string, hint = '請稍後再試。') => ({
       color: Colors.ERROR,
     },
   ],
-  components: [],
 });
 
 export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
@@ -191,7 +189,6 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
             color: Colors.WARNING,
           },
         ],
-        components: [],
       });
       log.info({ guildId, panelId, rolesCount: roles.length }, 'Panel deleted successfully');
     } catch (error) {
@@ -257,7 +254,6 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
             color: Colors.SUCCESS,
           },
         ],
-        components: [],
       });
       log.info({ guildId, panelId, updates }, 'Panel edited successfully');
     } catch (error) {
@@ -401,7 +397,6 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
             color: Colors.SUCCESS,
           },
         ],
-        components: [],
       });
       log.info({ guildId, panelId, emoji }, 'Reaction role removed');
     } catch (error) {

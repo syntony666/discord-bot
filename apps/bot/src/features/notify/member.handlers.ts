@@ -38,7 +38,6 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
 
   const cancelled = {
     embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
-    components: [],
   };
 
   h.handler('member.enable', async (ctx) => {
@@ -119,7 +118,6 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
           color: Colors.SUCCESS,
         },
       ],
-      components: [],
     });
     log.info({ guildId }, 'All member notifications disabled');
   });
@@ -248,7 +246,6 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
           color: Colors.SUCCESS,
         },
       ],
-      components: [],
     });
     log.info(
       { guildId, type, hasTemplate: template !== undefined, enabled },
