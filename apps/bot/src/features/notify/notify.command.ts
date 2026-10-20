@@ -60,6 +60,12 @@ const templateOption = {
   description: '訊息範本（可用變數：{user}、{username}、{server}、{memberCount}）',
 } as const;
 
+const leaveTemplateOption = {
+  name: 'template',
+  type: ApplicationCommandOptionType.String,
+  description: '訊息範本（可用變數：{username}、{server}、{memberCount}）',
+} as const;
+
 const enabledOption = {
   name: 'enabled',
   type: ApplicationCommandOptionType.Boolean,
@@ -88,7 +94,7 @@ export const notifyCommand = defineCommand({
         {
           name: 'leave',
           description: '查看或設定離開通知',
-          options: [templateOption, enabledOption],
+          options: [leaveTemplateOption, enabledOption],
         },
       ],
     },
