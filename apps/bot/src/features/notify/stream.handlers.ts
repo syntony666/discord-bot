@@ -127,7 +127,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
 
     const existingWatcher = await api.getWatcher(guildId, PLATFORMS[platform], platformId);
     if (!existingWatcher) {
-      return ctx.info('監控不存在', `未找到此 ${platform} 頻道的監控`);
+      return ctx.error('監控不存在', `未找到此 ${platform} 頻道的監控`);
     }
 
     await api.removeWatcher(guildId, PLATFORMS[platform], platformId);
