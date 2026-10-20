@@ -8,11 +8,11 @@ import { defineCommand } from '@discord-bot/discord-client';
 const panelIdOption = {
   name: 'panel_id',
   type: ApplicationCommandOptionType.String,
-  description: 'Panel 訊息的 ID',
+  description: '選單訊息的 ID',
   required: true,
 } as const;
 
-export const reactionRoleCommand = defineCommand()({
+export const reactionRoleCommand = defineCommand({
   command: 'reaction-role',
   description: '管理反應身分組',
   default_member_permissions: String(PermissionFlagsBits.ManageRoles),
@@ -20,7 +20,7 @@ export const reactionRoleCommand = defineCommand()({
   subcommands: [
     {
       name: 'add',
-      description: '為 Panel 添加 Reaction Role',
+      description: '為選單新增反應身分組',
       options: [
         panelIdOption,
         {
@@ -45,7 +45,7 @@ export const reactionRoleCommand = defineCommand()({
     },
     {
       name: 'remove',
-      description: '移除 Reaction Role',
+      description: '移除反應身分組',
       options: [
         panelIdOption,
         {
@@ -58,36 +58,36 @@ export const reactionRoleCommand = defineCommand()({
     },
     {
       name: 'role-list',
-      description: '列出 Panel 的所有 Reaction Roles',
+      description: '列出選單的所有反應身分組',
       options: [panelIdOption],
     },
   ],
   groups: [
     {
       name: 'panel',
-      description: '管理 Reaction Role Panel',
+      description: '管理身分組選單',
       subcommands: [
         {
           name: 'create',
-          description: '建立新的 Reaction Role Panel',
+          description: '建立新的身分組選單',
           options: [
             {
               name: 'channel',
               type: ApplicationCommandOptionType.Channel,
-              description: '選擇要發送 panel 的頻道',
+              description: '選擇要發送選單的頻道',
               required: true,
               channel_types: [ChannelType.GuildText],
             },
             {
               name: 'title',
               type: ApplicationCommandOptionType.String,
-              description: 'Panel 標題',
+              description: '選單標題',
               max_length: 256,
             },
             {
               name: 'description',
               type: ApplicationCommandOptionType.String,
-              description: 'Panel 說明文字',
+              description: '選單說明文字',
               max_length: 2048,
             },
             {
@@ -102,22 +102,22 @@ export const reactionRoleCommand = defineCommand()({
             },
           ],
         },
-        { name: 'list', description: '列出所有 Reaction Role Panels' },
+        { name: 'list', description: '列出所有身分組選單' },
         {
           name: 'delete',
-          description: '刪除 Reaction Role Panel',
+          description: '刪除身分組選單',
           options: [
             {
               name: 'panel_id',
               type: ApplicationCommandOptionType.String,
-              description: 'Panel 訊息的 ID（從 panel footer 複製）',
+              description: '選單訊息的 ID（從選單頁尾複製）',
               required: true,
             },
           ],
         },
         {
           name: 'edit',
-          description: '編輯 Panel 設定',
+          description: '編輯選單設定',
           options: [
             panelIdOption,
             {

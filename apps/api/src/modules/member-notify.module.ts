@@ -3,7 +3,6 @@ import type {
   CreateNotificationChannelInput,
   NotificationType,
   UpdateMessageInput,
-  UpsertMessageInput,
 } from '@discord-bot/shared';
 
 export function createMemberNotifyModule(prisma: PrismaClient) {
@@ -17,7 +16,7 @@ export function createMemberNotifyModule(prisma: PrismaClient) {
     setNotificationChannel(input: CreateNotificationChannelInput) {
       return prisma.notificationChannel.upsert({
         where: { guildId_type: { guildId: input.guildId, type: input.type } },
-        update: { channelId: input.channelId, enabled: true },
+        update: { channelId: input.channelId },
         create: {
           guildId: input.guildId,
           type: input.type,
@@ -49,18 +48,6 @@ export function createMemberNotifyModule(prisma: PrismaClient) {
 
     getMessageTemplates(guildId: string) {
       return prisma.memberNotifyMessage.findUnique({ where: { guildId } });
-    },
-
-    upsertMessageTemplates(input: UpsertMessageInput) {
-      const data = {
-        ...(input.joinMessage !== undefined && { joinMessage: input.joinMessage }),
-        ...(input.leaveMessage !== undefined && { leaveMessage: input.leaveMessage }),
-      };
-      return prisma.memberNotifyMessage.upsert({
-        where: { guildId: input.guildId },
-        update: data,
-        create: { guildId: input.guildId, ...data },
-      });
     },
 
     updateMessage(input: UpdateMessageInput) {

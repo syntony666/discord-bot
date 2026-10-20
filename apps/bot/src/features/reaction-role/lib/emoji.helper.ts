@@ -57,10 +57,6 @@ export function normalizeEmojiFromReaction(emoji: {
   return emoji.name || '';
 }
 
-export function formatEmojiForReaction(stored: string): string {
-  return stored;
-}
-
 export function formatEmojiForDisplay(stored: string): string {
   const trimmed = stored.trim();
   const custom = trimmed

@@ -2,6 +2,7 @@ export const BaseColors = {
   LIGHT_BLUE: 0x8bb7ff,
   DISCORD_BLUE: 0x5865f2,
   TWITCH_PURPLE: 0x9146ff,
+  YOUTUBE_RED: 0xff0000,
   CYAN: 0x00d9ff,
   RED: 0xe6161a,
   PINK: 0xeb459e,
@@ -13,23 +14,18 @@ export const BaseColors = {
   GRAY_BLUE: 0x99aab5,
 } as const;
 
-export const CommandColors = {
+// Per-platform live-notification colors. When a new platform is added to
+// StreamPlatform (shared enum + prisma), assign its color here.
+export const StreamLiveColors = {
+  TWITCH: BaseColors.TWITCH_PURPLE,
+  YOUTUBE: BaseColors.YOUTUBE_RED,
+} as const;
+
+export const Colors = {
   SUCCESS: BaseColors.LIGHT_BLUE,
   ERROR: BaseColors.RED,
   INFO: BaseColors.GRAY,
   WARNING: BaseColors.YELLOW,
-} as const;
-
-export const NotificationColors = {
-  STREAM_LIVE: BaseColors.TWITCH_PURPLE,
   MEMBER_JOIN: BaseColors.GREEN,
   MEMBER_LEAVE: BaseColors.GRAY_BLUE,
-  ANNOUNCEMENT: BaseColors.DISCORD_BLUE,
 } as const;
-
-export const Colors = {
-  ...CommandColors,
-  ...NotificationColors,
-} as const;
-
-export type ColorType = (typeof Colors)[keyof typeof Colors];

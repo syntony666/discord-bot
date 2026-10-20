@@ -1,13 +1,13 @@
 import { Hono } from 'hono';
-import { NotificationType, UpdateMessageInput, UpsertMessageInput } from '@discord-bot/shared';
+import { NotificationType, UpdateMessageInput } from '@discord-bot/shared';
 import { MemberNotifyModule } from '../modules/member-notify.module';
-import { guildId, jsonOr404 } from './helpers';
+import { enumParam, enumQuery, guildId, jsonOr404, oneOfBody, requireFields } from './helpers';
 
 export function memberNotifyRoutes(module: MemberNotifyModule) {
   const routes = new Hono();
 
   routes.get('/notification-channels', async (c) => {
-    const type = c.req.query('type') as NotificationType | undefined;
+    const type = enumQuery(c, 'type', NotificationType);
     if (type !== undefined) {
       return jsonOr404(c, await module.getNotificationChannel(guildId(c), type));
     }
@@ -16,10 +16,11 @@ export function memberNotifyRoutes(module: MemberNotifyModule) {
 
   routes.put('/notification-channels/:type', async (c) => {
     const body = await c.req.json<{ channelId: string }>();
+    requireFields(body, 'channelId');
     return c.json(
       await module.setNotificationChannel({
         guildId: guildId(c),
-        type: c.req.param('type') as NotificationType,
+        type: enumParam(c, 'type', NotificationType),
         channelId: body.channelId,
       })
     );
@@ -27,17 +28,18 @@ export function memberNotifyRoutes(module: MemberNotifyModule) {
 
   routes.patch('/notification-channels/:type', async (c) => {
     const body = await c.req.json<{ enabled: boolean }>();
+    requireFields(body, 'enabled');
     return c.json(
       await module.toggleChannelEnabled(
         guildId(c),
-        c.req.param('type') as NotificationType,
+        enumParam(c, 'type', NotificationType),
         body.enabled
       )
     );
   });
 
   routes.delete('/notification-channels/:type', async (c) => {
-    await module.deleteNotificationChannel(guildId(c), c.req.param('type') as NotificationType);
+    await module.deleteNotificationChannel(guildId(c), enumParam(c, 'type', NotificationType));
     return c.body(null, 204);
   });
 
@@ -45,14 +47,11 @@ export function memberNotifyRoutes(module: MemberNotifyModule) {
     jsonOr404(c, await module.getMessageTemplates(guildId(c)))
   );
 
-  routes.put('/member-notify-message', async (c) => {
-    const body = await c.req.json<Omit<UpsertMessageInput, 'guildId'>>();
-    return c.json(await module.upsertMessageTemplates({ ...body, guildId: guildId(c) }));
-  });
-
   routes.patch('/member-notify-message', async (c) => {
     const body = await c.req.json<Omit<UpdateMessageInput, 'guildId'>>();
-    return c.json(await module.updateMessage({ ...body, guildId: guildId(c) }));
+    requireFields(body, 'type', 'message');
+    const type = oneOfBody(body, 'type', ['join', 'leave'] as const);
+    return c.json(await module.updateMessage({ guildId: guildId(c), type, message: body.message }));
   });
 
   routes.delete('/member-notify-message', async (c) => {

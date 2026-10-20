@@ -1,27 +1,20 @@
 import { GatewayDispatchEvents } from 'discord-api-types/v10';
-import type { GatewayDispatchPayload, GatewayPresenceUpdateData } from 'discord-api-types/v10';
+import type { GatewayDispatchPayload } from 'discord-api-types/v10';
 import { createCommandRouter, handlerKeys } from './internal/router';
 import type { Resources } from './internal/resources';
 import { toRestBody } from './internal/serialize';
 import { commandsMatch } from './internal/sync';
 import { createSessionStore } from './internal/sessions/store';
 import { createEventHub } from './internal/events/hub';
-import { createHelpers } from './internal/helpers';
+import type { DiscordHelpers } from './helpers.type';
 import { resolveOwnerIds } from './internal/owners';
 import type { Bot, BotOptions } from './bot.type';
 import type { Collected, Feature } from './features.type';
 import type { CommandDef } from './commands.type';
 
-export function createBot(
-  resources: Resources,
-  options: BotOptions,
-  getPing: () => number = () => 0,
-  updatePresence?: (data: GatewayPresenceUpdateData) => Promise<void>
-): Bot {
+export function createBot(resources: Resources, options: BotOptions, discord: DiscordHelpers): Bot {
   const { appId } = options;
   const onError = options.onError ?? ((err) => console.error(err));
-
-  const discord = createHelpers(resources, getPing, updatePresence);
   const sessions = createSessionStore(resources, appId, options.theme, onError);
   const router = createCommandRouter(
     resources,
@@ -72,8 +65,8 @@ export function createBot(
       for (const [name, fn] of Object.entries(collected.stream ?? {})) {
         hub.stream(name as never, fn as never);
       }
-      for (const [pattern, fn] of Object.entries(collected.component ?? {})) {
-        router.addComponent(pattern, fn);
+      for (const [pattern, entry] of Object.entries(collected.component ?? {})) {
+        router.addComponent(pattern, entry.handler, { sameUser: entry.sameUser });
       }
     }
   };

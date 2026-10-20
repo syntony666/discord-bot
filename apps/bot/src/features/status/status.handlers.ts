@@ -1,5 +1,5 @@
-import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
-import { DiscordSnowflake, Formatters, useHandlers } from '@discord-bot/discord-client';
+import { ComponentType } from 'discord-api-types/v10';
+import { DiscordSnowflake, Formatters, linkButton, useHandlers } from '@discord-bot/discord-client';
 import type {
   APIActionRowComponent,
   APIButtonComponentWithURL,
@@ -14,6 +14,7 @@ import type { ReactionRoleApi } from '@features/reaction-role/reaction-role.api'
 import type { StreamNotifyApi } from '@features/notify/stream.api';
 import { getBotVersion, getUptime } from './bot-info';
 import { appConfig } from '@core/config';
+import { Colors } from '@core/config/colors.config';
 import { createLogger } from '@discord-bot/shared';
 import { statusCommand } from './status.command';
 import { avatarUrl, guildIconUrl } from './status.utils';
@@ -41,7 +42,7 @@ export function useStatusHandlers(deps: StatusDeps) {
     const version = getBotVersion();
     const botUser = discord.botUser;
     if (!botUser) {
-      return ctx.error('Bot 尚未就緒');
+      return ctx.error('錯誤', '機器人尚未就緒');
     }
     const botIcon = avatarUrl(botUser.id, botUser.avatar);
 
@@ -49,36 +50,30 @@ export function useStatusHandlers(deps: StatusDeps) {
       {
         type: ComponentType.ActionRow,
         components: [
-          {
-            type: ComponentType.Button,
-            style: ButtonStyle.Link,
-            label: '使用說明',
-            url: 'https://discord-bot.syntony666.com',
-          },
-          {
-            type: ComponentType.Button,
-            style: ButtonStyle.Link,
-            label: '邀請連結',
-            url: `https://discord.com/api/oauth2/authorize?client_id=${discord.botId}&permissions=8&scope=bot%20applications.commands`,
-          },
+          linkButton('使用說明', 'https://discord-bot.syntony666.com'),
+          linkButton(
+            '邀請連結',
+            `https://discord.com/api/oauth2/authorize?client_id=${discord.botId}&permissions=8&scope=bot%20applications.commands`
+          ),
         ],
       },
     ];
 
     const embed = (latency: string | number): APIEmbed => ({
       title: botUser.username,
+      color: Colors.INFO,
       description:
-        '你想知道什麼呢?\n\n製作: @sakurashigure_retry ‧ [Twitter(X)](https://x.com/SakuraShigure99)',
+        '你想知道什麼呢？\n\n製作：@sakurashigure_retry ‧ [Twitter(X)](https://x.com/SakuraShigure99)',
       thumbnail: botIcon ? { url: botIcon } : undefined,
       fields: [
-        { name: 'Uptime', value: `\`${getUptime()}\``, inline: false },
+        { name: '運作時間', value: `\`${getUptime()}\``, inline: false },
         {
-          name: 'API Latency',
+          name: 'API 延遲',
           value: typeof latency === 'number' ? `\`${latency}ms\`` : `\`${latency}\``,
           inline: true,
         },
         {
-          name: 'WS Ping',
+          name: 'WS 延遲',
           value: `\`${discord.wsPing > 0 ? `${discord.wsPing}ms` : '—'}\``,
           inline: true,
         },
@@ -99,8 +94,6 @@ export function useStatusHandlers(deps: StatusDeps) {
   });
 
   h.handler('guild', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('無法取得伺服器資訊');
-
     const [guild, record] = await Promise.all([
       discord.getGuild(ctx.guildId),
       deps.api.guild.getGuild(ctx.guildId),
@@ -110,7 +103,7 @@ export function useStatusHandlers(deps: StatusDeps) {
 
     const fields: APIEmbed['fields'] = [
       {
-        name: '創立時間',
+        name: '建立時間',
         value: Formatters.time(
           new Date(DiscordSnowflake.timestampFrom(guild.id)),
           Formatters.TimestampStyles.LongDateShortTime
@@ -123,7 +116,7 @@ export function useStatusHandlers(deps: StatusDeps) {
         inline: true,
       },
       {
-        name: '在線',
+        name: '線上',
         value: `${guild.approximate_presence_count || 0} 人`,
         inline: true,
       },
@@ -140,7 +133,7 @@ export function useStatusHandlers(deps: StatusDeps) {
         value:
           `監控 ${formatUsage(counts.streamWatchers, limits.streamWatchers)} · ` +
           `關鍵字 ${formatUsage(counts.keywordRules, limits.keywordRules)} · ` +
-          `面板 ${formatUsage(counts.reactionRolePanels, limits.reactionRolePanels)}`,
+          `身分組選單 ${formatUsage(counts.reactionRolePanels, limits.reactionRolePanels)}`,
         inline: false,
       });
     }
@@ -149,6 +142,7 @@ export function useStatusHandlers(deps: StatusDeps) {
       embeds: [
         {
           title: record ? `${TIER_ICON[record.tier]} ${guild.name}` : guild.name,
+          color: Colors.INFO,
           thumbnail: icon ? { url: icon } : undefined,
           fields,
           footer: {
@@ -162,14 +156,12 @@ export function useStatusHandlers(deps: StatusDeps) {
   });
 
   h.handler('features', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('無法取得伺服器資訊');
-
     const fields = await buildFeaturesStatusFields(ctx.guildId, deps.api, discord.commandMention);
     await ctx.reply({
       embeds: [
         fields.length > 0
-          ? { title: '功能狀態總覽', fields }
-          : { title: '功能狀態總覽', description: '目前沒有啟用任何功能' },
+          ? { title: '功能狀態總覽', color: Colors.INFO, fields }
+          : { title: '功能狀態總覽', color: Colors.INFO, description: '目前沒有啟用任何功能' },
       ],
     });
     log.info({ guildId: ctx.guildId }, 'Features status displayed');

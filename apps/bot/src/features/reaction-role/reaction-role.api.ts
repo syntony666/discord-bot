@@ -5,6 +5,7 @@ import {
   orNull,
   ReactionRole,
   ReactionRolePanel,
+  ReactionRolePanelWithRoles,
   UpdateReactionRolePanelInput,
 } from '@discord-bot/shared';
 
@@ -21,6 +22,11 @@ export function createReactionRoleApi(request: ApiRequest) {
     },
     getPanelsByGuild(guildId: string) {
       return request<ReactionRolePanel[]>(`${base(guildId)}/reaction-role-panels`);
+    },
+    getPanelsWithRoles(guildId: string) {
+      return request<ReactionRolePanelWithRoles[]>(
+        `${base(guildId)}/reaction-role-panels?withRoles=true`
+      );
     },
     createPanel(input: CreateReactionRolePanelInput) {
       const { guildId, ...body } = input;

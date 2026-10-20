@@ -21,6 +21,29 @@ export function createReactionRoleModule(prisma: PrismaClient) {
       });
     },
 
+    async getPanelsWithRoles(guildId: string) {
+      const [panels, roles] = await Promise.all([
+        prisma.reactionRolePanel.findMany({
+          where: { guildId },
+          orderBy: { createdAt: 'desc' },
+        }),
+        prisma.reactionRole.findMany({
+          where: { guildId },
+          orderBy: { emoji: 'asc' },
+        }),
+      ]);
+      const rolesByMessage = new Map<string, typeof roles>();
+      for (const r of roles) {
+        const arr = rolesByMessage.get(r.messageId) ?? [];
+        arr.push(r);
+        rolesByMessage.set(r.messageId, arr);
+      }
+      return panels.map((p) => ({
+        ...p,
+        reactionRoles: rolesByMessage.get(p.messageId) ?? [],
+      }));
+    },
+
     async createPanel(input: CreateReactionRolePanelInput) {
       const count = await prisma.reactionRolePanel.count({
         where: { guildId: input.guildId },

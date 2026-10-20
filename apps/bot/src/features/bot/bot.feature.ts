@@ -6,7 +6,7 @@ import { createBotApi } from './bot.api';
 import { useBotHandlers } from './bot.handlers';
 import type { BotDeps } from './bot.handlers';
 
-export const botFeature = defineFeature()({
+export const botFeature = defineFeature({
   command: botCommand,
   useHandlers: (deps: BotDeps) => useBotHandlers(deps),
   deps: {

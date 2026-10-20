@@ -6,7 +6,6 @@ import {
   NotificationType,
   orNull,
   UpdateMessageInput,
-  UpsertMessageInput,
 } from '@discord-bot/shared';
 
 const base = (guildId: string) => `/api/v1/guilds/${guildId}`;
@@ -38,13 +37,6 @@ export function createMemberNotifyApi(request: ApiRequest) {
     },
     getMessageTemplates(guildId: string) {
       return orNull(request<MemberNotifyMessage>(`${base(guildId)}/member-notify-message`));
-    },
-    upsertMessageTemplates(input: UpsertMessageInput) {
-      const { guildId, ...body } = input;
-      return request<MemberNotifyMessage>(`${base(guildId)}/member-notify-message`, {
-        method: 'PUT',
-        body: JSON.stringify(body),
-      });
     },
     updateMessage(input: UpdateMessageInput) {
       const { guildId, ...body } = input;

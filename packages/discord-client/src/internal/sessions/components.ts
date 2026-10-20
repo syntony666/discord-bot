@@ -1,6 +1,7 @@
 import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
 import type {
   APIButtonComponentWithCustomId,
+  APIButtonComponentWithURL,
   APIEmbed,
   APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
@@ -18,6 +19,13 @@ export const button = (
   label,
   style,
   disabled,
+});
+
+export const linkButton = (label: string, url: string): APIButtonComponentWithURL => ({
+  type: ComponentType.Button,
+  style: ButtonStyle.Link,
+  label,
+  url,
 });
 
 export const row = <T>(...components: T[]) => ({
