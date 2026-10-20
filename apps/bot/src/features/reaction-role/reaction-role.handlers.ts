@@ -141,7 +141,7 @@ export function useReactionRoleHandlers(deps: ReactionRoleDeps) {
 
       await ctx.announce({
         title: '選單已刪除',
-        description: `選單 \`${panelId}\` 及其 ${roles.length} 個反應身分組已全部刪除。`,
+        description: `「${panel.title}」(${Formatters.channelMention(panel.channelId)}) 及其 ${roles.length} 個反應身分組已全部刪除。`,
         color: Colors.WARNING,
       });
       log.info({ guildId, panelId, rolesCount: roles.length }, 'Panel deleted successfully');
