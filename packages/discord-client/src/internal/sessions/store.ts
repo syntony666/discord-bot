@@ -299,7 +299,20 @@ export function createSessionStore(
       .interaction(i.id, i.token)
       .respond({
         type: InteractionResponseType.ChannelMessageWithSource,
-        data: { content: '這個操作已過期，請重新執行指令。', flags: MessageFlags.Ephemeral },
+        data: {
+          embeds: [
+            withEmbedDefaults(
+              {
+                title: '❌ 操作已過期',
+                description: '請重新執行指令。',
+                color: theme.colors.error,
+              },
+              usernameOf(i),
+              theme
+            ),
+          ],
+          flags: MessageFlags.Ephemeral,
+        },
       })
       .catch(fail);
 
@@ -405,7 +418,17 @@ export function createSessionStore(
           await resources.interaction(i.id, i.token).respond({
             type: InteractionResponseType.ChannelMessageWithSource,
             data: {
-              content: `頁碼必須介於 1 到 ${totalPages}。`,
+              embeds: [
+                withEmbedDefaults(
+                  {
+                    title: '❌ 頁碼錯誤',
+                    description: `頁碼必須介於 1 到 ${totalPages}。`,
+                    color: theme.colors.error,
+                  },
+                  usernameOf(i),
+                  theme
+                ),
+              ],
               flags: MessageFlags.Ephemeral,
             },
           });
