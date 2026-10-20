@@ -122,7 +122,8 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
       leaveChannel ? `通知頻道：${Formatters.channelMention(leaveChannel.channelId)}` : '—',
       `訊息範本：\`${templates?.leaveMessage || '預設訊息'}\``,
       '',
-      '**可用變數**：`{user}`、`{username}`、`{server}`、`{memberCount}`',
+      '**可用變數（加入）**：`{user}`、`{username}`、`{server}`、`{memberCount}`',
+      '**可用變數（離開）**：`{username}`、`{server}`、`{memberCount}`',
     ].join('\n');
 
     await ctx.info('成員通知狀態', description);
@@ -139,7 +140,7 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
         : templates?.leaveMessage || DEFAULT_MEMBER_MESSAGES.leave;
 
     const testMessage = service.formatMessage(template, {
-      user: Formatters.userMention(ctx.user.id),
+      user: type === 'join' ? Formatters.userMention(ctx.user.id) : ctx.user.username || 'TestUser',
       username: ctx.user.username || 'TestUser',
       server: guild.name,
       memberCount: guild.approximate_member_count || 0,
@@ -230,7 +231,8 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
         (isJoin ? templates?.joinMessage : templates?.leaveMessage) ||
           DEFAULT_MEMBER_MESSAGES[type],
         {
-          user: Formatters.userMention(user.id),
+          // A departed member can't be mentioned; fall back to their username.
+          user: isJoin ? Formatters.userMention(user.id) : user.username || 'Unknown',
           username: user.username || 'Unknown',
           server: guild.name,
           memberCount: guild.approximate_member_count || 0,
