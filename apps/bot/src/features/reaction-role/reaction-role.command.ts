@@ -74,7 +74,7 @@ export const reactionRoleCommand = defineCommand({
             {
               name: 'channel',
               type: ApplicationCommandOptionType.Channel,
-              description: '選擇要發送 panel 的頻道',
+              description: '選擇要發送選單的頻道',
               required: true,
               channel_types: [ChannelType.GuildText],
             },
@@ -110,7 +110,7 @@ export const reactionRoleCommand = defineCommand({
             {
               name: 'panel_id',
               type: ApplicationCommandOptionType.String,
-              description: '選單訊息的 ID（從選單 footer 複製）',
+              description: '選單訊息的 ID（從選單頁尾複製）',
               required: true,
             },
           ],

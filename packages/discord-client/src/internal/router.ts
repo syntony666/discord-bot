@@ -238,7 +238,7 @@ export function createCommandRouter(
               embeds: [
                 {
                   title: '🔒',
-                  description: '此操作僅限指令原使用者',
+                  description: '此操作僅限原使用者',
                   color: theme.colors.error,
                 },
               ],

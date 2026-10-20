@@ -66,14 +66,14 @@ export function useStatusHandlers(deps: StatusDeps) {
         '你想知道什麼呢？\n\n製作：@sakurashigure_retry ‧ [Twitter(X)](https://x.com/SakuraShigure99)',
       thumbnail: botIcon ? { url: botIcon } : undefined,
       fields: [
-        { name: 'Uptime', value: `\`${getUptime()}\``, inline: false },
+        { name: '運作時間', value: `\`${getUptime()}\``, inline: false },
         {
-          name: 'API Latency',
+          name: 'API 延遲',
           value: typeof latency === 'number' ? `\`${latency}ms\`` : `\`${latency}\``,
           inline: true,
         },
         {
-          name: 'WS Ping',
+          name: 'WS 延遲',
           value: `\`${discord.wsPing > 0 ? `${discord.wsPing}ms` : '—'}\``,
           inline: true,
         },
@@ -103,7 +103,7 @@ export function useStatusHandlers(deps: StatusDeps) {
 
     const fields: APIEmbed['fields'] = [
       {
-        name: '創立時間',
+        name: '建立時間',
         value: Formatters.time(
           new Date(DiscordSnowflake.timestampFrom(guild.id)),
           Formatters.TimestampStyles.LongDateShortTime
@@ -116,7 +116,7 @@ export function useStatusHandlers(deps: StatusDeps) {
         inline: true,
       },
       {
-        name: '在線',
+        name: '線上',
         value: `${guild.approximate_presence_count || 0} 人`,
         inline: true,
       },

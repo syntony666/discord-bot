@@ -143,7 +143,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
 
     const candidates = splitKeywordResponse(rule.response);
     const meta = [`\`${rule.matchType}\``, Formatters.userMention(rule.editorId)];
-    if (candidates.length > 1) meta.push(`候選 ${candidates.length} 個`);
+    if (candidates.length > 1) meta.push(`選項 ${candidates.length} 個`);
 
     const body = candidates.length > 1 ? candidates.join('、') : rule.response;
     const shown =
@@ -187,7 +187,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
         fields: [
           {
             id: 'response',
-            label: '回覆內容（以 ;; 分隔多個候選）',
+            label: '回覆內容（用 ;; 分隔多個選項）',
             style: 'paragraph',
             value: rule.response,
             maxLength: 4000,
