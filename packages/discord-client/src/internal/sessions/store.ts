@@ -316,6 +316,28 @@ export function createSessionStore(
       })
       .catch(fail);
 
+  const restricted = (i: APIInteraction) =>
+    resources
+      .interaction(i.id, i.token)
+      .respond({
+        type: InteractionResponseType.ChannelMessageWithSource,
+        data: {
+          embeds: [
+            withEmbedDefaults(
+              {
+                title: '🔒',
+                description: '此操作僅限指令原使用者',
+                color: theme.colors.error,
+              },
+              usernameOf(i),
+              theme
+            ),
+          ],
+          flags: MessageFlags.Ephemeral,
+        },
+      })
+      .catch(fail);
+
   const handleComponent = async (
     i: APIMessageComponentInteraction,
     id: string,
@@ -323,7 +345,7 @@ export function createSessionStore(
     session: Pending
   ) => {
     if (session.kind === 'confirm') {
-      if (notOwner(i, session.ownerId)) return expired(i);
+      if (notOwner(i, session.ownerId)) return restricted(i);
       pending.delete(id);
       clearTimeout(session.timer);
       await resources.interaction(i.id, i.token).respond({
@@ -335,7 +357,7 @@ export function createSessionStore(
     }
 
     if (session.kind !== 'paginate') return;
-    if (notOwner(i, session.ownerId)) return expired(i);
+    if (notOwner(i, session.ownerId)) return restricted(i);
 
     const totalPages = Math.ceil(session.items.length / session.pageSize);
 
@@ -408,7 +430,7 @@ export function createSessionStore(
 
       if (kind === 'pag' && session.kind === 'paginate' && action === 'jump') {
         if (notOwner(i, session.ownerId)) {
-          await expired(i);
+          await restricted(i);
           return true;
         }
         const raw = modalFieldValues(i).page_number;
