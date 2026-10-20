@@ -2,21 +2,28 @@ import { Hono } from 'hono';
 import {
   CreateReactionRoleInput,
   CreateReactionRolePanelInput,
+  ReactionRoleMode,
   UpdateReactionRolePanelInput,
 } from '@discord-bot/shared';
 import { ReactionRoleModule } from '../modules/reaction-role.module';
-import { guildId, jsonOr404 } from './helpers';
+import { enumBody, guildId, jsonOr404, requireFields, requireQuery } from './helpers';
 
 export function reactionRoleRoutes(module: ReactionRoleModule) {
   const routes = new Hono();
 
   routes.get('/reaction-role-panels', async (c) =>
-    c.json(await module.getPanelsByGuild(guildId(c)))
+    c.json(
+      c.req.query('withRoles') === 'true'
+        ? await module.getPanelsWithRoles(guildId(c))
+        : await module.getPanelsByGuild(guildId(c))
+    )
   );
 
   routes.post('/reaction-role-panels', async (c) => {
     const body = await c.req.json<Omit<CreateReactionRolePanelInput, 'guildId'>>();
-    return c.json(await module.createPanel({ ...body, guildId: guildId(c) }), 201);
+    requireFields(body, 'channelId', 'messageId');
+    const mode = enumBody(body, 'mode', ReactionRoleMode, { optional: true });
+    return c.json(await module.createPanel({ ...body, mode, guildId: guildId(c) }), 201);
   });
 
   routes.get('/reaction-role-panels/:messageId', async (c) =>
@@ -25,7 +32,10 @@ export function reactionRoleRoutes(module: ReactionRoleModule) {
 
   routes.patch('/reaction-role-panels/:messageId', async (c) => {
     const body = await c.req.json<UpdateReactionRolePanelInput>();
-    return c.json(await module.updatePanel(guildId(c), c.req.param('messageId'), body));
+    const mode = enumBody(body, 'mode', ReactionRoleMode, { optional: true });
+    return c.json(
+      await module.updatePanel(guildId(c), c.req.param('messageId'), { ...body, mode })
+    );
   });
 
   routes.delete('/reaction-role-panels/:messageId', async (c) => {
@@ -34,11 +44,12 @@ export function reactionRoleRoutes(module: ReactionRoleModule) {
   });
 
   routes.get('/reaction-roles', async (c) =>
-    c.json(await module.getReactionRolesByMessage(guildId(c), c.req.query('messageId') ?? ''))
+    c.json(await module.getReactionRolesByMessage(guildId(c), requireQuery(c, 'messageId')))
   );
 
   routes.post('/reaction-roles', async (c) => {
     const body = await c.req.json<Omit<CreateReactionRoleInput, 'guildId'>>();
+    requireFields(body, 'messageId', 'emoji', 'roleId');
     return c.json(await module.createReactionRole({ ...body, guildId: guildId(c) }), 201);
   });
 

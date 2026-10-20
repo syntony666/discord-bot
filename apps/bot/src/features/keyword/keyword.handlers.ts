@@ -1,6 +1,7 @@
 import { button, Formatters, row, useHandlers } from '@discord-bot/discord-client';
 import { ButtonStyle, RESTJSONErrorCodes } from 'discord-api-types/v10';
-import { KeywordMatchType } from '@discord-bot/shared';
+import type { APIEmbed } from 'discord-api-types/v10';
+import { KeywordMatchType, splitKeywordResponse } from '@discord-bot/shared';
 import type { KeywordRule, UpdateKeywordRuleInput } from '@discord-bot/shared';
 import type { CommandContext, DiscordHelpers } from '@discord-bot/discord-client';
 import { Colors } from '@core/config/colors.config';
@@ -11,6 +12,9 @@ import { responsePreview, truncate } from './keyword.preview';
 import { keywordCommand } from './keyword.command';
 
 const log = createLogger('Keyword');
+
+// Discord embed description limit is 4096; leave room for the truncation suffix.
+const MAX_VIEW_LENGTH = 3900;
 
 /** What this feature actually needs — the bootstrap deps object must cover it. */
 export interface KeywordDeps {
@@ -24,24 +28,15 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   const service = createKeywordService(api);
   const h = useHandlers(keywordCommand);
 
-  const cancelled = {
-    embeds: [{ title: '已取消', description: '操作已取消。', color: Colors.INFO }],
-    components: [],
-  };
-
   const formatRule = (r: KeywordRule) =>
     `**${truncate(r.pattern, 150)}** ⭢ ${responsePreview(r.response, 150)}\n\`${r.matchType}\` ${Formatters.userMention(r.editorId)}`;
 
-  const applyUpdate = async (input: UpdateKeywordRuleInput) => {
+  const applyUpdate = async (input: UpdateKeywordRuleInput): Promise<APIEmbed> => {
     const rule = await api.updateRule(input);
     return {
-      embeds: [
-        {
-          title: '關鍵字已更新',
-          description: `\`${rule.matchType}\` **${input.pattern}** ⭢ ${responsePreview(input.response, 900)}`,
-          color: Colors.SUCCESS,
-        },
-      ],
+      title: '關鍵字已更新',
+      description: `\`${rule.matchType}\` **${input.pattern}** ⭢ ${responsePreview(input.response, 900)}`,
+      color: Colors.SUCCESS,
     };
   };
 
@@ -57,12 +52,12 @@ export function useKeywordHandlers(deps: KeywordDeps) {
       emptyText,
       render: (page) => ({
         title,
+        color: Colors.INFO,
         description: page.map(formatRule).join('\n\n'),
       }),
     });
 
   h.handler('add', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const { pattern, response } = ctx.options;
     const matchType = ctx.options.match_type ?? KeywordMatchType.EXACT;
@@ -72,94 +67,87 @@ export function useKeywordHandlers(deps: KeywordDeps) {
 
     if (!existing) {
       await api.createRule({ guildId, pattern, matchType, response, editorId });
-      await ctx.reply({
-        embeds: [
-          {
-            title: '關鍵字已新增',
-            description: `\`${matchType}\` **${pattern}** ⭢ ${responsePreview(response, 900)}`,
-            color: Colors.SUCCESS,
-          },
-        ],
-      });
+      await ctx.success(
+        '關鍵字已新增',
+        `\`${matchType}\` **${pattern}** ⭢ ${responsePreview(response, 900)}`
+      );
       log.info({ pattern, guildId }, 'Keyword added');
       return;
     }
 
-    const ok = await ctx.confirm({
-      title: '⚠️ 確認覆寫關鍵字',
-      description: `關鍵字 \`${pattern}\` 已存在。是否要覆寫？`,
-      fields: [
-        {
-          name: '目前設定',
-          value: `**回覆**: ${responsePreview(existing.response, 900)}\n**比對類型**: ${existing.matchType}`,
-        },
-        {
-          name: '新設定',
-          value: `**回覆**: ${responsePreview(response, 900)}\n**比對類型**: ${matchType}`,
-        },
-      ],
-      confirmLabel: '確認覆寫',
-      cancelLabel: '取消',
-      danger: true,
-    });
-    if (!ok) return ctx.editReply(cancelled);
+    if (
+      !(await ctx.confirmed({
+        title: '⚠️ 確認覆寫關鍵字',
+        description: `關鍵字 \`${pattern}\` 已存在。是否要覆寫？`,
+        fields: [
+          {
+            name: '目前設定',
+            value: `**回覆**: ${responsePreview(existing.response, 900)}\n**比對類型**: ${existing.matchType}`,
+          },
+          {
+            name: '新設定',
+            value: `**回覆**: ${responsePreview(response, 900)}\n**比對類型**: ${matchType}`,
+          },
+        ],
+        confirmLabel: '確認覆寫',
+        cancelLabel: '取消',
+        danger: true,
+      }))
+    )
+      return;
 
     await api.updateRule({ guildId, pattern, response, matchType, editorId });
-    await ctx.editReply({
-      embeds: [
+    await ctx.announce({
+      title: '關鍵字已更新',
+      description: `${Formatters.userMention(editorId)} 已覆蓋更新關鍵字 \`${pattern}\``,
+      fields: [
         {
-          title: '關鍵字已更新',
-          description: `${Formatters.userMention(editorId)} 已覆蓋更新關鍵字 \`${pattern}\``,
-          fields: [
-            {
-              name: '新設定',
-              value: `\`${matchType}\` **${pattern}** ⭢ ${responsePreview(response, 900)}`,
-            },
-          ],
-          color: Colors.SUCCESS,
+          name: '新設定',
+          value: `\`${matchType}\` **${pattern}** ⭢ ${responsePreview(response, 900)}`,
         },
       ],
-      components: [],
+      color: Colors.SUCCESS,
     });
     log.info({ pattern, guildId }, 'Keyword overwritten');
   });
 
   h.handler('edit', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const { pattern, response } = ctx.options;
     const matchType = ctx.options.match_type ?? KeywordMatchType.EXACT;
 
-    const existing = await api.getRuleByPattern(guildId, pattern);
-    if (!existing) return ctx.error('找不到此關鍵字。');
+    const existing = await ctx.require(() => api.getRuleByPattern(guildId, pattern), '錯誤', {
+      description: '找不到此關鍵字。',
+    });
+    if (!existing) return;
 
-    await ctx.reply(
+    await ctx.embed(
       await applyUpdate({ guildId, pattern, response, matchType, editorId: ctx.user.id })
     );
     log.info({ pattern, guildId }, 'Keyword updated');
   });
 
   h.handler('list', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
-
     const rules = await api.getRulesForList(ctx.guildId);
     await paginateRules(ctx, rules, '關鍵字規則列表', '目前沒有任何關鍵字規則。');
     log.info({ guildId: ctx.guildId }, 'Keyword list displayed');
   });
 
   h.handler('view', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const { pattern } = ctx.options;
 
-    const rule = await api.getRuleByPattern(ctx.guildId, pattern);
-    if (!rule) return ctx.error('找不到此關鍵字。');
+    const rule = await ctx.require(() => api.getRuleByPattern(ctx.guildId, pattern), '錯誤', {
+      description: '找不到此關鍵字。',
+    });
+    if (!rule) return;
 
-    const candidates = rule.response.split(';;').filter((p) => p.length > 0);
+    const candidates = splitKeywordResponse(rule.response);
     const meta = [`\`${rule.matchType}\``, Formatters.userMention(rule.editorId)];
-    if (candidates.length > 1) meta.push(`候選 ${candidates.length} 個`);
+    if (candidates.length > 1) meta.push(`選項 ${candidates.length} 個`);
 
     const body = candidates.length > 1 ? candidates.join('、') : rule.response;
-    const shown = body.length > 3900 ? `${body.slice(0, 3900)}… (已截斷)` : body;
+    const shown =
+      body.length > MAX_VIEW_LENGTH ? `${body.slice(0, MAX_VIEW_LENGTH)}… (已截斷)` : body;
     const arrow =
       candidates.length > 1 ? `**${rule.pattern}** ⭢\n${shown}` : `**${rule.pattern}** ⭢ ${shown}`;
 
@@ -182,98 +170,86 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     log.info({ guildId: ctx.guildId, pattern }, 'Keyword rule viewed');
   });
 
-  h.component('kw:edit:{pattern}', async (ctx) => {
-    if (!ctx.guildId) return;
-    const guildId = ctx.guildId;
-    const pattern = ctx.params.pattern ?? '';
+  h.component(
+    'kw:edit:{pattern}',
+    async (ctx) => {
+      if (!ctx.guildId) return;
+      const guildId = ctx.guildId;
+      const pattern = ctx.params.pattern ?? '';
 
-    const rule = await api.getRuleByPattern(guildId, pattern);
-    if (!rule) {
-      return ctx.reply(
-        {
-          embeds: [
-            {
-              title: '❌ 錯誤',
-              description: '找不到此關鍵字，可能已被刪除。',
-              color: Colors.ERROR,
-            },
-          ],
-        },
-        true
-      );
-    }
+      const rule = await api.getRuleByPattern(guildId, pattern);
+      if (!rule) {
+        return ctx.error('錯誤', '找不到此關鍵字，可能已被刪除。');
+      }
 
-    const values = await ctx.modal({
-      title: '修改關鍵字回覆',
-      fields: [
-        {
-          id: 'response',
-          label: '回覆內容（以 ;; 分隔多個候選）',
-          style: 'paragraph',
-          value: rule.response,
-          maxLength: 4000,
-        },
-      ],
-    });
-    if (!values) return;
+      const values = await ctx.modal({
+        title: '修改關鍵字回覆',
+        fields: [
+          {
+            id: 'response',
+            label: '回覆內容（用 ;; 分隔多個選項）',
+            style: 'paragraph',
+            value: rule.response,
+            maxLength: 4000,
+          },
+        ],
+      });
+      if (!values) return;
 
-    const response = values.response;
-    if (!response || response === rule.response) return;
+      const response = values.response;
+      if (!response || response === rule.response) return;
 
-    await ctx.followUp(await applyUpdate({ guildId, pattern, response, editorId: ctx.user.id }));
-    log.info({ pattern, guildId }, 'Keyword updated via view modal');
-  });
+      await ctx.announce(await applyUpdate({ guildId, pattern, response, editorId: ctx.user.id }));
+      log.info({ pattern, guildId }, 'Keyword updated via view modal');
+    },
+    { sameUser: true }
+  );
 
   h.handler('search', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const { query } = ctx.options;
 
     const rules = await api.searchRules(guildId, query);
-    await paginateRules(ctx, rules, `關鍵字搜尋：${query}`, `找不到符合「${query}」的關鍵字規則。`);
+    await paginateRules(
+      ctx,
+      rules,
+      `關鍵字搜尋：${query}`,
+      `找不到符合 **${query}** 的關鍵字規則。`
+    );
     log.info({ guildId, query }, 'Keyword search displayed');
   });
 
   h.handler('delete', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const { pattern } = ctx.options;
-    const editorId = ctx.user.id;
 
-    const rule = await api.getRuleByPattern(guildId, pattern);
-    if (!rule) return ctx.error('找不到此關鍵字，可能已被其他人刪除。');
-
-    const ok = await ctx.confirm({
-      title: '⚠️ 確認刪除關鍵字',
-      description: `即將刪除關鍵字 \`${pattern}\`，此操作無法復原。`,
-      fields: [
-        {
-          name: '關鍵字資訊',
-          value: `**回覆**: ${responsePreview(rule.response, 900)}\n**比對類型**: ${rule.matchType}`,
-        },
-      ],
-      confirmLabel: '確認刪除',
-      cancelLabel: '取消',
-      danger: true,
+    const rule = await ctx.require(() => api.getRuleByPattern(guildId, pattern), '錯誤', {
+      description: '找不到此關鍵字，可能已被其他人刪除。',
     });
-    if (!ok) return ctx.editReply(cancelled);
+    if (!rule) return;
+
+    if (
+      !(await ctx.confirmed({
+        title: '⚠️ 確認刪除關鍵字',
+        description: `即將刪除關鍵字 \`${pattern}\`，此操作無法復原。`,
+        fields: [
+          {
+            name: '關鍵字資訊',
+            value: `**回覆**: ${responsePreview(rule.response, 900)}\n**比對類型**: ${rule.matchType}`,
+          },
+        ],
+        confirmLabel: '確認刪除',
+        cancelLabel: '取消',
+        danger: true,
+      }))
+    )
+      return;
 
     await api.deleteRule(guildId, pattern);
-    await ctx.editReply({
-      embeds: [
-        {
-          title: '關鍵字已刪除',
-          description: `${Formatters.userMention(editorId)} 已刪除關鍵字 \`${pattern}\``,
-          fields: [
-            {
-              name: '已刪除的設定',
-              value: `\`${rule.matchType}\` **${truncate(rule.pattern, 150)}** ⭢ ${responsePreview(rule.response, 900)}`,
-            },
-          ],
-          color: Colors.WARNING,
-        },
-      ],
-      components: [],
+    await ctx.announce({
+      title: '關鍵字已刪除',
+      description: `\`${rule.matchType}\` **${rule.pattern}** ⭢ ${responsePreview(rule.response, 900)}`,
+      color: Colors.WARNING,
     });
     log.info({ pattern, guildId }, 'Keyword deleted');
   });
@@ -286,12 +262,9 @@ export function useKeywordHandlers(deps: KeywordDeps) {
 
     try {
       await discord.sendMessage(msg.channel_id, {
-        content: match.rule.response,
+        content: match.response,
       });
-      log.info(
-        { guildId: msg.guild_id, pattern: match.rule.pattern },
-        'Keyword matched and replied'
-      );
+      log.info({ guildId: msg.guild_id, pattern: match.pattern }, 'Keyword matched and replied');
     } catch (error) {
       if ((error as { code?: number }).code === RESTJSONErrorCodes.MissingPermissions) {
         log.warn(

@@ -19,7 +19,9 @@ export interface ReactionRolePanel {
   updatedAt: string;
 }
 
-export type ReactionRoleRuntime = Pick<ReactionRole, 'guildId' | 'messageId' | 'emoji' | 'roleId'>;
+export interface ReactionRolePanelWithRoles extends ReactionRolePanel {
+  reactionRoles: ReactionRole[];
+}
 
 export interface ReactionRoleMatch {
   roleId: string;

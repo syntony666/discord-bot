@@ -24,7 +24,7 @@ const streamChannelOption = {
 const streamMessageOption = {
   name: 'message',
   type: ApplicationCommandOptionType.String,
-  description: '自訂通知訊息（可用 {user} 代表實況主名稱）',
+  description: '自訂通知訊息（{user} 將替換為實況主名稱）',
   max_length: 1000,
 } as const;
 
@@ -39,7 +39,7 @@ const platformOption = {
 const streamerIdOption = {
   name: 'id',
   type: ApplicationCommandOptionType.String,
-  description: '實況主 ID 或用戶名',
+  description: '實況主 ID 或使用者名稱',
   required: true,
 } as const;
 
@@ -57,7 +57,13 @@ const typeOption = {
 const templateOption = {
   name: 'template',
   type: ApplicationCommandOptionType.String,
-  description: '訊息模板 (可用變數: {user}, {username}, {server}, {memberCount})',
+  description: '訊息範本（可用變數：{user}、{username}、{server}、{memberCount}）',
+} as const;
+
+const leaveTemplateOption = {
+  name: 'template',
+  type: ApplicationCommandOptionType.String,
+  description: '訊息範本（可用變數：{username}、{server}、{memberCount}）',
 } as const;
 
 const enabledOption = {
@@ -66,7 +72,7 @@ const enabledOption = {
   description: '是否啟用',
 } as const;
 
-export const notifyCommand = defineCommand()({
+export const notifyCommand = defineCommand({
   command: 'notify',
   description: '統一通知設定',
   default_member_permissions: String(PermissionFlagsBits.ManageGuild),
@@ -88,7 +94,7 @@ export const notifyCommand = defineCommand()({
         {
           name: 'leave',
           description: '查看或設定離開通知',
-          options: [templateOption, enabledOption],
+          options: [leaveTemplateOption, enabledOption],
         },
       ],
     },

@@ -35,3 +35,7 @@ export const LimitFeature = {
   reactionRolePanels: 'reactionRolePanels',
 } as const;
 export type LimitFeature = (typeof LimitFeature)[keyof typeof LimitFeature];
+
+export function isEnumValue<E extends Record<string, string>>(e: E, v: unknown): v is E[keyof E] {
+  return typeof v === 'string' && Object.values(e).includes(v);
+}

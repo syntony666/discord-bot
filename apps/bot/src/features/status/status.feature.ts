@@ -8,7 +8,7 @@ import { createStreamNotifyApi } from '@features/notify/stream.api';
 import { statusCommand } from './status.command';
 import { useStatusHandlers } from './status.handlers';
 
-export const statusFeature = defineFeature()({
+export const statusFeature = defineFeature({
   command: statusCommand,
   useHandlers: useStatusHandlers,
   deps: {

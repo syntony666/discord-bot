@@ -17,7 +17,7 @@ export function buildPanelEmbed(options: BuildPanelEmbedOptions) {
     embeds: [
       {
         title: title || '選擇你的身分組',
-        description: description || '點擊下方的反應來獲得對應的身分組。\n再次點擊可以移除身分組。',
+        description: description || '點擊下方反應即可取得對應身分組。\n再次點擊可移除身分組。',
         color: Colors.INFO,
         fields: [
           {
@@ -35,13 +35,13 @@ export function buildPanelEmbed(options: BuildPanelEmbedOptions) {
                       return `${displayEmoji} → <@&${r.roleId}>${r.description ? ` - ${r.description}` : ''}`;
                     })
                     .join('\n')
-                : '⏳ 尚未添加任何身分組',
+                : '⏳ 尚未新增任何身分組',
             inline: false,
           },
         ],
         footer: messageId
           ? {
-              text: `Panel ID: ${messageId}`,
+              text: `選單 ID: ${messageId}`,
             }
           : undefined,
         timestamp: new Date().toISOString(),

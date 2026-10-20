@@ -17,8 +17,7 @@ import type {
 } from 'discord-api-types/v10';
 import { ORIGINAL_MESSAGE, type Resources } from '../resources';
 import type { PaginateOptions } from '../../context.type';
-import type { SessionApi } from '../context.type';
-import type { PaginatePending, Pending, Waiter } from './store.type';
+import type { PaginatePending, Pending, SessionApi, Waiter } from './store.type';
 import { button, modalFieldValues, paginateEmbed, paginateRow, row } from './components';
 import { usernameOf, withEmbedDefaults, type EmbedTheme } from '../embeds';
 
@@ -27,6 +26,8 @@ const DEFAULT_CONFIRM_TIMEOUT = 120_000;
 const DEFAULT_PAGINATE_TIMEOUT = 5 * 60_000;
 const DEFAULT_MODAL_TIMEOUT = 5 * 60_000;
 const DEFAULT_PROMPT_TIMEOUT = 60_000;
+/** Route components (h.component) on replies expire after this age. */
+export const COMPONENT_MAX_AGE_MS = 5 * 60_000;
 
 export function createSessionStore(
   resources: Resources,
@@ -77,6 +78,12 @@ export function createSessionStore(
     data: APIInteractionResponseCallbackData
   ) => resources.webhook(appId, token).message(messageId).edit(data).catch(fail);
 
+  const expireComponents = (token: string, messageId: string, ttlMs: number) => {
+    setTimeout(() => {
+      void editMessage(token, messageId, { components: [] });
+    }, ttlMs);
+  };
+
   const expirePaginate = (id: string, s: PaginatePending) => {
     clearTimeout(s.timer);
     s.timer = setTimeout(() => {
@@ -122,6 +129,7 @@ export function createSessionStore(
             button(`${base}:no`, options.cancelLabel ?? '取消', ButtonStyle.Secondary)
           ),
         ],
+        flags: MessageFlags.Ephemeral,
       },
       responded
     );
@@ -291,7 +299,42 @@ export function createSessionStore(
       .interaction(i.id, i.token)
       .respond({
         type: InteractionResponseType.ChannelMessageWithSource,
-        data: { content: '這個操作已過期，請重新執行指令。', flags: MessageFlags.Ephemeral },
+        data: {
+          embeds: [
+            withEmbedDefaults(
+              {
+                title: '❌ 操作已過期',
+                description: '請重新執行指令。',
+                color: theme.colors.error,
+              },
+              usernameOf(i),
+              theme
+            ),
+          ],
+          flags: MessageFlags.Ephemeral,
+        },
+      })
+      .catch(fail);
+
+  const restricted = (i: APIInteraction) =>
+    resources
+      .interaction(i.id, i.token)
+      .respond({
+        type: InteractionResponseType.ChannelMessageWithSource,
+        data: {
+          embeds: [
+            withEmbedDefaults(
+              {
+                title: '🔒',
+                description: '此操作僅限原使用者',
+                color: theme.colors.error,
+              },
+              usernameOf(i),
+              theme
+            ),
+          ],
+          flags: MessageFlags.Ephemeral,
+        },
       })
       .catch(fail);
 
@@ -302,7 +345,7 @@ export function createSessionStore(
     session: Pending
   ) => {
     if (session.kind === 'confirm') {
-      if (notOwner(i, session.ownerId)) return expired(i);
+      if (notOwner(i, session.ownerId)) return restricted(i);
       pending.delete(id);
       clearTimeout(session.timer);
       await resources.interaction(i.id, i.token).respond({
@@ -314,7 +357,7 @@ export function createSessionStore(
     }
 
     if (session.kind !== 'paginate') return;
-    if (notOwner(i, session.ownerId)) return expired(i);
+    if (notOwner(i, session.ownerId)) return restricted(i);
 
     const totalPages = Math.ceil(session.items.length / session.pageSize);
 
@@ -387,7 +430,7 @@ export function createSessionStore(
 
       if (kind === 'pag' && session.kind === 'paginate' && action === 'jump') {
         if (notOwner(i, session.ownerId)) {
-          await expired(i);
+          await restricted(i);
           return true;
         }
         const raw = modalFieldValues(i).page_number;
@@ -397,7 +440,17 @@ export function createSessionStore(
           await resources.interaction(i.id, i.token).respond({
             type: InteractionResponseType.ChannelMessageWithSource,
             data: {
-              content: `頁碼必須介於 1 到 ${totalPages}。`,
+              embeds: [
+                withEmbedDefaults(
+                  {
+                    title: '❌ 頁碼錯誤',
+                    description: `頁碼必須介於 1 到 ${totalPages}。`,
+                    color: theme.colors.error,
+                  },
+                  usernameOf(i),
+                  theme
+                ),
+              ],
               flags: MessageFlags.Ephemeral,
             },
           });
@@ -445,8 +498,7 @@ export function createSessionStore(
     claims,
     dispatch,
     tryMessage,
+    expireComponents,
     close,
   };
 }
-
-export type SessionStore = ReturnType<typeof createSessionStore>;

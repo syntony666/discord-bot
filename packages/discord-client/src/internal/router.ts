@@ -1,4 +1,9 @@
-import { ApplicationCommandType, InteractionType } from 'discord-api-types/v10';
+import {
+  ApplicationCommandType,
+  InteractionResponseType,
+  InteractionType,
+  MessageFlags,
+} from 'discord-api-types/v10';
 import type {
   APIApplicationCommandInteractionDataOption,
   APIChatInputApplicationCommandInteraction,
@@ -8,16 +13,18 @@ import type {
 } from 'discord-api-types/v10';
 import { ApplicationCommandOptionType } from 'discord-api-types/v10';
 import type { Resources } from './resources';
-import { buildCommandContext, buildComponentContext } from './context';
-import type { CommandRoute, SessionApi } from './context.type';
+import { buildCommandContext, buildComponentContext, interactionUser } from './context';
+import type { SessionApi } from './sessions/store.type';
+import { COMPONENT_MAX_AGE_MS } from './sessions/store';
 import type {
   CommandHandler,
+  CommandRoute,
   ComponentHandler,
   ComponentRoute,
   SessionDispatcher,
 } from './router.type';
 import type { CommandDef } from '../commands.type';
-import type { EmbedTheme } from './embeds';
+import { usernameOf, withEmbedDefaults, type EmbedTheme } from './embeds';
 
 /** Handler keys a command def accepts: 'add', 'panel.create', or the command
  *  name itself when it has no subcommands. */
@@ -122,9 +129,13 @@ export function createCommandRouter(
     commands.set(def.command, { def, handlers });
   };
 
-  const addComponent = (pattern: string, handler: ComponentHandler) => {
+  const addComponent = (
+    pattern: string,
+    handler: ComponentHandler,
+    opts?: { sameUser?: boolean }
+  ) => {
     const compiled = compilePattern(pattern);
-    components.push({ ...compiled, handler });
+    components.push({ ...compiled, handler, sameUser: opts?.sameUser });
   };
 
   const handleChatInput = async (i: APIChatInputApplicationCommandInteraction) => {
@@ -180,11 +191,63 @@ export function createCommandRouter(
     for (const route of components) {
       const m = route.pattern.exec(customId);
       if (!m) continue;
+      // Route components expire with their host message; strip dead buttons
+      // and tell the clicker (covers process restarts — timers are in-memory).
+      if (i.type === InteractionType.MessageComponent) {
+        const ts = i.message?.timestamp;
+        if (ts && Date.now() - Date.parse(ts) > COMPONENT_MAX_AGE_MS) {
+          await resources
+            .interaction(i.id, i.token)
+            .respond({ type: InteractionResponseType.UpdateMessage, data: { components: [] } })
+            .catch(() => undefined);
+          await resources
+            .webhook(appId, i.token)
+            .execute({
+              embeds: [
+                withEmbedDefaults(
+                  {
+                    title: '❌ 操作已過期',
+                    description: '請重新執行指令。',
+                    color: theme.colors.error,
+                  },
+                  usernameOf(i),
+                  theme
+                ),
+              ],
+              flags: MessageFlags.Ephemeral,
+            })
+            .catch(() => undefined);
+          return true;
+        }
+      }
       const params: Record<string, string> = {};
       route.params.forEach((name, idx) => {
         params[name] = m[idx + 1]!;
       });
       const ctx = buildComponentContext(resources, appId, sessions, i, params, theme);
+      if (route.sameUser) {
+        // Owner of the message this component lives on — resolvable only for
+        // message-component interactions. Fail closed when unresolvable.
+        const owner =
+          i.type === InteractionType.MessageComponent
+            ? (i.message?.interaction_metadata?.user?.id ?? i.message?.interaction?.user?.id)
+            : undefined;
+        if (!owner || interactionUser(i).id !== owner) {
+          await ctx.reply(
+            {
+              embeds: [
+                {
+                  title: '🔒',
+                  description: '此操作僅限原使用者',
+                  color: theme.colors.error,
+                },
+              ],
+            },
+            true
+          );
+          return true;
+        }
+      }
       await route.handler(ctx);
       return true;
     }
@@ -216,5 +279,3 @@ export function createCommandRouter(
     handle: (i: APIInteraction) => handle(i).catch((err) => (onError(err), true)),
   };
 }
-
-export type CommandRouter = ReturnType<typeof createCommandRouter>;

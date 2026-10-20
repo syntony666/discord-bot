@@ -30,8 +30,6 @@ model Guild {
   reactionRolePanels        ReactionRolePanel[]
   streamNotifyConfig         StreamNotifyConfig?
   streamWatchers            StreamWatcher[]
-
-  @@index([id])
 }
 
 /**
@@ -50,7 +48,6 @@ model KeywordRule {
   guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   @@id([guildId, pattern])
-  @@index([guildId])
 }
 
 enum KeywordMatchType {
@@ -72,7 +69,6 @@ model NotificationChannel {
   guild     Guild            @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   @@id([guildId, type])
-  @@index([guildId])
 }
 
 enum NotificationType {
@@ -83,6 +79,7 @@ enum NotificationType {
 /**
  * MemberNotifyMessage - Message templates for member notifications
  */
+// Defaults mirror DEFAULT_MEMBER_MESSAGES in packages/shared/src/constants.ts.
 model MemberNotifyMessage {
   guildId     String   @id
   joinMessage String   @default("📥 {user} 加入了 {server}！目前共 {memberCount} 位成員")
@@ -91,8 +88,6 @@ model MemberNotifyMessage {
   updatedAt   DateTime @updatedAt
 
   guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
-
-  @@index([guildId])
 }
 
 /**
@@ -108,7 +103,6 @@ model ReactionRole {
   guild       Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   @@id([guildId, messageId, emoji])
-  @@index([guildId])
   @@index([messageId])
 }
 
@@ -128,7 +122,6 @@ model ReactionRolePanel {
   guild       Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   @@id([guildId, messageId])
-  @@index([guildId])
 }
 
 enum ReactionRoleMode {
@@ -149,8 +142,6 @@ model StreamNotifyConfig {
   updatedAt DateTime @updatedAt
 
   guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
-
-  @@index([guildId])
 }
 
 /**
@@ -171,7 +162,6 @@ model StreamWatcher {
   guild            Guild            @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   @@unique([guildId, platform, platformId])
-  @@index([guildId])
   @@index([isLive])
   @@index([platformUserId])
 }

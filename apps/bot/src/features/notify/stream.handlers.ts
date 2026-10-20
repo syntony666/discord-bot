@@ -3,6 +3,7 @@ import { StreamPlatform } from '@discord-bot/shared';
 import type { DiscordHelpers } from '@discord-bot/discord-client';
 import type { Scheduler } from '@core/scheduler';
 import { Colors } from '@core/config/colors.config';
+import { appConfig } from '@core/config';
 import { createLogger } from '@discord-bot/shared';
 import type { StreamNotifyApi } from './stream.api';
 import { createStreamNotifyService } from './stream.service';
@@ -27,38 +28,26 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
   const service = createStreamNotifyService(discord);
   const h = useHandlers(notifyCommand);
 
-  const twitchService = new TwitchService(
-    process.env.TWITCH_CLIENT_ID || '',
-    process.env.TWITCH_CLIENT_SECRET || ''
+  const twitchService = new TwitchService(appConfig.twitch.clientId, appConfig.twitch.clientSecret);
+
+  scheduler.every(TWITCH_TASK_ID, 60_000, () => service.checkAllStreams(api, [twitchService]));
+
+  scheduler.every(TWITCH_AVATAR_TASK_ID, 86_400_000, () =>
+    service.refreshTwitchWatcherAvatars(api, twitchService)
   );
-
-  scheduler.every(TWITCH_TASK_ID, 60_000, async () => {
-    try {
-      await service.checkAllStreams(api, [twitchService]);
-    } catch (error) {
-      log.error({ error }, 'Twitch stream check failed');
-    }
-  });
-
-  scheduler.every(TWITCH_AVATAR_TASK_ID, 86_400_000, async () => {
-    try {
-      await service.refreshTwitchWatcherAvatars(api, twitchService);
-    } catch (error) {
-      log.error({ error }, 'Twitch avatar refresh failed');
-    }
-  });
 
   // Backfill avatars for pre-existing watchers on boot
   void service.refreshTwitchWatcherAvatars(api, twitchService);
 
-  const toPlatform = (platform: string) => platform.toUpperCase() as StreamPlatform;
+  // Slash choices narrow ctx.options.platform to literals; a missing key here
+  // is a compile error, not a runtime surprise.
+  const PLATFORMS = { twitch: StreamPlatform.TWITCH } satisfies Record<string, StreamPlatform>;
 
   // 'login' or 'login (display_name)' when they differ
   const nameOf = (platformId: string, displayName: string) =>
     displayName.toLowerCase() === platformId ? platformId : `${platformId} (${displayName})`;
 
   h.handler('stream.enable', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const channelId = ctx.options.channel.id;
     const message = ctx.options.message;
@@ -71,62 +60,31 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
         message: message || existingConfig.message,
         enabled: true,
       });
-      await ctx.reply({
-        embeds: [
-          {
-            title: '直播通知已更新',
-            description: `通知頻道已更新至 ${Formatters.channelMention(channelId)}`,
-            color: Colors.SUCCESS,
-          },
-        ],
-      });
+      await ctx.success(
+        '直播通知已更新',
+        `通知頻道已更新至 ${Formatters.channelMention(channelId)}`
+      );
     } else {
       await api.createConfig(guildId, channelId, message);
-      await ctx.reply({
-        embeds: [
-          {
-            title: '直播通知已啟用',
-            description: `通知將發送至 ${Formatters.channelMention(channelId)}`,
-            color: Colors.SUCCESS,
-          },
-        ],
-      });
+      await ctx.success('直播通知已啟用', `通知將發送至 ${Formatters.channelMention(channelId)}`);
     }
     log.info({ guildId, channelId }, 'Stream notify enabled');
   });
 
   h.handler('stream.disable', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
 
     const existingConfig = await api.getConfig(guildId);
     if (!existingConfig) {
-      return ctx.reply({
-        embeds: [
-          {
-            title: '直播通知未啟用',
-            description: '此伺服器尚未啟用直播通知功能',
-            color: Colors.SUCCESS,
-          },
-        ],
-      });
+      return ctx.info('直播通知未啟用', '此伺服器尚未啟用直播通知功能');
     }
 
     await api.updateConfig(guildId, { enabled: false });
-    await ctx.reply({
-      embeds: [
-        {
-          title: '直播通知已停用',
-          description: '直播通知功能已暫時停用',
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await ctx.success('直播通知已停用', '直播通知功能已暫時停用');
     log.info({ guildId }, 'Stream notify disabled');
   });
 
   h.handler('stream.watch', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const platform = ctx.options.platform;
     const id = ctx.options.id;
@@ -139,49 +97,24 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     if (platform === 'twitch') {
       const [user] = await twitchService.getUsersByField('login', [id]);
       if (!user) {
-        return ctx.reply({
-          embeds: [
-            {
-              title: '找不到使用者',
-              description: `Twitch 上找不到使用者 ${id}`,
-              color: Colors.ERROR,
-            },
-          ],
-        });
+        return ctx.error('找不到使用者', `Twitch 上找不到使用者 ${id}`);
       }
       platformId = user.login;
       displayName = name || user.display_name || user.login;
       profile = { platformUserId: user.id, avatarImageUrl: user.profile_image_url };
     }
 
-    const existingWatcher = await api.getWatcher(guildId, toPlatform(platform), platformId);
+    const existingWatcher = await api.getWatcher(guildId, PLATFORMS[platform], platformId);
     if (existingWatcher) {
-      return ctx.reply({
-        embeds: [
-          {
-            title: '監控已存在',
-            description: `已在監控此 ${platform} 頻道`,
-            color: Colors.SUCCESS,
-          },
-        ],
-      });
+      return ctx.error('監控已存在', `已在監控此 ${platform} 頻道`);
     }
 
-    await api.addWatcher(guildId, toPlatform(platform), platformId, displayName, profile);
-    await ctx.reply({
-      embeds: [
-        {
-          title: '已新增監控',
-          description: `開始監控 ${platform} 頻道 ${nameOf(platformId, displayName)}`,
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await api.addWatcher(guildId, PLATFORMS[platform], platformId, displayName, profile);
+    await ctx.success('已新增監控', `開始監控 ${platform} 頻道 ${nameOf(platformId, displayName)}`);
     log.info({ guildId, platform, platformId }, 'Stream watcher added');
   });
 
   h.handler('stream.unwatch', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
     const platform = ctx.options.platform;
     const id = ctx.options.id;
@@ -192,34 +125,20 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
       platformId = user?.login ?? id;
     }
 
-    const existingWatcher = await api.getWatcher(guildId, toPlatform(platform), platformId);
+    const existingWatcher = await api.getWatcher(guildId, PLATFORMS[platform], platformId);
     if (!existingWatcher) {
-      return ctx.reply({
-        embeds: [
-          {
-            title: '監控不存在',
-            description: `未找到此 ${platform} 頻道的監控`,
-            color: Colors.SUCCESS,
-          },
-        ],
-      });
+      return ctx.error('監控不存在', `未找到此 ${platform} 頻道的監控`);
     }
 
-    await api.removeWatcher(guildId, toPlatform(platform), platformId);
-    await ctx.reply({
-      embeds: [
-        {
-          title: '已移除監控',
-          description: `已停止監控 ${platform} 頻道 ${nameOf(existingWatcher.platformId, existingWatcher.displayName)}`,
-          color: Colors.SUCCESS,
-        },
-      ],
-    });
+    await api.removeWatcher(guildId, PLATFORMS[platform], platformId);
+    await ctx.success(
+      '已移除監控',
+      `已停止監控 ${platform} 頻道 ${nameOf(existingWatcher.platformId, existingWatcher.displayName)}`
+    );
     log.info({ guildId, platform, platformId }, 'Stream watcher removed');
   });
 
   h.handler('stream.list', async (ctx) => {
-    if (!ctx.guildId) return ctx.error('此指令只能在伺服器中使用');
     const guildId = ctx.guildId;
 
     const [config, watchers] = await Promise.all([
@@ -228,15 +147,7 @@ export function useStreamNotifyHandlers(deps: StreamNotifyDeps) {
     ]);
 
     if (!config && watchers.length === 0) {
-      await ctx.reply({
-        embeds: [
-          {
-            title: '直播通知設定',
-            description: '尚未設定任何直播通知',
-            color: Colors.INFO,
-          },
-        ],
-      });
+      await ctx.info('直播通知設定', '尚未設定任何直播通知');
       return;
     }
 

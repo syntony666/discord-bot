@@ -1,4 +1,5 @@
 import { ActivityType, ApplicationCommandOptionType } from 'discord-api-types/v10';
+import { UNLIMITED_LIMIT } from '@discord-bot/shared';
 import { defineCommand } from '@discord-bot/discord-client';
 
 const guildIdOption = {
@@ -14,7 +15,7 @@ const guildIdRequiredOption = {
   required: true,
 } as const;
 
-export const botCommand = defineCommand()({
+export const botCommand = defineCommand({
   command: 'bot',
   description: '機器人管理指令（僅限作者）',
   ownerOnly: true,
@@ -85,18 +86,18 @@ export const botCommand = defineCommand()({
             {
               name: 'url',
               type: ApplicationCommandOptionType.String,
-              description: '直播連結（僅「直播中」類型使用）',
+              description: '直播連結（僅 **直播中** 類型使用）',
             },
           ],
         },
         {
           name: 'about',
-          description: '設定自我介紹',
+          description: '設定關於我',
           options: [
             {
               name: 'text',
               type: ApplicationCommandOptionType.String,
-              description: '自我介紹內容',
+              description: '關於我的內容',
               required: true,
             },
           ],
@@ -124,19 +125,19 @@ export const botCommand = defineCommand()({
           name: 'watchers',
           type: ApplicationCommandOptionType.Integer,
           description: '直播監控上限（-1 為無限）',
-          min_value: -1,
+          min_value: UNLIMITED_LIMIT,
         },
         {
           name: 'keywords',
           type: ApplicationCommandOptionType.Integer,
           description: '關鍵字規則上限（-1 為無限）',
-          min_value: -1,
+          min_value: UNLIMITED_LIMIT,
         },
         {
           name: 'panels',
           type: ApplicationCommandOptionType.Integer,
-          description: '身分組面板上限（-1 為無限）',
-          min_value: -1,
+          description: '身分組選單上限（-1 為無限）',
+          min_value: UNLIMITED_LIMIT,
         },
       ],
     },

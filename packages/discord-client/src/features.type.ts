@@ -5,7 +5,7 @@ import type {
   APIRole,
   APIUser,
 } from 'discord-api-types/v10';
-import type { CommandContext } from './context.type';
+import type { CommandContext, GuildCommandContext } from './context.type';
 import type { CommandHandler, ComponentHandler } from './internal/router.type';
 import type { EventHandler, EventName, StreamBuilder } from './internal/events/hub.type';
 import type { CommandDef, OptionDef } from './commands.type';
@@ -96,11 +96,9 @@ type SubName<C extends CommandDef, K> =
 
 type GroupName<K> = K extends `${infer G}.${string}` ? G : never;
 
-export type CtxFor<C extends CommandDef, K> = CommandContext<
-  OptionsOf<HandlerOptions<C, K>>,
-  SubName<C, K>,
-  GroupName<K>
->;
+export type CtxFor<C extends CommandDef, K> = C extends { guildOnly: true }
+  ? GuildCommandContext<OptionsOf<HandlerOptions<C, K>>, SubName<C, K>, GroupName<K>>
+  : CommandContext<OptionsOf<HandlerOptions<C, K>>, SubName<C, K>, GroupName<K>>;
 
 // --- collected shape --------------------------------------------------------
 
@@ -108,7 +106,7 @@ export interface Collected {
   handler?: Record<string, CommandHandler>;
   event?: { [K in EventName]?: EventHandler<K> };
   stream?: { [K in EventName]?: StreamBuilder<K> };
-  component?: Record<string, ComponentHandler>;
+  component?: Record<string, { handler: ComponentHandler; sameUser?: boolean }>;
 }
 
 // --- defineFeature ----------------------------------------------------------
