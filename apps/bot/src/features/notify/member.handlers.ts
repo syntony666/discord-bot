@@ -116,13 +116,13 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
     const description = [
       `**${typeName('join')}:** ${typeEmoji(joinChannel?.enabled || false)} ${joinChannel?.enabled ? '已啟用' : '已停用'}`,
       joinChannel ? `通知頻道：${Formatters.channelMention(joinChannel.channelId)}` : '—',
-      `訊息模板：\`${templates?.joinMessage || '預設訊息'}\``,
+      `訊息範本：\`${templates?.joinMessage || '預設訊息'}\``,
       '',
       `**${typeName('leave')}:** ${typeEmoji(leaveChannel?.enabled || false)} ${leaveChannel?.enabled ? '已啟用' : '已停用'}`,
       leaveChannel ? `通知頻道：${Formatters.channelMention(leaveChannel.channelId)}` : '—',
-      `訊息模板：\`${templates?.leaveMessage || '預設訊息'}\``,
+      `訊息範本：\`${templates?.leaveMessage || '預設訊息'}\``,
       '',
-      '**可用變數**: `{user}`, `{username}`, `{server}`, `{memberCount}`',
+      '**可用變數**：`{user}`、`{username}`、`{server}`、`{memberCount}`',
     ].join('\n');
 
     await ctx.info('成員通知狀態', description);
@@ -168,19 +168,19 @@ export function useMemberNotifyHandlers(deps: MemberNotifyDeps) {
         [
           `狀態：${typeEmoji(!!channel?.enabled)} ${channel?.enabled ? '已啟用' : '已停用'}`,
           channel ? `通知頻道：${Formatters.channelMention(channel.channelId)}` : '—',
-          `訊息模板：\`${current || '預設訊息'}\``,
+          `訊息範本：\`${current || '預設訊息'}\``,
         ].join('\n')
       );
     }
 
     const fields = [
-      ...(template !== undefined ? [{ name: '新模板', value: `\`${template}\`` }] : []),
+      ...(template !== undefined ? [{ name: '新範本', value: `\`${template}\`` }] : []),
       ...(enabled !== undefined ? [{ name: '通知狀態', value: enabled ? '啟用' : '停用' }] : []),
     ];
     if (
       !(await ctx.confirmed({
         title: `確認更新${typeName(type)}`,
-        description: '即將套用以下變更。',
+        description: '將套用以下變更：',
         fields,
         confirmLabel: '確認更新',
         cancelLabel: '取消',

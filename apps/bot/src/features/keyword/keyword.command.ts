@@ -29,7 +29,7 @@ export const keywordCommand = defineCommand({
         {
           name: 'response',
           type: ApplicationCommandOptionType.String,
-          description: '回覆內容（用 ;; 分隔多個候選則隨機挑選）',
+          description: '回覆內容（用 ;; 分隔多個選項就會隨機挑選）',
           required: true,
         },
         matchTypeOption,
@@ -48,7 +48,7 @@ export const keywordCommand = defineCommand({
         {
           name: 'response',
           type: ApplicationCommandOptionType.String,
-          description: '新的回覆內容（用 ;; 分隔多個候選則隨機挑選）',
+          description: '新的回覆內容（用 ;; 分隔多個選項就會隨機挑選）',
           required: true,
         },
         matchTypeOption,
