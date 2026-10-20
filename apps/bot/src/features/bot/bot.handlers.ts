@@ -105,7 +105,7 @@ export function useBotHandlers(deps: BotDeps) {
     if (
       !(await ctx.confirmed({
         title: '⚠️ 退出伺服器',
-        description: `確定要退出 **${name}**？其所有設定資料將被刪除。`,
+        description: `確定要退出 **${name}** 嗎？其所有設定將被刪除。`,
         confirmLabel: '退出',
         danger: true,
       }))
@@ -148,7 +148,7 @@ export function useBotHandlers(deps: BotDeps) {
             ...(orphans.length
               ? [
                   {
-                    name: `移除 ${orphans.length} 筆（已退出但殘留）`,
+                    name: `移除 ${orphans.length} 筆（已退出但資料仍在）`,
                     value: orphans.map((g) => g.name).join(' · '),
                   },
                 ]
@@ -171,10 +171,7 @@ export function useBotHandlers(deps: BotDeps) {
   h.handler('profile.about', async (ctx) => {
     const { text } = ctx.options;
     await discord.editApplication({ description: text });
-    await ctx.success(
-      '自我介紹已更新',
-      `**${text.length > 100 ? `${text.slice(0, 100)}…` : text}**`
-    );
+    await ctx.success('關於我已更新', `**${text.length > 100 ? `${text.slice(0, 100)}…` : text}**`);
   });
 
   h.handler('limit', async (ctx) => {
@@ -252,7 +249,7 @@ export function useBotHandlers(deps: BotDeps) {
     }
 
     await ctx.announceSuccess(
-      '公告已送出',
+      '公告已發送',
       `已發送給 ${sent} 位擁有者` +
         (failed.length
           ? `\n失敗 ${failed.length} 位：${failed.map((n) => `**${n}**`).join('、')}`
@@ -305,7 +302,7 @@ export function useBotHandlers(deps: BotDeps) {
             },
             {
               name: '狀態',
-              value: `運行 ${uptime} · WS ${discord.wsPing}ms`,
+              value: `運作 ${uptime} · WS ${discord.wsPing}ms`,
             },
           ],
         },

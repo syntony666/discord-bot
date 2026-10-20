@@ -11,7 +11,7 @@ export const responsePreview = (response: string, maxLen: number) => {
   const parts = splitKeywordResponse(response);
   if (parts.length <= 1) return truncate(response, maxLen);
 
-  const suffix = ` (共 ${parts.length} 個候選)`;
+  const suffix = ` (共 ${parts.length} 個選項)`;
   if (parts[0]!.length > maxLen) {
     return `${truncate(parts[0]!, maxLen)}${SEPARATOR}…${suffix}`;
   }

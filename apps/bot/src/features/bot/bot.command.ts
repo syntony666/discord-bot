@@ -92,12 +92,12 @@ export const botCommand = defineCommand({
         },
         {
           name: 'about',
-          description: '設定自我介紹',
+          description: '設定關於我',
           options: [
             {
               name: 'text',
               type: ApplicationCommandOptionType.String,
-              description: '自我介紹內容',
+              description: '關於我的內容',
               required: true,
             },
           ],
