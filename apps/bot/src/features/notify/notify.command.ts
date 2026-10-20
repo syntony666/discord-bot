@@ -24,7 +24,7 @@ const streamChannelOption = {
 const streamMessageOption = {
   name: 'message',
   type: ApplicationCommandOptionType.String,
-  description: '自訂通知訊息（可用 {user} 代表實況主名稱）',
+  description: '自訂通知訊息（{user} 將替換為實況主名稱）',
   max_length: 1000,
 } as const;
 
@@ -57,7 +57,7 @@ const typeOption = {
 const templateOption = {
   name: 'template',
   type: ApplicationCommandOptionType.String,
-  description: '訊息模板 (可用變數：{user}, {username}, {server}, {memberCount})',
+  description: '訊息範本（可用變數：{user}、{username}、{server}、{memberCount}）',
 } as const;
 
 const enabledOption = {

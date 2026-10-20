@@ -17,7 +17,7 @@ export function buildPanelEmbed(options: BuildPanelEmbedOptions) {
     embeds: [
       {
         title: title || '選擇你的身分組',
-        description: description || '點擊下方的反應來獲得對應的身分組。\n再次點擊可以移除身分組。',
+        description: description || '點擊下方反應即可取得對應身分組。\n再次點擊可移除身分組。',
         color: Colors.INFO,
         fields: [
           {

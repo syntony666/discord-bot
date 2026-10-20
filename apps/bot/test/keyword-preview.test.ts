@@ -17,18 +17,18 @@ test('single response truncates at maxLen', () => {
 });
 
 test('multi candidates show all when they fit', () => {
-  assert.equal(responsePreview('空;;空;;子彈', 150), '空;;空;;子彈 (共 3 個候選)');
+  assert.equal(responsePreview('空;;空;;子彈', 150), '空;;空;;子彈 (共 3 個選項)');
 });
 
 test('multi candidates truncate with count suffix', () => {
   const resp = Array.from({ length: 20 }, (_, i) => `item${i}`).join(';;');
   const out = responsePreview(resp, 30);
-  assert.ok(out.endsWith(';;… (共 20 個候選)'));
+  assert.ok(out.endsWith(';;… (共 20 個選項)'));
   assert.ok(out.startsWith('item0;;item1'));
 });
 
 test('oversized first candidate truncates alone', () => {
   const resp = `${'a'.repeat(200)};;b`;
   const out = responsePreview(resp, 50);
-  assert.equal(out, `${'a'.repeat(50)}…;;… (共 2 個候選)`);
+  assert.equal(out, `${'a'.repeat(50)}…;;… (共 2 個選項)`);
 });
