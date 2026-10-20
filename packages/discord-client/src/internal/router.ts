@@ -24,7 +24,7 @@ import type {
   SessionDispatcher,
 } from './router.type';
 import type { CommandDef } from '../commands.type';
-import type { EmbedTheme } from './embeds';
+import { usernameOf, withEmbedDefaults, type EmbedTheme } from './embeds';
 
 /** Handler keys a command def accepts: 'add', 'panel.create', or the command
  *  name itself when it has no subcommands. */
@@ -203,7 +203,17 @@ export function createCommandRouter(
           await resources
             .webhook(appId, i.token)
             .execute({
-              content: '這個操作已過期，請重新執行指令。',
+              embeds: [
+                withEmbedDefaults(
+                  {
+                    title: '❌ 操作已過期',
+                    description: '請重新執行指令。',
+                    color: theme.colors.error,
+                  },
+                  usernameOf(i),
+                  theme
+                ),
+              ],
               flags: MessageFlags.Ephemeral,
             })
             .catch(() => undefined);
