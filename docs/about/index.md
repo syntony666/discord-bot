@@ -18,6 +18,18 @@ GitHub: [syntony666](https://github.com/syntony666)
 
 ## 版本紀錄
 
+### ver. 5.2.2
+
+#### 2026.10.20
+
+- `/keyword view` 新增「複製 / 修改回覆」按鈕，按下會開啟已預填目前內容的表單，直接修改即可更新
+- 確認訊息改為僅限原使用者可見，操作結果會標示執行者
+- 訊息上的互動按鈕 5 分鐘後自動失效，過期後點擊會顯示「操作已過期」；非原使用者點擊會提示「此操作僅限原使用者」
+- `/keyword delete` 結果改為顯示被刪除的規則內容
+- 修正 `/notify member enable` 重複執行時會覆蓋加入／離開通知個別開關的問題
+- 實況監控重複加入、移除不存在的監控時改為私密錯誤提示
+- 統一機器人回覆用語，列表與狀態訊息卡片加上顏色標示
+
 ### ver. 5.2.1
 
 #### 2026.10.14
@@ -33,7 +45,7 @@ GitHub: [syntony666](https://github.com/syntony666)
 - 通知指令整合：`member-notify`、`stream-notify` 合併為 `/notify member`、`/notify stream`
 - 關鍵字回覆新增 `/keyword view`、`/keyword search`，回覆內容支援 `;;` 分隔多個候選隨機回覆
 - `/status notify` 改名為 `/status features`
-- 機器人被移出伺服器時自動清除該伺服器的設定資料
+- 機器人被移出伺服器時自動清除伺服器的設定資料
 
 ### ver. 5.1.0
 
@@ -47,7 +59,7 @@ GitHub: [syntony666](https://github.com/syntony666)
 #### 2026.2.14
 
 - 全面重寫為 monorepo 架構
-- 指令全面改版：`keyword`、`member-notify`、`stream-notify`、`reaction-role`（Panel 制）、`status`
+- 指令全面改版：`keyword`、`member-notify`、`stream-notify`、`reaction-role`（選單制）、`status`
 - 移除 `say`、`clear`、`choose`、`fortune` 等舊指令
 
 ### ver. 4.0.6
