@@ -222,7 +222,6 @@ export function useKeywordHandlers(deps: KeywordDeps) {
   h.handler('delete', async (ctx) => {
     const guildId = ctx.guildId;
     const { pattern } = ctx.options;
-    const editorId = ctx.user.id;
 
     const rule = await ctx.require(() => api.getRuleByPattern(guildId, pattern), '錯誤', {
       description: '找不到此關鍵字，可能已被其他人刪除。',
@@ -249,13 +248,7 @@ export function useKeywordHandlers(deps: KeywordDeps) {
     await api.deleteRule(guildId, pattern);
     await ctx.announce({
       title: '關鍵字已刪除',
-      description: `${Formatters.userMention(editorId)} 已刪除關鍵字 \`${pattern}\``,
-      fields: [
-        {
-          name: '已刪除的設定',
-          value: `\`${rule.matchType}\` **${truncate(rule.pattern, 150)}** ⭢ ${responsePreview(rule.response, 900)}`,
-        },
-      ],
+      description: `\`${rule.matchType}\` **${rule.pattern}** ⭢ ${responsePreview(rule.response, 900)}`,
       color: Colors.WARNING,
     });
     log.info({ pattern, guildId }, 'Keyword deleted');
