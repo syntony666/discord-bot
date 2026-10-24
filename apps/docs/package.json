@@ -1,0 +1,20 @@
+{
+  "name": "discord-bot-docs",
+  "version": "0.0.1",
+  "description": "Discord Bot Document",
+  "authors": {
+    "name": "Tony",
+    "email": "syntony666@outlook.com"
+  },
+  "repository": "/discord-bot-docs",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "vitepress": "^1.6.4",
+    "wrangler": "^4.136.3"
+  }
+}
