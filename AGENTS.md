@@ -9,7 +9,7 @@ Working agreement for coding agents in this repo. Contributor-facing rules live 
 - Use subagents to parallelize independent work (broad searches, disjoint edits).
 - State-changing actions need their own explicit approval: git checkout/merge/rebase/commit/push/reset, dependency installs, deploys.
 - Never claim a check passed unless it was actually run and observed.
-- Respond in Traditional Chinese; commit messages in English, under 50 words.
+- Commit messages in English, under 50 words.
 
 ## Repo notes
 
