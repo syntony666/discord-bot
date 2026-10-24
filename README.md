@@ -6,7 +6,9 @@
 [![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io)
 [![Discord](https://img.shields.io/badge/Discord-Bot-5865F2?logo=discord&logoColor=white)](https://discord.com)
 
-Modular Discord bot monorepo with keyword auto-replies, reaction roles, member join/leave notifications, and Twitch stream alerts. Built with TypeScript, RxJS, Hono, and Prisma + PostgreSQL. `apps/bot` handles Discord events and scheduled tasks; `apps/api` owns the database behind a small REST API; `packages/shared` carries the API contract (DTOs, enums, request helper, env loader); `packages/discord-client` wraps Discord REST/gateway access and the command/event runtime.
+[![view - Documentation](https://img.shields.io/badge/view-Documentation-834abe?style=for-the-badge)](https://discord-bot.syntony666.com)
+
+Modular Discord bot monorepo with keyword auto-replies, reaction roles, member join/leave notifications, and Twitch stream alerts. Built with TypeScript, RxJS, Hono, and Prisma + PostgreSQL. `apps/bot` handles Discord events and scheduled tasks; `apps/api` owns the database behind a small REST API; `apps/doc` is the VitePress documentation site; `packages/shared` carries the API contract (DTOs, enums, request helper, env loader); `packages/discord-client` wraps Discord REST/gateway access and the command/event runtime.
 
 ## Requirements
 
@@ -55,6 +57,10 @@ Guilds carry a tier — `NORMAL`, `PREMIUM`, or `HOME` (only one `HOME` at a tim
 ```
 
 `profile activity` persists through `BotState` and is re-applied on every gateway Ready.
+
+## Documentation
+
+The site at [discord-bot.syntony666.com](https://discord-bot.syntony666.com) is the `@discord-bot/doc` workspace (VitePress). Preview with `npm run dev -w @discord-bot/doc`, build with `npm run build -w @discord-bot/doc`. Cloudflare Workers Builds deploys on pushes to `master` that touch `apps/doc/`; doc-only changes skip the VM deploy.
 
 ## Useful Resources
 
