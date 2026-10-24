@@ -45,7 +45,14 @@ npm run build -w @discord-bot/doc   # when touching apps/doc
 Work branches off the current `release/x.y.z` branch, never directly off `master`:
 
 1. Create or reuse the release branch: `release/x.y.z`
-2. Branch off it (`fix/…`, `feat/…`, `docs/…`); keep commits small and single-concern
+2. Branch off it (`fix/…`, `feat/…`, `docs/…`)
 3. Push and wait for CI green, then merge into `release/x.y.z` with `--no-ff` — real merge commits, no fast-forwards
 4. When the release is ready, merge `release/x.y.z` into `master` with `--no-ff` and push
 5. Pushing `master` triggers CI → VM deploy for the bot. Pushes touching `apps/doc/` additionally trigger Cloudflare Workers Builds; doc-only changes skip the VM deploy
+
+## Change discipline
+
+- **Small, reviewable increments.** One commit per concern — split anything that can't be reviewed at a glance rather than landing one big diff
+- **Assess the blast radius first.** Before refactoring or touching shared code, trace what depends on it and say what the change can break (API contract, interaction flows, deployment) before editing
+- **Report before merging.** State files touched, what changed, and verification output — wait for review instead of piling on more changes
+- **No fake branches.** A branch that fast-forwards straight back leaves no history boundary — always merge with `--no-ff` so the change's edges are visible
