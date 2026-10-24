@@ -42,7 +42,10 @@ npm run build -w @discord-bot/doc   # when touching apps/doc
 
 ## Workflow
 
-1. Branch off `master` (`fix/…`, `feat/…`, `docs/…`, `release/x.y.z`)
-2. Keep commits small and single-concern; push and wait for CI green
-3. Merge into `master` with `--no-ff` — real merge commits, no fast-forwards
-4. Pushing `master` triggers CI → VM deploy for the bot. Pushes touching `apps/doc/` additionally trigger Cloudflare Workers Builds; doc-only changes skip the VM deploy
+Work branches off the current `release/x.y.z` branch, never directly off `master`:
+
+1. Create or reuse the release branch: `release/x.y.z`
+2. Branch off it (`fix/…`, `feat/…`, `docs/…`); keep commits small and single-concern
+3. Push and wait for CI green, then merge into `release/x.y.z` with `--no-ff` — real merge commits, no fast-forwards
+4. When the release is ready, merge `release/x.y.z` into `master` with `--no-ff` and push
+5. Pushing `master` triggers CI → VM deploy for the bot. Pushes touching `apps/doc/` additionally trigger Cloudflare Workers Builds; doc-only changes skip the VM deploy
