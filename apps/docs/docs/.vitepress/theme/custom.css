@@ -1,0 +1,21 @@
+/* Home hero: keep the image clear of the navbar */
+
+.VPHome .VPHero .image {
+  margin-top: -32px;
+}
+
+@media (min-width: 640px) {
+  .VPHome .VPHero .image {
+    margin-top: -48px;
+  }
+}
+
+@media (min-width: 960px) {
+  .VPHome .VPHero.VPHomeHero {
+    padding-top: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 128px);
+  }
+
+  .VPHome .VPHero .image-container {
+    transform: translate(-32px, 0);
+  }
+}
