@@ -35,6 +35,7 @@ npm run build -w @discord-bot/doc   # when touching apps/doc
 
 - Prettier formats everything — run `npm run format`, never hand-format
 - User-facing strings are Taiwan Traditional Chinese. Reuse established terms: 選單、範本、身分組、實況主、級別、關於我
+- `apps/doc` copy follows the same zh-TW rules: full-width punctuation (（）「」，、；：), a half-width space between Chinese and Latin (`實況主 ID`), and terms matching the bot's own command copy
 - Error replies go through `ctx.error` / `ctx.require` (❌ ephemeral embeds); non-owner interaction clicks use the 🔒 restricted response; don't hand-build plain-text error replies
 - Code comments in English only, and only where they add information
 - Commit messages in English, under 50 words, conventional prefixes (`fix:`, `feat:`, `docs:`, `chore:`, `ci:`, `refactor:`, `style:`)
