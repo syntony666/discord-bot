@@ -64,6 +64,7 @@ The site at [discord-bot.syntony666.com](https://discord-bot.syntony666.com) is 
 
 ## Useful Resources
 
+- [CONTRIBUTING.md](./CONTRIBUTING.md) — setup, conventions, release-branch workflow
 - [example.env](./example.env) — all environment variables with comments
 - [Discord Developer Portal](https://discord.com/developers/applications) — bot token, application id, intents
 - [Prisma](https://www.prisma.io/docs) · [Hono](https://hono.dev) · [RxJS](https://rxjs.dev) · [Twitch EventSub](https://dev.twitch.tv/docs/eventsub/)
