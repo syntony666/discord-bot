@@ -34,7 +34,7 @@ GitHub: [syntony666](https://github.com/syntony666)
 
 #### 2026.10.14
 
-- 新增作者專用管理指令 `/bot`：伺服器列表與詳情、級別設定、退出與同步伺服器、活動狀態與自我介紹、級別額度調整、公告私訊、全域統計
+- 新增作者專用管理指令 `/bot`：伺服器列表與詳情、級別設定、退出與同步伺服器、活動狀態與關於我、級別額度調整、公告私訊、全域統計
 - 伺服器分為 `NORMAL`、`PREMIUM`、`HOME` 三個級別，各功能設有數量上限，達到上限時無法再新增
 - 修復 `/status` 使用說明按鈕連結
 
@@ -43,7 +43,7 @@ GitHub: [syntony666](https://github.com/syntony666)
 #### 2026.9.23
 
 - 通知指令整合：`member-notify`、`stream-notify` 合併為 `/notify member`、`/notify stream`
-- 關鍵字回覆新增 `/keyword view`、`/keyword search`，回覆內容支援 `;;` 分隔多個候選隨機回覆
+- 關鍵字回覆新增 `/keyword view`、`/keyword search`，回覆內容支援 `;;` 分隔多個選項隨機回覆
 - `/status notify` 改名為 `/status features`
 - 機器人被移出伺服器時自動清除伺服器的設定資料
 
@@ -67,7 +67,7 @@ GitHub: [syntony666](https://github.com/syntony666)
 #### 2023.4.1
 
 - 部分功能改為維護中
-- 增加Twitch開台通知功能
+- 增加 Twitch 開台通知功能
 - 更改通知設定指令
 
 ### ver. 4.0.5
