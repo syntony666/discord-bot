@@ -26,7 +26,7 @@ export default defineConfig({
         link: 'https://discord.com/api/oauth2/authorize?client_id=995551157151862854&permissions=1644971945463&scope=bot',
       },
     ],
-    socialLinks: [{ icon: 'github', link: 'https://github.com/syntony666/discord-bot-doc' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/syntony666/discord-bot' }],
     search: {
       provider: 'local',
       options: {
