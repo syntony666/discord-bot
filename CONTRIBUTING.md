@@ -54,5 +54,4 @@ Work branches off the current `release/x.y.z` branch, never directly off `master
 
 - **Small, reviewable increments.** One commit per concern — split anything that can't be reviewed at a glance rather than landing one big diff
 - **Assess the blast radius first.** Before refactoring or touching shared code, trace what depends on it and say what the change can break (API contract, interaction flows, deployment) before editing
-- **Report before merging.** State files touched, what changed, and verification output — wait for review instead of piling on more changes
 - **No fake branches.** A branch that fast-forwards straight back leaves no history boundary — always merge with `--no-ff` so the change's edges are visible
