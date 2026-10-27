@@ -18,3 +18,4 @@ Working agreement for coding agents in this repo. Contributor-facing rules live 
 - Merge into `release/x.y.z` and then `master` with `--no-ff` only — no fast-forwards.
 - Deploys: pushing `master` runs CI then `deploy.sh` on the VM (script lives in a gist, fetched live). Pushes touching `apps/doc/` also trigger Cloudflare Workers Builds; doc-only pushes skip the VM deploy via path diff.
 - The docs subtree's history lives under `apps/doc/` — don't rewrite those commits when rebasing.
+- `*.plan.md` files are gitignored local working notes — the active roadmap is `feature-plan.plan.md`.
