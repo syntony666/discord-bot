@@ -1,5 +1,7 @@
 ---
 lastUpdated: false
+title: 隱私權政策
+description: 星野咲子隱私權政策：資料蒐集、處理及利用方式說明。
 ---
 
 # 隱私權政策
