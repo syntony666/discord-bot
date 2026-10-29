@@ -1,5 +1,7 @@
 ---
 sidebar: false
+title: 關於
+description: 關於星野咲子：Discord 機器人邀請連結、原始碼、作者資訊與版本紀錄。
 ---
 
 ## 關於星野咲子
