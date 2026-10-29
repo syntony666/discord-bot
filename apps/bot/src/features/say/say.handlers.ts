@@ -24,13 +24,13 @@ export function useSayHandlers(deps: SayDeps) {
       description: unescapeNewlines(ctx.options.message),
       color: Colors.INFO,
     };
-    await ctx.embed(embed, true);
 
     const channelId = ctx.interaction.channel_id;
     if (
       !(await ctx.confirmed({
         title: '⚠️ 確認發送訊息',
         description: `確定要發送至 ${Formatters.channelMention(channelId)} 嗎？`,
+        embeds: [embed],
         confirmLabel: '發送',
       }))
     )
