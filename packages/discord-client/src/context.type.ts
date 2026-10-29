@@ -12,6 +12,8 @@ export interface ConfirmOptions {
   title?: string;
   description: string;
   fields?: APIEmbed['fields'];
+  /** Extra embeds (e.g. a preview of the outgoing payload) shown below the confirm embed. */
+  embeds?: APIEmbed[];
   confirmLabel?: string;
   cancelLabel?: string;
   danger?: boolean;
