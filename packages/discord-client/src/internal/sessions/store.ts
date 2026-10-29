@@ -118,6 +118,7 @@ export function createSessionStore(
             },
             timestamp: new Date().toISOString(),
           },
+          ...(options.embeds ?? []),
         ],
         components: [
           row(
