@@ -261,21 +261,54 @@ export async function processLink(
   return { kind: 'none' };
 }
 
-/** Production resolver: one manual redirect hop per call, destination never fetched. */
-export async function resolveLocation(url: string): Promise<string | null> {
-  for (const method of ['HEAD', 'GET'] as const) {
-    try {
-      const res = await fetch(url, {
-        method,
-        redirect: 'manual',
-        signal: AbortSignal.timeout(5000),
-      });
-      const location = res.headers.get('location');
-      if (location) return new URL(location, url).toString();
-      if (res.status < 300 || res.status >= 400) return null;
-    } catch {
-      return null;
+/** HTML-embedded redirect patterns — shorteners like reurl.cc redirect via
+ *  page markup/JS instead of a 3xx response. */
+const HTML_REDIRECT_RES = [
+  /data-redirect-url=["']([^"']+)["']/i,
+  /<meta[^>]+http-equiv=["']?refresh["']?[^>]+content=["']?\d+\s*;\s*url=([^"'>\s]+)/i,
+  /window\.location(?:\.href)?\s*=\s*["']([^"']+)["']/i,
+  /location\.replace\(["']([^"']+)["']\)/i,
+];
+
+/** Finds a redirect target in an HTML page body; resolves relative URLs. */
+export function sniffHtmlRedirect(html: string, baseUrl: string): string | null {
+  for (const re of HTML_REDIRECT_RES) {
+    const m = html.match(re);
+    if (m?.[1]) {
+      try {
+        return new URL(m[1], baseUrl).toString();
+      } catch {
+        return null;
+      }
     }
   }
   return null;
+}
+
+const MAX_HTML_SNIFF_BYTES = 262_144;
+
+/** Production resolver: one manual redirect hop per call. Reads Location headers
+ *  first, then sniffs HTML-embedded redirects — the destination is never fetched. */
+export async function resolveLocation(url: string): Promise<string | null> {
+  const signal = AbortSignal.timeout(5000);
+  try {
+    const head = await fetch(url, { method: 'HEAD', redirect: 'manual', signal });
+    const location = head.headers.get('location');
+    if (location) return new URL(location, url).toString();
+    if (head.status >= 300 && head.status < 400) return null;
+  } catch {
+    // HEAD failed outright — GET below still gets a chance.
+  }
+  try {
+    const res = await fetch(url, { method: 'GET', redirect: 'manual', signal });
+    const location = res.headers.get('location');
+    if (location) return new URL(location, url).toString();
+    if (res.status >= 300 && res.status < 400) return null;
+    const type = res.headers.get('content-type') ?? '';
+    const length = Number(res.headers.get('content-length') ?? 0);
+    if (!type.includes('text/html') || length > MAX_HTML_SNIFF_BYTES) return null;
+    return sniffHtmlRedirect(await res.text(), url);
+  } catch {
+    return null;
+  }
 }
