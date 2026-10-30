@@ -3,6 +3,7 @@ import {
   CreateNotificationChannelInput,
   MemberNotifyMessage,
   NotificationChannel,
+  NotificationChannelIgnore,
   NotificationType,
   orNull,
   UpdateMessageInput,
@@ -34,6 +35,22 @@ export function createMemberNotifyApi(request: ApiRequest) {
     },
     getNotificationChannels(guildId: string) {
       return request<NotificationChannel[]>(`${base(guildId)}/notification-channels`);
+    },
+    getNotificationChannelIgnores(guildId: string, type: NotificationType) {
+      return request<NotificationChannelIgnore[]>(
+        `${base(guildId)}/notification-channels/${type}/ignores`
+      );
+    },
+    addNotificationChannelIgnore(guildId: string, type: NotificationType, channelId: string) {
+      return request<NotificationChannelIgnore>(
+        `${base(guildId)}/notification-channels/${type}/ignores/${channelId}`,
+        { method: 'PUT' }
+      );
+    },
+    removeNotificationChannelIgnore(guildId: string, type: NotificationType, channelId: string) {
+      return request<void>(`${base(guildId)}/notification-channels/${type}/ignores/${channelId}`, {
+        method: 'DELETE',
+      });
     },
     getMessageTemplates(guildId: string) {
       return orNull(request<MemberNotifyMessage>(`${base(guildId)}/member-notify-message`));
