@@ -43,6 +43,31 @@ export function memberNotifyRoutes(module: MemberNotifyModule) {
     return c.body(null, 204);
   });
 
+  routes.get('/notification-channels/:type/ignores', async (c) =>
+    c.json(
+      await module.getNotificationChannelIgnores(guildId(c), enumParam(c, 'type', NotificationType))
+    )
+  );
+
+  routes.put('/notification-channels/:type/ignores/:channelId', async (c) =>
+    c.json(
+      await module.addNotificationChannelIgnore(
+        guildId(c),
+        enumParam(c, 'type', NotificationType),
+        c.req.param('channelId')
+      )
+    )
+  );
+
+  routes.delete('/notification-channels/:type/ignores/:channelId', async (c) => {
+    await module.removeNotificationChannelIgnore(
+      guildId(c),
+      enumParam(c, 'type', NotificationType),
+      c.req.param('channelId')
+    );
+    return c.body(null, 204);
+  });
+
   routes.get('/member-notify-message', async (c) =>
     jsonOr404(c, await module.getMessageTemplates(guildId(c)))
   );
