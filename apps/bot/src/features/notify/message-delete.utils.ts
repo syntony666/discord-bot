@@ -1,9 +1,10 @@
-import type { APIEmbed } from 'discord-api-types/v10';
+import type { APIEmbed, APIEmbedField } from 'discord-api-types/v10';
 import { Formatters } from '@discord-bot/discord-client';
 
 export interface CachedMessage {
   authorId: string;
   authorName: string;
+  avatar: string | null;
   isBot: boolean;
   content: string;
   attachmentCount: number;
@@ -38,26 +39,26 @@ export function buildDeleteLogEmbed(
   channelId: string,
   color: number
 ): APIEmbed {
-  const fields = [
-    {
-      name: '作者',
-      value: `${Formatters.userMention(msg.authorId)}(${msg.authorName})`,
-      inline: true,
-    },
+  const fields: APIEmbedField[] = [
+    { name: '作者', value: Formatters.userMention(msg.authorId), inline: true },
     { name: '頻道', value: Formatters.channelMention(channelId), inline: true },
     {
       name: '訊息時間',
-      value: Formatters.time(Math.floor(new Date(msg.timestamp).getTime() / 1000)),
+      value: Formatters.time(Math.floor(new Date(msg.timestamp).getTime() / 1000), 'R'),
       inline: true,
     },
   ];
   if (msg.attachmentCount > 0) {
     fields.push({ name: '附件', value: `${msg.attachmentCount} 個`, inline: true });
   }
+  const ext = msg.avatar?.startsWith('a_') ? 'gif' : 'webp';
   return {
     title: '訊息被刪除',
     description: msg.content.slice(0, CONTENT_LIMIT) || '(無文字內容)',
     color,
     fields,
+    thumbnail: msg.avatar
+      ? { url: `https://cdn.discordapp.com/avatars/${msg.authorId}/${msg.avatar}.${ext}` }
+      : undefined,
   };
 }
