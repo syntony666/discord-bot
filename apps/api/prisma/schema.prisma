@@ -30,6 +30,7 @@ model Guild {
   reactionRolePanels        ReactionRolePanel[]
   streamNotifyConfig         StreamNotifyConfig?
   streamWatchers            StreamWatcher[]
+  autoFeatures              AutoFeature[]
 }
 
 /**
@@ -74,6 +75,25 @@ model NotificationChannel {
 enum NotificationType {
   MEMBER_JOIN
   MEMBER_LEAVE
+}
+
+enum AutoFeatureType {
+  LINKFIX
+}
+
+/**
+ * AutoFeature - Per-guild toggle for /auto automation features
+ */
+model AutoFeature {
+  guildId   String
+  feature   AutoFeatureType
+  enabled   Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  guild     Guild           @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@id([guildId, feature])
 }
 
 /**
