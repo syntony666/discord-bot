@@ -4,6 +4,7 @@ import {
   classifyUrl,
   extractLinks,
   processLink,
+  reurlTarget,
   sniffHtmlRedirect,
   stripTracking,
 } from '../src/features/linkfix/linkfix.pipeline.ts';
@@ -150,6 +151,26 @@ test('sniffHtmlRedirect finds markup and JS redirect targets', () => {
     'https://example.com/out'
   );
   assert.equal(sniffHtmlRedirect('<p>no redirect</p>', 'https://lihi.cc/x'), null);
+});
+
+test('reurlTarget extracts destination only from live info pages', () => {
+  const live = `<section id="search-main"><div class="container"><div class="row">
+    <div class="col-md-12 text-center">
+      <a href="https://x.com/a/status/1">
+        <span class="lead">https://x.com/a/status/1</span>
+      </a>
+    </div></div></div></section>`;
+  assert.equal(reurlTarget(live), 'https://x.com/a/status/1');
+  // Dead-link pages show a sponsored exit link instead — no lead-span echo.
+  const dead = `<section id="search-main"><div class="container">
+    <a href="https://www.trip.com/?Allianceid=1">離開此頁</a></div></section>`;
+  assert.equal(reurlTarget(dead), null);
+  assert.equal(reurlTarget(`<div id="notFound" data-redirect-url='https://reurl.cc'></div>`), null);
+  // href HTML-escaping must not break the echo check.
+  const escaped = `<section id="search-main"><div class="col-md-12 text-center">
+    <a href="https://a.b/?x=1&amp;y=2"><span class="lead">https://a.b/?x=1&amp;y=2</span></a>
+    </div></section>`;
+  assert.equal(reurlTarget(escaped), 'https://a.b/?x=1&y=2');
 });
 
 test('processLink returns none when resolution fails', async () => {
