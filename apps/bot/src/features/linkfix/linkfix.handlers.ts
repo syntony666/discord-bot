@@ -20,7 +20,9 @@ export function useLinkfixHandlers(deps: LinkfixDeps) {
   const h = useHandlers(linkfixCommand);
 
   h.handler('linkfix', async (ctx) => {
-    const result = await processLink(ctx.options.url.trim(), resolveLocation);
+    const raw = ctx.options.url.trim();
+    const input = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    const result = await processLink(input, resolveLocation);
     if (result.kind === 'none') {
       return ctx.error('無需修復', '這個連結不需要修復，或不是有效的網址。');
     }
@@ -37,7 +39,9 @@ export function useLinkfixHandlers(deps: LinkfixDeps) {
     if (!cfg?.enabled) return;
 
     const results = await Promise.all(urls.map((u) => processLink(u, resolveLocation)));
-    const fixed = results.filter((r) => r.kind === 'fix');
+    const fixed = results
+      .filter((r) => r.kind === 'fix' || r.kind === 'resolved')
+      .map((r) => r.url);
     if (fixed.length === 0) return;
 
     // Suppress the broken previews first so a repost never doubles embeds.
@@ -55,7 +59,7 @@ export function useLinkfixHandlers(deps: LinkfixDeps) {
 
     try {
       await discord.sendMessage(msg.channel_id, {
-        content: `由 ${Formatters.userMention(msg.author.id)} 分享：\n${fixed.map((f) => f.url).join('\n')}`,
+        content: `由 ${Formatters.userMention(msg.author.id)} 分享：\n${fixed.join('\n')}`,
       });
       log.info(
         { guildId: msg.guild_id, channelId: msg.channel_id, count: fixed.length },
