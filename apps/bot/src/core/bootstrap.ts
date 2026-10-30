@@ -5,6 +5,8 @@ import { guildFeature } from '@features/guild/guild.feature';
 import { reactionRoleFeature } from '@features/reaction-role/reaction-role.feature';
 import { randomFeature } from '@features/random/random.feature';
 import { sayFeature } from '@features/say/say.feature';
+import { autoFeature } from '@features/auto/auto.feature';
+import { linkfixFeature } from '@features/linkfix/linkfix.feature';
 import { botFeature } from '@features/bot/bot.feature';
 import { buildPresence } from '@features/bot/bot.presence';
 import type { ActivityConfig } from '@features/bot/bot.presence';
@@ -40,6 +42,8 @@ export async function bootstrapApp(client: DiscordClient) {
     reactionRoleFeature,
     randomFeature,
     sayFeature,
+    autoFeature,
+    linkfixFeature,
     botFeature
   );
   const syncResult = await bot.sync();

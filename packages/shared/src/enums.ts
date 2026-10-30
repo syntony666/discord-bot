@@ -29,6 +29,11 @@ export const GuildTier = {
 } as const;
 export type GuildTier = (typeof GuildTier)[keyof typeof GuildTier];
 
+export const AutoFeatureType = {
+  LINKFIX: 'LINKFIX',
+} as const;
+export type AutoFeatureType = (typeof AutoFeatureType)[keyof typeof AutoFeatureType];
+
 export const LimitFeature = {
   streamWatchers: 'streamWatchers',
   keywordRules: 'keywordRules',
