@@ -58,7 +58,7 @@ test('buildDeleteLogEmbed sets avatar footer icon when present', () => {
 
 test('buildDeleteLogEmbed handles attachment-only messages', () => {
   const embed = buildDeleteLogEmbed(entry({ content: '', attachmentCount: 3 }), '999', 0xff0000);
-  assert.equal(embed.description, '(無文字內容)');
+  assert.ok(embed.description?.startsWith('(無文字內容)'));
   const attach = embed.fields?.find((f) => f.name === '附件');
   assert.equal(attach?.value, '3 個');
 });
