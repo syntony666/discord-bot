@@ -287,10 +287,50 @@ export function sniffHtmlRedirect(html: string, baseUrl: string): string | null 
 
 const MAX_HTML_SNIFF_BYTES = 262_144;
 
+const unescapeHtml = (s: string) =>
+  s
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'");
+
+/** reurl.cc publishes the original URL on a `<code>+` info page inside
+ *  `#search-main`; the redirect page itself is an ad interstitial whose
+ *  exit link is sponsored, not the destination. The destination anchor
+ *  echoes the URL as its own text, which dead-link pages lack. */
+export function reurlTarget(html: string): string | null {
+  const section = html.match(/<section id="search-main">([\s\S]*?)<\/section>/)?.[1];
+  const anchor = section?.match(/<a href="([^"]+)">\s*<span class="lead">([^<]+)<\/span>/);
+  const [, href, text] = anchor ?? [];
+  if (!href || !text) return null;
+  return unescapeHtml(href) === unescapeHtml(text) ? unescapeHtml(href) : null;
+}
+
+/** Shorteners that expose the destination on a separate info page instead of
+ *  redirecting. Checked before the generic flow — their link pages carry
+ *  third-party ad scripts that would false-positive the HTML sniffers. */
+const INFO_PAGE_RESOLVERS: Record<
+  string,
+  { infoUrl: (url: URL) => string; extract: (html: string) => string | null }
+> = {
+  'reurl.cc': {
+    infoUrl: (u) => `https://reurl.cc${u.pathname.replace(/\+$/, '')}+`,
+    extract: reurlTarget,
+  },
+};
+
 /** Production resolver: one manual redirect hop per call. Reads Location headers
  *  first, then sniffs HTML-embedded redirects — the destination is never fetched. */
 export async function resolveLocation(url: string): Promise<string | null> {
   const signal = AbortSignal.timeout(5000);
+  const infoRule = INFO_PAGE_RESOLVERS[new URL(url).hostname.replace(/^www\./, '')];
+  if (infoRule) {
+    try {
+      const res = await fetch(infoRule.infoUrl(new URL(url)), { redirect: 'manual', signal });
+      return res.ok ? infoRule.extract(await res.text()) : null;
+    } catch {
+      return null;
+    }
+  }
   try {
     const head = await fetch(url, { method: 'HEAD', redirect: 'manual', signal });
     const location = head.headers.get('location');
