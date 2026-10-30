@@ -8,6 +8,8 @@ interface FixerRule {
   hosts: readonly string[];
   /** Tested against the URL pathname — only matching paths get swapped. */
   pattern: RegExp;
+  /** Query params carried to the fixed URL (query-dependent routes like story.php). */
+  keepParams?: readonly string[];
 }
 
 export const FIXER_RULES: readonly FixerRule[] = [
@@ -17,9 +19,9 @@ export const FIXER_RULES: readonly FixerRule[] = [
     pattern: /^\/[^/]+\/status\/\d+/,
   },
   {
-    fixer: 'ddinstagram.com',
+    fixer: 'vxinstagram.com',
     hosts: ['instagram.com', 'www.instagram.com'],
-    pattern: /^\/(p|reel|reels|tv)\/[\w-]+/,
+    pattern: /^\/(p|reel|reels|tv|share|stories)\/[\w-]+/,
   },
   {
     fixer: 'vxtiktok.com',
@@ -40,6 +42,7 @@ export const FIXER_RULES: readonly FixerRule[] = [
     fixer: 'facebed.com',
     hosts: ['facebook.com', 'www.facebook.com', 'm.facebook.com'],
     pattern: /^\/(reel|watch|posts|share|photo|video|permalink|story)/,
+    keepParams: ['story_fbid', 'id', 'v', 'fbid', 'set'],
   },
 ];
 
@@ -60,6 +63,14 @@ export const SHORTENER_HOSTS: ReadonlySet<string> = new Set([
   'lihi.cc',
   'lihi2.cc',
 ]);
+
+/** Host+path pairs that redirect (not in SHORTENER_HOSTS because the host is a fixer host). */
+const SHORTENER_PATTERNS: readonly { hosts: readonly string[]; pattern: RegExp }[] = [
+  {
+    hosts: ['threads.net', 'www.threads.net', 'threads.com', 'www.threads.com'],
+    pattern: /^\/share\//,
+  },
+];
 
 /** Unambiguous tracking params stripped on any host (`utm_*` matched by prefix). */
 const GLOBAL_TRACKING_PARAMS: ReadonlySet<string> = new Set([
@@ -145,22 +156,36 @@ const HOST_TRACKING_PARAMS: Readonly<Record<string, readonly string[]>> = {
 
 export type LinkAction =
   | { kind: 'fix'; url: string }
+  | { kind: 'resolved'; url: string }
   | { kind: 'shorten'; url: string }
   | { kind: 'strip'; url: string }
   | { kind: 'none' };
 
 const URL_RE = /https?:\/\/[^\s<>"'「」（）\[\]|]+/g;
+const BARE_HOSTS_RE = new RegExp(
+  `\\b(?:${[...FIXER_RULES.flatMap((r) => r.hosts), ...SHORTENER_HOSTS]
+    .map((h) => h.replace(/\./g, '\\.'))
+    .join('|')})/[^\\s<>"'「」（）\\[\\]|]+`,
+  'g'
+);
 const TRAILING_JUNK = /[.,;:!?)。，；：！？》」』)]+$/;
 
-/** Raw URLs in a message, skipping `<>` (opt-out) and `||` (spoiler) wrappings. */
+/** Raw URLs in a message — full-scheme plus bare `host/path` for known hosts.
+ *  Skips `<>` (opt-out) and `||` (spoiler) wrappings. */
 export function extractLinks(content: string): string[] {
   const out: string[] = [];
+  const skipped = (idx: number, end: number) =>
+    (content[idx - 1] === '<' && content[end] === '>') ||
+    (content[idx - 1] === '|' && content[end] === '|');
   for (const m of content.matchAll(URL_RE)) {
     const url = m[0].replace(TRAILING_JUNK, '');
-    const idx = m.index!;
-    if (content[idx - 1] === '<' && content[idx + m[0].length] === '>') continue;
-    if (content[idx - 1] === '|' && content[idx + m[0].length] === '|') continue;
-    if (url) out.push(url);
+    if (url && !skipped(m.index!, m.index! + m[0].length)) out.push(url);
+  }
+  for (const m of content.matchAll(BARE_HOSTS_RE)) {
+    // Bare matches inside a scheme:// match are already captured above.
+    if (content.slice(m.index! - 3, m.index!) === '://') continue;
+    const url = m[0].replace(TRAILING_JUNK, '');
+    if (url && !skipped(m.index!, m.index! + m[0].length)) out.push(`https://${url}`);
   }
   return [...new Set(out)];
 }
@@ -187,8 +212,21 @@ export function classifyUrl(raw: string): LinkAction {
   if (u.protocol !== 'http:' && u.protocol !== 'https:') return { kind: 'none' };
   const host = u.hostname.toLowerCase();
   const rule = FIXER_RULES.find((r) => r.hosts.includes(host) && r.pattern.test(u.pathname));
-  if (rule) return { kind: 'fix', url: `https://${rule.fixer}${u.pathname}` };
-  if (SHORTENER_HOSTS.has(host)) return { kind: 'shorten', url: raw };
+  if (rule) {
+    const kept = new URLSearchParams();
+    for (const p of rule.keepParams ?? []) {
+      const v = u.searchParams.get(p);
+      if (v !== null) kept.set(p, v);
+    }
+    return {
+      kind: 'fix',
+      url: `https://${rule.fixer}${u.pathname}${kept.size ? `?${kept}` : ''}`,
+    };
+  }
+  const isShortener =
+    SHORTENER_HOSTS.has(host) ||
+    SHORTENER_PATTERNS.some((s) => s.hosts.includes(host) && s.pattern.test(u.pathname));
+  if (isShortener) return { kind: 'shorten', url: raw };
   const before = u.toString();
   const stripped = stripTracking(u);
   if (stripped !== before) return { kind: 'strip', url: stripped };
@@ -205,11 +243,20 @@ export async function processLink(
   let current = raw;
   for (let hop = 0; hop <= MAX_REDIRECT_HOPS; hop++) {
     const action = classifyUrl(current);
-    if (action.kind !== 'shorten') return action;
-    if (hop === MAX_REDIRECT_HOPS) return { kind: 'none' };
-    const next = await resolve(current);
-    if (!next) return { kind: 'none' };
-    current = next;
+    if (action.kind === 'shorten') {
+      if (hop === MAX_REDIRECT_HOPS) return { kind: 'none' };
+      const next = await resolve(current);
+      if (!next) return { kind: 'none' };
+      current = next;
+      continue;
+    }
+    // A shortener that resolved: `fix` keeps its kind, anything else is an
+    // expanded link worth reposting (the shortener itself can't embed).
+    if (hop > 0) {
+      if (action.kind === 'fix') return action;
+      return { kind: 'resolved', url: action.kind === 'strip' ? action.url : current };
+    }
+    return action;
   }
   return { kind: 'none' };
 }
