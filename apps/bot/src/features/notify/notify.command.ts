@@ -130,5 +130,28 @@ export const notifyCommand = defineCommand({
         { name: 'list', description: '顯示目前的直播通知設定' },
       ],
     },
+    {
+      name: 'message-delete',
+      description: '刪除訊息記錄',
+      subcommands: [
+        {
+          name: 'enable',
+          description: '啟用刪除訊息記錄（監看全群頻道）',
+          options: [channelOption],
+        },
+        { name: 'disable', description: '關閉刪除訊息記錄' },
+        { name: 'status', description: '查看目前設定' },
+        {
+          name: 'ignore',
+          description: '排除頻道（該頻道的刪除不記錄）',
+          options: [channelOption],
+        },
+        {
+          name: 'unignore',
+          description: '取消排除頻道',
+          options: [channelOption],
+        },
+      ],
+    },
   ],
 });

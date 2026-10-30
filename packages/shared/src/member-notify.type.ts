@@ -9,6 +9,13 @@ export interface NotificationChannel {
   updatedAt: string;
 }
 
+export interface NotificationChannelIgnore {
+  guildId: string;
+  type: NotificationType;
+  channelId: string;
+  createdAt: string;
+}
+
 export interface MemberNotifyMessage {
   guildId: string;
   joinMessage: string;

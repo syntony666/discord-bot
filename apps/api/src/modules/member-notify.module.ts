@@ -46,6 +46,28 @@ export function createMemberNotifyModule(prisma: PrismaClient) {
       });
     },
 
+    getNotificationChannelIgnores(guildId: string, type: NotificationType) {
+      return prisma.notificationChannelIgnore.findMany({ where: { guildId, type } });
+    },
+
+    addNotificationChannelIgnore(guildId: string, type: NotificationType, channelId: string) {
+      return prisma.notificationChannelIgnore.upsert({
+        where: { guildId_type_channelId: { guildId, type, channelId } },
+        update: {},
+        create: { guildId, type, channelId },
+      });
+    },
+
+    async removeNotificationChannelIgnore(
+      guildId: string,
+      type: NotificationType,
+      channelId: string
+    ) {
+      await prisma.notificationChannelIgnore.delete({
+        where: { guildId_type_channelId: { guildId, type, channelId } },
+      });
+    },
+
     getMessageTemplates(guildId: string) {
       return prisma.memberNotifyMessage.findUnique({ where: { guildId } });
     },

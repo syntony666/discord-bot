@@ -7,6 +7,7 @@ export type KeywordMatchType = (typeof KeywordMatchType)[keyof typeof KeywordMat
 export const NotificationType = {
   MEMBER_JOIN: 'MEMBER_JOIN',
   MEMBER_LEAVE: 'MEMBER_LEAVE',
+  MESSAGE_DELETE: 'MESSAGE_DELETE',
 } as const;
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
 
