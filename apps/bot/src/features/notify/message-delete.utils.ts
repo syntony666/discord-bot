@@ -40,13 +40,7 @@ export function buildDeleteLogEmbed(
   color: number
 ): APIEmbed {
   const fields: APIEmbedField[] = [
-    { name: '作者', value: Formatters.userMention(msg.authorId), inline: true },
     { name: '頻道', value: Formatters.channelMention(channelId), inline: true },
-    {
-      name: '訊息時間',
-      value: Formatters.time(Math.floor(new Date(msg.timestamp).getTime() / 1000), 'R'),
-      inline: true,
-    },
   ];
   if (msg.attachmentCount > 0) {
     fields.push({ name: '附件', value: `${msg.attachmentCount} 個`, inline: true });
@@ -57,8 +51,12 @@ export function buildDeleteLogEmbed(
     description: msg.content.slice(0, CONTENT_LIMIT) || '(無文字內容)',
     color,
     fields,
-    thumbnail: msg.avatar
-      ? { url: `https://cdn.discordapp.com/avatars/${msg.authorId}/${msg.avatar}.${ext}` }
-      : undefined,
+    footer: {
+      text: `${msg.authorName}・${msg.authorId}`,
+      icon_url: msg.avatar
+        ? `https://cdn.discordapp.com/avatars/${msg.authorId}/${msg.avatar}.${ext}`
+        : undefined,
+    },
+    timestamp: msg.timestamp,
   };
 }

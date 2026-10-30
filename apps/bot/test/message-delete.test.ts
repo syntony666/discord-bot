@@ -45,14 +45,16 @@ test('buildDeleteLogEmbed renders fields and truncates long content', () => {
   assert.equal(embed.title, '訊息被刪除');
   assert.equal(embed.description?.length, 1000);
   const names = embed.fields?.map((f) => f.name);
-  assert.deepEqual(names, ['作者', '頻道', '訊息時間']);
-  assert.equal(embed.fields?.[1]?.value, '<#999>');
+  assert.deepEqual(names, ['頻道']);
+  assert.equal(embed.fields?.[0]?.value, '<#999>');
+  assert.equal(embed.footer?.text, 'TestUser・111');
+  assert.equal(embed.timestamp, '2026-10-30T10:00:00.000Z');
 });
 
-test('buildDeleteLogEmbed sets avatar thumbnail when present', () => {
+test('buildDeleteLogEmbed sets avatar footer icon when present', () => {
   const embed = buildDeleteLogEmbed(entry({ avatar: 'a_abc123' }), '999', 0xff0000);
-  assert.equal(embed.thumbnail?.url, 'https://cdn.discordapp.com/avatars/111/a_abc123.gif');
-  assert.equal(buildDeleteLogEmbed(entry(), '999', 0xff0000).thumbnail, undefined);
+  assert.equal(embed.footer?.icon_url, 'https://cdn.discordapp.com/avatars/111/a_abc123.gif');
+  assert.equal(buildDeleteLogEmbed(entry(), '999', 0xff0000).footer?.icon_url, undefined);
 });
 
 test('buildDeleteLogEmbed handles attachment-only messages', () => {
