@@ -43,10 +43,9 @@ test('messageCache re-set refreshes position and delete removes', () => {
 test('buildDeleteLogEmbed renders fields and truncates long content', () => {
   const embed = buildDeleteLogEmbed(entry({ content: 'x'.repeat(1500) }), '999', 0xff0000);
   assert.equal(embed.title, '訊息被刪除');
-  assert.equal(embed.description?.length, 1000);
-  const names = embed.fields?.map((f) => f.name);
-  assert.deepEqual(names, ['頻道']);
-  assert.equal(embed.fields?.[0]?.value, '<#999>');
+  assert.equal(embed.description?.length, 1000 + 2 + '<#999>'.length);
+  assert.equal(embed.fields, undefined);
+  assert.ok(embed.description?.endsWith('<#999>'));
   assert.equal(embed.footer?.text, 'TestUser・111');
   assert.equal(embed.timestamp, '2026-10-30T10:00:00.000Z');
 });

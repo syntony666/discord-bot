@@ -39,18 +39,21 @@ export function buildDeleteLogEmbed(
   channelId: string,
   color: number
 ): APIEmbed {
-  const fields: APIEmbedField[] = [
-    { name: '頻道', value: Formatters.channelMention(channelId), inline: true },
-  ];
+  const fields: APIEmbedField[] = [];
   if (msg.attachmentCount > 0) {
     fields.push({ name: '附件', value: `${msg.attachmentCount} 個`, inline: true });
   }
   const ext = msg.avatar?.startsWith('a_') ? 'gif' : 'webp';
+  const description = [
+    msg.content.slice(0, CONTENT_LIMIT) || '(無文字內容)',
+    '',
+    Formatters.channelMention(channelId),
+  ].join('\n');
   return {
     title: '訊息被刪除',
-    description: msg.content.slice(0, CONTENT_LIMIT) || '(無文字內容)',
+    description,
     color,
-    fields,
+    fields: fields.length > 0 ? fields : undefined,
     footer: {
       text: `${msg.authorName}・${msg.authorId}`,
       icon_url: msg.avatar
