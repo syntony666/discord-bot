@@ -98,6 +98,7 @@ export function useMessageDeleteHandlers(deps: MessageDeleteNotifyDeps) {
     cache.set(msg.id, {
       authorId: msg.author.id,
       authorName: msg.author.global_name ?? msg.author.username,
+      avatar: msg.author.avatar ?? null,
       isBot: msg.author.bot ?? false,
       content: msg.content,
       attachmentCount: msg.attachments?.length ?? 0,
