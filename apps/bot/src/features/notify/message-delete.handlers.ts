@@ -31,7 +31,7 @@ export function useMessageDeleteHandlers(deps: MessageDeleteNotifyDeps) {
     await api.setNotificationChannel({ guildId, type: TYPE, channelId });
     await ctx.success(
       '刪除訊息記錄已啟用',
-      `記錄頻道已設定為 ${Formatters.channelMention(channelId)}\n全群頻道的刪除都會記錄；可用 ${discord.commandMention('notify message-delete ignore')} 排除特定頻道。`
+      `刪除記錄會發送至 ${Formatters.channelMention(channelId)}\n全群頻道的刪除都會記錄；可用 ${discord.commandMention('notify message-delete ignore')} 排除特定頻道。`
     );
     log.info({ guildId, channelId }, 'Message-delete log enabled');
   });
@@ -62,7 +62,7 @@ export function useMessageDeleteHandlers(deps: MessageDeleteNotifyDeps) {
     }
     const description = [
       `**狀態：** ${cfg.enabled ? '✅ 已啟用' : '❌ 已停用'}`,
-      `記錄頻道：${Formatters.channelMention(cfg.channelId)}`,
+      `刪除記錄發送至：${Formatters.channelMention(cfg.channelId)}`,
       `排除頻道：${
         ignores.length > 0
           ? ignores.map((i) => Formatters.channelMention(i.channelId)).join('、')
