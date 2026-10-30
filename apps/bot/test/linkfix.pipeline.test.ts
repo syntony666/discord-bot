@@ -4,6 +4,7 @@ import {
   classifyUrl,
   extractLinks,
   processLink,
+  sniffHtmlRedirect,
   stripTracking,
 } from '../src/features/linkfix/linkfix.pipeline.ts';
 
@@ -130,6 +131,25 @@ test('processLink resolves threads share links into fixed posts', async () => {
     async () => 'https://www.threads.com/@u/post/DfDdw4dkuKH?xmt=track'
   );
   assert.deepEqual(result, { kind: 'fix', url: 'https://vxthreads.com/@u/post/DfDdw4dkuKH' });
+});
+
+test('sniffHtmlRedirect finds markup and JS redirect targets', () => {
+  assert.equal(
+    sniffHtmlRedirect(
+      `<div data-redirect-url='https://x.com/a/status/1'></div>`,
+      'https://reurl.cc/x'
+    ),
+    'https://x.com/a/status/1'
+  );
+  assert.equal(
+    sniffHtmlRedirect(`<meta http-equiv="refresh" content="0;url=/target">`, 'https://reurl.cc/x'),
+    'https://reurl.cc/target'
+  );
+  assert.equal(
+    sniffHtmlRedirect(`window.location.href = "https://example.com/out"`, 'https://lihi.cc/x'),
+    'https://example.com/out'
+  );
+  assert.equal(sniffHtmlRedirect('<p>no redirect</p>', 'https://lihi.cc/x'), null);
 });
 
 test('processLink returns none when resolution fails', async () => {
