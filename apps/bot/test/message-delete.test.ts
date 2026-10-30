@@ -9,6 +9,7 @@ import type { CachedMessage } from '../src/features/notify/message-delete.utils.
 const entry = (over: Partial<CachedMessage> = {}): CachedMessage => ({
   authorId: '111',
   authorName: 'TestUser',
+  avatar: null,
   isBot: false,
   content: 'hello',
   attachmentCount: 0,
@@ -46,6 +47,12 @@ test('buildDeleteLogEmbed renders fields and truncates long content', () => {
   const names = embed.fields?.map((f) => f.name);
   assert.deepEqual(names, ['作者', '頻道', '訊息時間']);
   assert.equal(embed.fields?.[1]?.value, '<#999>');
+});
+
+test('buildDeleteLogEmbed sets avatar thumbnail when present', () => {
+  const embed = buildDeleteLogEmbed(entry({ avatar: 'a_abc123' }), '999', 0xff0000);
+  assert.equal(embed.thumbnail?.url, 'https://cdn.discordapp.com/avatars/111/a_abc123.gif');
+  assert.equal(buildDeleteLogEmbed(entry(), '999', 0xff0000).thumbnail, undefined);
 });
 
 test('buildDeleteLogEmbed handles attachment-only messages', () => {
