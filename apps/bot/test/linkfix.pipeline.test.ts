@@ -18,18 +18,32 @@ test('extractLinks trims trailing CJK and ASCII punctuation', () => {
   assert.deepEqual(extractLinks('(https://x.com/a/status/1)'), ['https://x.com/a/status/1']);
 });
 
+test('extractLinks picks up bare host/path for known hosts', () => {
+  assert.deepEqual(extractLinks('看這個 reurl.cc/Ab12 喔'), ['https://reurl.cc/Ab12']);
+  assert.deepEqual(extractLinks('x.com/a/status/1'), ['https://x.com/a/status/1']);
+  // Scheme-prefixed URLs are not double-counted by the bare pass.
+  assert.deepEqual(extractLinks('https://reurl.cc/Ab12'), ['https://reurl.cc/Ab12']);
+  // Unknown bare domains are ignored.
+  assert.deepEqual(extractLinks('example.com/page'), []);
+});
+
 test('classifyUrl swaps all six fixer platforms', () => {
   const cases: [string, string][] = [
     ['https://x.com/a/status/123', 'https://vxtwitter.com/a/status/123'],
     ['https://twitter.com/a/status/123?s=20&t=abc', 'https://vxtwitter.com/a/status/123'],
-    ['https://www.instagram.com/p/AbC_123/', 'https://ddinstagram.com/p/AbC_123/'],
+    ['https://www.instagram.com/p/AbC_123/', 'https://vxinstagram.com/p/AbC_123/'],
+    ['https://instagram.com/share/AbC_123', 'https://vxinstagram.com/share/AbC_123'],
     ['https://tiktok.com/@user/video/456', 'https://vxtiktok.com/@user/video/456'],
     ['https://pixiv.net/artworks/789', 'https://phixiv.net/artworks/789'],
     ['https://pixiv.net/en/artworks/789', 'https://phixiv.net/en/artworks/789'],
     ['https://threads.net/@u/post/xYz', 'https://vxthreads.com/@u/post/xYz'],
     ['https://www.threads.com/@u/post/xYz', 'https://vxthreads.com/@u/post/xYz'],
     ['https://facebook.com/reel/123', 'https://facebed.com/reel/123'],
-    ['https://m.facebook.com/watch/?v=1', 'https://facebed.com/watch/'],
+    ['https://m.facebook.com/watch/?v=1', 'https://facebed.com/watch/?v=1'],
+    [
+      'https://www.facebook.com/story.php?story_fbid=123&id=456&mibextid=x',
+      'https://facebed.com/story.php?story_fbid=123&id=456',
+    ],
   ];
   for (const [input, expected] of cases) {
     assert.deepEqual(classifyUrl(input), { kind: 'fix', url: expected });
@@ -55,6 +69,7 @@ test('classifyUrl marks allowlisted shorteners', () => {
   ]) {
     assert.equal(classifyUrl(`https://${host}/abc`).kind, 'shorten', host);
   }
+  assert.equal(classifyUrl('https://www.threads.com/share/Ab12C/').kind, 'shorten');
 });
 
 test('classifyUrl strips tracking params but keeps functional ones', () => {
@@ -98,7 +113,23 @@ test('processLink resolves a shortener into a stripped link', async () => {
     'https://reurl.cc/xyz',
     async () => 'https://example.com/a?utm_source=x&id=1'
   );
-  assert.deepEqual(result, { kind: 'strip', url: 'https://example.com/a?id=1' });
+  assert.deepEqual(result, { kind: 'resolved', url: 'https://example.com/a?id=1' });
+});
+
+test('processLink resolves a shortener into a plain resolved link', async () => {
+  const result = await processLink(
+    'https://reurl.cc/xyz',
+    async () => 'https://example.com/article'
+  );
+  assert.deepEqual(result, { kind: 'resolved', url: 'https://example.com/article' });
+});
+
+test('processLink resolves threads share links into fixed posts', async () => {
+  const result = await processLink(
+    'https://www.threads.com/share/Ab12C/',
+    async () => 'https://www.threads.com/@u/post/DfDdw4dkuKH?xmt=track'
+  );
+  assert.deepEqual(result, { kind: 'fix', url: 'https://vxthreads.com/@u/post/DfDdw4dkuKH' });
 });
 
 test('processLink returns none when resolution fails', async () => {
