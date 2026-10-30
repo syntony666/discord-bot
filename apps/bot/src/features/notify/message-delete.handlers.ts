@@ -119,7 +119,7 @@ export function useMessageDeleteHandlers(deps: MessageDeleteNotifyDeps) {
 
     try {
       await discord.sendMessage(cfg.channelId, {
-        embeds: [buildDeleteLogEmbed(cached, channel_id, Colors.ERROR)],
+        embeds: [buildDeleteLogEmbed(cached, channel_id, Colors.MESSAGE_DELETE)],
       });
     } catch (error) {
       log.warn(
