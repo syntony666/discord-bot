@@ -49,16 +49,10 @@ export function useSayHandlers(deps: SayDeps) {
       embed.footer = { text: authorName, icon_url: avatarUrlOf(user) };
       embed.timestamp = new Date().toISOString();
       const msg = await discord.sendMessage(channelId, { embeds: [embed] });
-      await ctx.followUp({
-        embeds: [
-          {
-            title: '訊息已發送',
-            description: `[檢視訊息](https://discord.com/channels/${ctx.guildId}/${channelId}/${msg.id})`,
-            color: Colors.SUCCESS,
-          },
-        ],
-        flags: MessageFlags.Ephemeral,
-      });
+      await ctx.announceSuccess(
+        '訊息已發送',
+        `[檢視訊息](https://discord.com/channels/${ctx.guildId}/${channelId}/${msg.id})`
+      );
       log.info({ guildId: ctx.guildId, channelId, messageId: msg.id }, 'Say message sent');
     } catch (error) {
       log.warn(
