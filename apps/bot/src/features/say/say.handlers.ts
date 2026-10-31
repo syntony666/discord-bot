@@ -5,7 +5,7 @@ import type { DiscordHelpers } from '@discord-bot/discord-client';
 import { createLogger } from '@discord-bot/shared';
 import { Colors } from '@core/config/colors.config';
 import { sayCommand } from './say.command';
-import { unescapeNewlines } from './say.utils';
+import { avatarUrlOf, unescapeNewlines } from './say.utils';
 
 const log = createLogger('Say');
 
@@ -19,17 +19,21 @@ export function useSayHandlers(deps: SayDeps) {
   const h = useHandlers(sayCommand);
 
   h.handler('say', async (ctx) => {
+    const user = ctx.user;
     const embed: APIEmbed = {
       title: ctx.options.title,
       description: unescapeNewlines(ctx.options.message),
       color: Colors.INFO,
+      footer: {
+        text: `${user.global_name ?? user.username}・${user.id}`,
+        icon_url: avatarUrlOf(user),
+      },
     };
 
     const channelId = ctx.interaction.channel_id;
     if (
       !(await ctx.confirmed({
-        title: '⚠️ 確認發送訊息',
-        description: `確定要發送至 ${Formatters.channelMention(channelId)} 嗎？`,
+        content: `⚠️ 確定要發送至 ${Formatters.channelMention(channelId)} 嗎？`,
         embeds: [embed],
         confirmLabel: '發送',
       }))
@@ -37,6 +41,7 @@ export function useSayHandlers(deps: SayDeps) {
       return;
 
     try {
+      embed.timestamp = new Date().toISOString();
       const msg = await discord.sendMessage(channelId, { embeds: [embed] });
       await ctx.followUp({
         embeds: [
