@@ -20,6 +20,7 @@
     "test": "node --test 'apps/*/test/**/*.test.ts' 'packages/*/test/**/*.test.ts'"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "husky": "^9.1.7",
     "lint-staged": "^17.5.1",
     "prettier": "^3.7.4",
