@@ -1,5 +1,6 @@
 {
   "name": "@discord-bot/doc",
+  "private": true,
   "version": "0.0.1",
   "description": "Discord Bot Document",
   "authors": {
