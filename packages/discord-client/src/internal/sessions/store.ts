@@ -103,11 +103,10 @@ export function createSessionStore(
     const ownerId = i.user?.id ?? i.member?.user.id ?? '';
     const timeoutMs = options.timeoutMs ?? DEFAULT_CONFIRM_TIMEOUT;
 
-    await send(
-      i,
-      {
-        embeds: [
-          {
+    const confirmEmbed =
+      'content' in options
+        ? null
+        : {
             title: options.title ?? '確認',
             description: options.description,
             fields: options.fields,
@@ -117,9 +116,15 @@ export function createSessionStore(
               icon_url: theme.footerIconUrl,
             },
             timestamp: new Date().toISOString(),
-          },
-          ...(options.embeds ?? []),
-        ],
+          };
+
+    await send(
+      i,
+      {
+        content: options.content
+          ? `${options.content}\n-# ${usernameOf(i)} · ${Math.ceil(timeoutMs / 60_000)} 分鐘後失效`
+          : undefined,
+        embeds: [...(confirmEmbed ? [confirmEmbed] : []), ...(options.embeds ?? [])],
         components: [
           row(
             button(

@@ -8,9 +8,7 @@ import type {
   APIUser,
 } from 'discord-api-types/v10';
 
-export interface ConfirmOptions {
-  title?: string;
-  description: string;
+interface ConfirmBase {
   fields?: APIEmbed['fields'];
   /** Extra embeds (e.g. a preview of the outgoing payload) shown below the confirm embed. */
   embeds?: APIEmbed[];
@@ -19,6 +17,16 @@ export interface ConfirmOptions {
   danger?: boolean;
   timeoutMs?: number;
 }
+
+export type ConfirmOptions = ConfirmBase &
+  (
+    | { title?: string; description: string; content?: never }
+    | {
+        /** Prompt rendered as message content instead of the built-in confirm
+         *  embed — for single-embed confirms where `embeds` IS the visual. */
+        content: string;
+      }
+  );
 
 export interface PaginateOptions<T> {
   items: T[];
