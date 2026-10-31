@@ -122,7 +122,7 @@ export function createSessionStore(
       i,
       {
         content: options.content
-          ? `${options.content}\n-# ${usernameOf(i)} · ${Math.ceil(timeoutMs / 60_000)} 分鐘後失效`
+          ? `${options.content}\n-# ${Math.ceil(timeoutMs / 60_000)} 分鐘後失效`
           : undefined,
         embeds: [...(confirmEmbed ? [confirmEmbed] : []), ...(options.embeds ?? [])],
         components: [
