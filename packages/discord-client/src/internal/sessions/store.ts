@@ -121,9 +121,7 @@ export function createSessionStore(
     await send(
       i,
       {
-        content: options.content
-          ? `${options.content}\n-# ${Math.ceil(timeoutMs / 60_000)} 分鐘後失效`
-          : undefined,
+        content: options.content,
         embeds: [...(confirmEmbed ? [confirmEmbed] : []), ...(options.embeds ?? [])],
         components: [
           row(
