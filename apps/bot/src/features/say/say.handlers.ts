@@ -25,7 +25,7 @@ export function useSayHandlers(deps: SayDeps) {
       description: unescapeNewlines(ctx.options.message),
       color: Colors.INFO,
       footer: {
-        text: `${user.global_name ?? user.username}・${user.id}`,
+        text: user.global_name ?? user.username,
         icon_url: avatarUrlOf(user),
       },
     };
