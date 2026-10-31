@@ -20,12 +20,16 @@ export function useSayHandlers(deps: SayDeps) {
 
   h.handler('say', async (ctx) => {
     const user = ctx.user;
+    const authorName = user.global_name ?? user.username;
+    const timeoutMs = 120_000;
     const embed: APIEmbed = {
       title: ctx.options.title,
       description: unescapeNewlines(ctx.options.message),
       color: Colors.INFO,
       footer: {
-        text: user.global_name ?? user.username,
+        // Expiry shows only while confirming — replaced by the plain author
+        // name before the message goes out.
+        text: `${authorName} · ${timeoutMs / 60_000} 分鐘後失效`,
         icon_url: avatarUrlOf(user),
       },
     };
@@ -36,11 +40,13 @@ export function useSayHandlers(deps: SayDeps) {
         content: `⚠️ 確定要發送至 ${Formatters.channelMention(channelId)} 嗎？`,
         embeds: [embed],
         confirmLabel: '發送',
+        timeoutMs,
       }))
     )
       return;
 
     try {
+      embed.footer = { text: authorName, icon_url: avatarUrlOf(user) };
       embed.timestamp = new Date().toISOString();
       const msg = await discord.sendMessage(channelId, { embeds: [embed] });
       await ctx.followUp({
