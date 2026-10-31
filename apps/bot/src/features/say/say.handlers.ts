@@ -22,22 +22,21 @@ export function useSayHandlers(deps: SayDeps) {
     const user = ctx.user;
     const authorName = user.global_name ?? user.username;
     const timeoutMs = 120_000;
+    const channelId = ctx.interaction.channel_id;
     const embed: APIEmbed = {
-      title: ctx.options.title,
+      // Title/footer hold the confirm prompt only while previewing — both are
+      // replaced with the user-facing values before the message goes out.
+      title: `⚠️ 確定要發送至 ${Formatters.channelMention(channelId)} 嗎？`,
       description: unescapeNewlines(ctx.options.message),
       color: Colors.INFO,
       footer: {
-        // Expiry shows only while confirming — replaced by the plain author
-        // name before the message goes out.
         text: `${authorName} · ${timeoutMs / 60_000} 分鐘後失效`,
         icon_url: avatarUrlOf(user),
       },
     };
 
-    const channelId = ctx.interaction.channel_id;
     if (
       !(await ctx.confirmed({
-        content: `⚠️ 確定要發送至 ${Formatters.channelMention(channelId)} 嗎？`,
         embeds: [embed],
         confirmLabel: '發送',
         timeoutMs,
@@ -46,6 +45,7 @@ export function useSayHandlers(deps: SayDeps) {
       return;
 
     try {
+      embed.title = ctx.options.title;
       embed.footer = { text: authorName, icon_url: avatarUrlOf(user) };
       embed.timestamp = new Date().toISOString();
       const msg = await discord.sendMessage(channelId, { embeds: [embed] });

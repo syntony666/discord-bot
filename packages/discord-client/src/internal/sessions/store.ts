@@ -104,9 +104,8 @@ export function createSessionStore(
     const timeoutMs = options.timeoutMs ?? DEFAULT_CONFIRM_TIMEOUT;
 
     const confirmEmbed =
-      'content' in options
-        ? null
-        : {
+      'description' in options
+        ? {
             title: options.title ?? '確認',
             description: options.description,
             fields: options.fields,
@@ -116,7 +115,8 @@ export function createSessionStore(
               icon_url: theme.footerIconUrl,
             },
             timestamp: new Date().toISOString(),
-          };
+          }
+        : null;
 
     await send(
       i,
