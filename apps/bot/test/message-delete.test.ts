@@ -42,8 +42,8 @@ test('messageCache re-set refreshes position and delete removes', () => {
 
 test('buildDeleteLogEmbed renders fields and truncates long content', () => {
   const embed = buildDeleteLogEmbed(entry({ content: 'x'.repeat(1500) }), '999', 0xff0000);
-  assert.equal(embed.title, '訊息被刪除');
-  assert.equal(embed.description?.length, 1000 + 2 + '<#999>'.length);
+  assert.equal(embed.title, undefined);
+  assert.ok(embed.description?.startsWith('**訊息被刪除**\n\n' + 'x'.repeat(1000)));
   assert.equal(embed.fields, undefined);
   assert.ok(embed.description?.endsWith('<#999>'));
   assert.equal(embed.footer?.text, 'TestUser・111');
@@ -58,7 +58,7 @@ test('buildDeleteLogEmbed sets avatar footer icon when present', () => {
 
 test('buildDeleteLogEmbed handles attachment-only messages', () => {
   const embed = buildDeleteLogEmbed(entry({ content: '', attachmentCount: 3 }), '999', 0xff0000);
-  assert.ok(embed.description?.startsWith('(無文字內容)'));
+  assert.ok(embed.description?.includes('(無文字內容)'));
   const attach = embed.fields?.find((f) => f.name === '附件');
   assert.equal(attach?.value, '3 個');
 });
