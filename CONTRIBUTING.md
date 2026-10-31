@@ -82,11 +82,12 @@ Codebase:
 
 Work branches off the current `release/x.y.z` branch, never directly off `master`:
 
-1. Create or reuse the release branch: `release/x.y.z` — the first commit on a new release branch is always the version bump (`apps/bot/package.json` carries the bot's release version)
-2. Branch off it (`fix/…`, `feat/…`, `docs/…`)
+1. Create or reuse the release branch: `release/x.y.z` — the name declares intent; the shipped version is computed by changesets at release time, not by hand
+2. Branch off it (`fix/…`, `feat/…`, `docs/…`). Changes that belong in the changelog carry a changeset file — run `npx changeset`, pick the bump level (patch/minor/major), describe the change. Only `@discord-bot/bot` is versioned; all other workspaces are changeset-ignored
 3. Push and wait for CI green, then merge into `release/x.y.z` with `--no-ff` — real merge commits, no fast-forwards
-4. When the release is ready, merge `release/x.y.z` into `master` with `--no-ff` and push
-5. Pushing `master` triggers CI → VM deploy for the bot. Pushes touching `apps/doc/` additionally trigger Cloudflare Workers Builds; doc-only changes skip the VM deploy
+4. When the release is ready, merge `release/x.y.z` into `master` with `--no-ff` and push — changesets/action opens (or updates) a `chore: release` PR accumulating every pending changeset
+5. Merge the `chore: release` PR to ship: it bumps `apps/bot/package.json`, writes `apps/bot/CHANGELOG.md`, tags `@discord-bot/bot@x.y.z`, and creates the GitHub release. Nothing is versioned until that PR merges
+6. Pushing `master` triggers CI → VM deploy for the bot. Pushes touching `apps/doc/` additionally trigger Cloudflare Workers Builds; doc-only changes skip the VM deploy
 
 ## Change discipline
 
