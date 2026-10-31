@@ -22,9 +22,11 @@ export type ConfirmOptions = ConfirmBase &
   (
     | { title?: string; description: string; content?: never }
     | {
-        /** Prompt rendered as message content instead of the built-in confirm
-         *  embed — for single-embed confirms where `embeds` IS the visual. */
-        content: string;
+        /** Visual mode — `embeds` IS the whole confirm visual; optional
+         *  `content` renders as message text above them. */
+        content?: string;
+        title?: never;
+        description?: never;
       }
   );
 
