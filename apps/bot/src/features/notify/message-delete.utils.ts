@@ -45,13 +45,12 @@ export function buildDeleteLogEmbed(
   }
   const ext = msg.avatar?.startsWith('a_') ? 'gif' : 'webp';
   const description = [
-    '**訊息被刪除**',
-    '',
     msg.content.slice(0, CONTENT_LIMIT) || '(無文字內容)',
     '',
     Formatters.channelMention(channelId),
   ].join('\n');
   return {
+    title: '訊息被刪除',
     description,
     color,
     fields: fields.length > 0 ? fields : undefined,
