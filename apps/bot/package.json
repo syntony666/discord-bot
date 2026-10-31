@@ -1,6 +1,6 @@
 {
   "name": "@discord-bot/bot",
-  "version": "5.3.0",
+  "version": "5.2.2",
   "private": true,
   "main": "dist/index.js",
   "scripts": {
