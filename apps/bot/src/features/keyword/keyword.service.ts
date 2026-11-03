@@ -1,7 +1,7 @@
 import type { KeywordRuntime } from '@discord-bot/shared';
 import type { KeywordApi } from './keyword.api';
 
-const CACHE_TTL_MS = 1_000;
+const CACHE_TTL_MS = 5_000;
 
 interface CacheEntry {
   rules: KeywordRuntime[];
