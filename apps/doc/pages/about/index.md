@@ -1,4 +1,5 @@
 ---
+lastUpdated: false
 sidebar: false
 title: 關於
 description: 關於星野咲子：Discord 機器人邀請連結、原始碼、作者資訊與版本紀錄。
@@ -10,7 +11,7 @@ description: 關於星野咲子：Discord 機器人邀請連結、原始碼、�
 
 原始碼: [syntony666/discord-bot](https://github.com/syntony666/discord-bot/)
 
-[工具人邀請連結](https://discord.com/api/oauth2/authorize?client_id=995551157151862854&permissions=1644971945463&scope=bot)
+[邀請連結](https://discord.com/api/oauth2/authorize?client_id=995551157151862854&permissions=1644971945463&scope=bot)
 
 ## 關於作者
 
@@ -25,7 +26,7 @@ GitHub: [syntony666](https://github.com/syntony666)
 #### 2026.11.3
 
 - 新增 `/random`：抽籤（`pick`）、擲骰子（`roll`，支援 kh/dh/kl/dl 修飾）、隨機整數（`number`）
-- 新增 `/say`：讓工具人以訊息卡片代發公告，送出前會先跳出預覽確認
+- 新增 `/say`：以訊息卡片代發公告，送出前會先跳出預覽確認
 - 新增 `/linkfix`：清理連結，展開短網址、移除追蹤參數、修復 X／Instagram／TikTok／Pixiv／Threads／Facebook 的預覽
 - 新增 `/auto linkfix`：啟用後自動修復訊息中上述站點的連結預覽
 - 新增 `/notify message-delete`：訊息被刪除時記錄內容到指定頻道，可排除特定頻道
