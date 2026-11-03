@@ -4,7 +4,4 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 
 const { version } = JSON.parse(readFileSync('apps/bot/package.json', 'utf8'));
-writeFileSync(
-  'apps/doc/.vitepress/version.mts',
-  `export const BOT_VERSION = '${version}';\n`
-);
+writeFileSync('apps/doc/.vitepress/version.mts', `export const BOT_VERSION = '${version}';\n`);
