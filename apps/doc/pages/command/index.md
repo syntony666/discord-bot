@@ -16,7 +16,7 @@ description: 星野咲子全部斜線指令說明：/keyword 關鍵字自動回�
 | `/keyword`       | 設定關鍵字，有人命中就自動回覆 | 無，人人都能用 |
 | `/random`        | 抽籤、骰子、亂數               | 無             |
 | `/linkfix`       | 手動清理一條連結               | 無             |
-| `/auto linkfix`  | 訊息裡的連結自動修復預覽       | 管理伺服器     |
+| `/auto`          | 自動化功能（連結預覽修復）     | 管理伺服器     |
 | `/reaction-role` | 對訊息按表情符號領取身分組     | 管理身分組     |
 | `/say`           | 讓工具人代發訊息卡片           | 管理伺服器     |
 | `/clear`         | 批次刪除頻道訊息               | 管理訊息       |
@@ -133,7 +133,7 @@ description: 星野咲子全部斜線指令說明：/keyword 關鍵字自動回�
 
 不填預設 `1d6`；格式是 `NdM`（N 顆 M 面），後面可以加 `kh`（留最高）、`kl`（留最低）、`dh`（丟最高）、`dl`（丟最低），例如 `4d6kh3` 是「擲 4 顆 6 面骰，留最高的 3 顆」
 
-### 隨機整數 `/random number`
+### 產生隨機整數 `/random number`
 
 - 指令: `/random number [最小值] [最大值]`
 
@@ -141,29 +141,33 @@ description: 星野咲子全部斜線指令說明：/keyword 關鍵字自動回�
 
 ---
 
-## 連結修復 `/linkfix`、`/auto linkfix`
+## 連結修復 `/linkfix`
 
 > X、Instagram、TikTok、Pixiv、Threads、Facebook 貼到 Discord 常常預覽不出來，工具人幫你換成能預覽的連結
-
-### 清理連結 `/linkfix`
 
 - 指令: `/linkfix <連結>`
 
 回傳清理完的連結：支援的站點會換成可預覽的網址、短網址（bit.ly、reurl.cc 這類）會展開、`utm`、`fbclid` 這種追蹤參數會清掉
 
-### 自動修復 `/auto linkfix`
+::: tip
+
+不想被修的連結用 `<>` 包起來就會跳過；隱藏文字（spoiler）裡的連結也不會動
+
+:::
+
+---
+
+## 自動修復連結 `/auto linkfix`
 
 _**僅限擁有「管理伺服器」權限者執行**_
 
-啟用後，訊息裡出現上述站點的連結時，工具人會把壞掉的預覽壓掉、改貼修好的連結
+> 啟用後，訊息裡出現上述站點的連結時，工具人會把壞掉的預覽壓掉、改貼修好的連結
 
 - 指令: `/auto linkfix enable` — 啟用
 - 指令: `/auto linkfix disable` — 停用
 - 指令: `/auto linkfix status` — 查看啟用狀態
 
 ::: tip
-
-不想被修的連結用 `<>` 包起來就會跳過；隱藏文字（spoiler）裡的連結也不會動
 
 手動 `/linkfix` 不用先啟用，隨時都能用
 
@@ -267,11 +271,11 @@ _**僅限擁有「管理訊息」權限者執行**_
 
 > 一次清掉頻道裡最近的訊息，洗版或吵架現場善後用
 
-### 依數量 `/clear count`
+### 依數量刪除 `/clear count`
 
 - 指令: `/clear count <數量>` — 刪除最近 1～100 則
 
-### 依時間 `/clear time`
+### 依時間刪除 `/clear time`
 
 - 指令: `/clear time <分鐘>` — 刪除最近 1～1440 分鐘內的訊息
 
@@ -409,8 +413,13 @@ _**僅限擁有「管理伺服器」權限者執行**_
 
 > 有人的訊息被刪掉時，把內容記錄到指定頻道，吵架刪訊滅證就抓得到
 
+### 啟用 / 關閉記錄
+
 - 指令: `/notify message-delete enable <頻道>` — 啟用，監看全伺服器的頻道
 - 指令: `/notify message-delete disable` — 關閉
+
+### 查看 / 排除頻道
+
 - 指令: `/notify message-delete status` — 查看目前設定
 - 指令: `/notify message-delete ignore <頻道>` — 排除某個頻道，該頻道的刪除不記錄
 - 指令: `/notify message-delete unignore <頻道>` — 取消排除
