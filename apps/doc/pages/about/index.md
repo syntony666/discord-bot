@@ -20,6 +20,18 @@ GitHub: [syntony666](https://github.com/syntony666)
 
 ## 版本紀錄
 
+### ver. 5.3.0
+
+#### 2026.11.3
+
+- 新增 `/random`：抽籤（`pick`）、擲骰子（`roll`，支援 kh/dh/kl/dl 修飾）、隨機整數（`number`）
+- 新增 `/say`：讓工具人以訊息卡片代發公告，送出前會先跳出預覽確認
+- 新增 `/linkfix`：清理連結，展開短網址、移除追蹤參數、修復 X／Instagram／TikTok／Pixiv／Threads／Facebook 的預覽
+- 新增 `/auto linkfix`：啟用後自動修復訊息中上述站點的連結預覽
+- 新增 `/notify message-delete`：訊息被刪除時記錄內容到指定頻道，可排除特定頻道
+- 新增 `/clear`：依數量或時間範圍批次刪除訊息，釘選的訊息會自動跳過
+- 關鍵字回覆的多選項（`;;`）隨機結果改為較快輪替
+
 ### ver. 5.2.2
 
 #### 2026.10.20
