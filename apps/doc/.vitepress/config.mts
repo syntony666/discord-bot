@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig, type HeadConfig } from 'vitepress';
 
 const HOSTNAME = 'https://discord-bot.syntony666.com';
@@ -7,6 +8,10 @@ const DESCRIPTION =
 
 export default defineConfig({
   srcDir: 'pages',
+  outDir: 'site',
+  vite: {
+    publicDir: fileURLToPath(new URL('../public', import.meta.url)),
+  },
   title: '星野咲子',
   description: DESCRIPTION,
   lang: 'zh-TW',
