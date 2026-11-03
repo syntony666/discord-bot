@@ -6,6 +6,7 @@ const DESCRIPTION =
   '星野咲子 Discord 機器人使用文件：關鍵字自動回覆、反應身分組、實況開台通知、成員進出通知的設定與指令說明。';
 
 export default defineConfig({
+  srcDir: 'pages',
   title: '星野咲子',
   description: DESCRIPTION,
   lang: 'zh-TW',

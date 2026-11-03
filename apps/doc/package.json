@@ -9,9 +9,9 @@
   },
   "repository": "/discord-bot-docs",
   "scripts": {
-    "dev": "vitepress dev docs",
-    "build": "vitepress build docs",
-    "preview": "vitepress preview docs"
+    "dev": "vitepress dev",
+    "build": "vitepress build && cp -R public/. .vitepress/dist/",
+    "preview": "vitepress preview"
   },
   "license": "MIT",
   "devDependencies": {
