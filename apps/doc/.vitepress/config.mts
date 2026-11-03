@@ -1,5 +1,10 @@
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type HeadConfig } from 'vitepress';
+
+const { version: BOT_VERSION } = createRequire(import.meta.url)('../../bot/package.json') as {
+  version: string;
+};
 
 const HOSTNAME = 'https://discord-bot.syntony666.com';
 const OG_IMAGE = 'https://cdn.jsdelivr.net/gh/syntony666/cdn/SakikoHoshino-512x512.png';
@@ -115,7 +120,7 @@ export default defineConfig({
     sidebarMenuLabel: '目錄',
     returnToTopLabel: '回到頂部',
     footer: {
-      message: 'Made by syntony666 ☻ Powered by VitePress',
+      message: `ver. ${BOT_VERSION} · Made by syntony666 ☻ Powered by VitePress`,
     },
   },
 });
