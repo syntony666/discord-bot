@@ -7,6 +7,7 @@ export type KeywordMatchType = (typeof KeywordMatchType)[keyof typeof KeywordMat
 export const NotificationType = {
   MEMBER_JOIN: 'MEMBER_JOIN',
   MEMBER_LEAVE: 'MEMBER_LEAVE',
+  MESSAGE_DELETE: 'MESSAGE_DELETE',
 } as const;
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
 
@@ -28,6 +29,11 @@ export const GuildTier = {
   HOME: 'HOME',
 } as const;
 export type GuildTier = (typeof GuildTier)[keyof typeof GuildTier];
+
+export const AutoFeatureType = {
+  LINKFIX: 'LINKFIX',
+} as const;
+export type AutoFeatureType = (typeof AutoFeatureType)[keyof typeof AutoFeatureType];
 
 export const LimitFeature = {
   streamWatchers: 'streamWatchers',

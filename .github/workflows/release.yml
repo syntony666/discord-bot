@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - id: changesets
+        uses: changesets/action@v1
+        with:
+          version: npx changeset version
+          publish: npx changeset git-tag
+          commit: 'chore: release'
+          title: 'chore: release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub release
+        run: |
+          version=$(node -p "require('./apps/bot/package.json').version")
+          tag="@discord-bot/bot@$version"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "$tag already released — skipping"
+            exit 0
+          fi
+          if ! git rev-parse --verify "refs/tags/$tag" >/dev/null 2>&1; then
+            echo "no local tag — this push did not publish"
+            exit 0
+          fi
+          git push origin "$tag" || true
+          notes=$(awk -v v="$version" '$0 == "## " v {f=1; next} /^## / {f=0} f' apps/bot/CHANGELOG.md)
+          gh release create "$tag" --title "$tag" --notes "${notes:-Release $tag}" --verify-tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

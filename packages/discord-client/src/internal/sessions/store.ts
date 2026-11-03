@@ -103,11 +103,9 @@ export function createSessionStore(
     const ownerId = i.user?.id ?? i.member?.user.id ?? '';
     const timeoutMs = options.timeoutMs ?? DEFAULT_CONFIRM_TIMEOUT;
 
-    await send(
-      i,
-      {
-        embeds: [
-          {
+    const confirmEmbed =
+      'description' in options
+        ? {
             title: options.title ?? '確認',
             description: options.description,
             fields: options.fields,
@@ -117,8 +115,14 @@ export function createSessionStore(
               icon_url: theme.footerIconUrl,
             },
             timestamp: new Date().toISOString(),
-          },
-        ],
+          }
+        : null;
+
+    await send(
+      i,
+      {
+        content: options.content,
+        embeds: [...(confirmEmbed ? [confirmEmbed] : []), ...(options.embeds ?? [])],
         components: [
           row(
             button(

@@ -9,15 +9,18 @@ import { useMemberNotifyHandlers } from './member.handlers';
 import type { MemberNotifyDeps } from './member.handlers';
 import { useStreamNotifyHandlers } from './stream.handlers';
 import type { StreamNotifyDeps } from './stream.handlers';
+import { useMessageDeleteHandlers } from './message-delete.handlers';
+import type { MessageDeleteNotifyDeps } from './message-delete.handlers';
 
-type NotifyDeps = MemberNotifyDeps & StreamNotifyDeps;
+type NotifyDeps = MemberNotifyDeps & StreamNotifyDeps & MessageDeleteNotifyDeps;
 
 export const notifyFeature = defineFeature({
   command: notifyCommand,
   useHandlers: (deps: NotifyDeps) => {
     const member = useMemberNotifyHandlers(deps);
     const stream = useStreamNotifyHandlers(deps);
-    return mergeCollected(member, stream);
+    const messageDelete = useMessageDeleteHandlers(deps);
+    return mergeCollected(member, stream, messageDelete);
   },
   deps: {
     api: {

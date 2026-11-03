@@ -28,4 +28,5 @@ export const Colors = {
   WARNING: BaseColors.YELLOW,
   MEMBER_JOIN: BaseColors.GREEN,
   MEMBER_LEAVE: BaseColors.GRAY_BLUE,
+  MESSAGE_DELETE: BaseColors.ORANGE,
 } as const;
