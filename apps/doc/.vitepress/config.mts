@@ -91,7 +91,7 @@ export default defineConfig({
       { text: '關於', link: '/about/' },
       { text: '隱私權政策', link: '/privacy/' },
       {
-        text: '工具人邀請連結',
+        text: '邀請連結',
         link: 'https://discord.com/api/oauth2/authorize?client_id=995551157151862854&permissions=1644971945463&scope=bot',
       },
     ],
@@ -120,7 +120,7 @@ export default defineConfig({
     sidebarMenuLabel: '目錄',
     returnToTopLabel: '回到頂部',
     footer: {
-      message: `ver. ${BOT_VERSION} · Made by syntony666 ☻ Powered by VitePress`,
+      message: `Made by syntony666 ☻ Powered by VitePress · ver. ${BOT_VERSION}`,
     },
   },
 });
