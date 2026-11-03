@@ -8,7 +8,7 @@
 
 [![view - Documentation](https://img.shields.io/badge/view-Documentation-834abe?style=for-the-badge)](https://discord-bot.syntony666.com)
 
-Modular Discord bot monorepo with keyword auto-replies, reaction roles, member join/leave notifications, and Twitch stream alerts. Built with TypeScript, RxJS, Hono, and Prisma + PostgreSQL. `apps/bot` handles Discord events and scheduled tasks; `apps/api` owns the database behind a small REST API; `apps/doc` is the VitePress documentation site; `packages/shared` carries the API contract (DTOs, enums, request helper, env loader); `packages/discord-client` wraps Discord REST/gateway access and the command/event runtime.
+Modular Discord bot monorepo with keyword auto-replies, reaction roles, member join/leave notifications, Twitch stream alerts, link fixing, deleted-message logging, and bulk message cleanup. Built with TypeScript, RxJS, Hono, and Prisma + PostgreSQL. `apps/bot` handles Discord events and scheduled tasks; `apps/api` owns the database behind a small REST API; `apps/doc` is the VitePress documentation site; `packages/shared` carries the API contract (DTOs, enums, request helper, env loader); `packages/discord-client` wraps Discord REST/gateway access and the command/event runtime.
 
 ## Requirements
 
@@ -29,6 +29,7 @@ npm run dev            # start API + bot together
 # or separately:
 npm run dev:api        # REST API on :3001  → curl localhost:3001/health
 npm run dev:bot        # Discord bot, health endpoint on :3000/status
+npm run dev:doc        # VitePress docs site
 ```
 
 Other commands:
