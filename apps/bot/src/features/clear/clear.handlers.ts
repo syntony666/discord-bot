@@ -22,21 +22,21 @@ export function useClearHandlers(deps: ClearDeps) {
   const purge = async (
     ctx: CommandContext,
     candidates: APIMessage[],
-    scope: string
+    scope: { range: string; where: string }
   ): Promise<void> => {
     const channelId = ctx.interaction.channel_id;
     const { clearable, pinned } = partitionClearable(candidates);
     if (clearable.length === 0) {
       await ctx.info(
         '沒有可刪除的訊息',
-        pinned > 0 ? `${scope}的訊息都已釘選，不會被批次刪除。` : `${scope}沒有訊息。`
+        pinned > 0 ? `${scope.where}的訊息都已釘選，不會被批次刪除。` : `${scope.where}沒有訊息。`
       );
       return;
     }
     if (
       !(await ctx.confirmed({
         title: '確認批次刪除',
-        description: `${scope}將刪除 **${clearable.length}** 則訊息${pinned > 0 ? `（${pinned} 則釘選訊息會保留）` : ''}。`,
+        description: `將刪除${scope.range}**${clearable.length}** 則訊息${pinned > 0 ? `（${pinned} 則釘選訊息會保留）` : ''}。`,
         confirmLabel: '刪除',
         danger: true,
       }))
@@ -68,7 +68,7 @@ export function useClearHandlers(deps: ClearDeps) {
     const messages = await discord.getChannelMessages(ctx.interaction.channel_id, {
       limit: ctx.options.count,
     });
-    await purge(ctx, messages, `最近 **${ctx.options.count}** 則`);
+    await purge(ctx, messages, { range: '最近的 ', where: '頻道內' });
   });
 
   h.handler('time', async (ctx) => {
@@ -78,7 +78,10 @@ export function useClearHandlers(deps: ClearDeps) {
     const messages = (
       await discord.getChannelMessages(ctx.interaction.channel_id, { limit: TIME_FETCH_LIMIT })
     ).filter((m) => withinMinutes(m, minutes, Date.now()));
-    await purge(ctx, messages, `最近 **${minutes}** 分鐘內`);
+    await purge(ctx, messages, {
+      range: `最近 **${minutes}** 分鐘內的 `,
+      where: `最近 ${minutes} 分鐘內`,
+    });
   });
 
   return h.collect();
