@@ -7,6 +7,7 @@ import { randomFeature } from '@features/random/random.feature';
 import { sayFeature } from '@features/say/say.feature';
 import { autoFeature } from '@features/auto/auto.feature';
 import { linkfixFeature } from '@features/linkfix/linkfix.feature';
+import { clearFeature } from '@features/clear/clear.feature';
 import { botFeature } from '@features/bot/bot.feature';
 import { buildPresence } from '@features/bot/bot.presence';
 import type { ActivityConfig } from '@features/bot/bot.presence';
@@ -44,6 +45,7 @@ export async function bootstrapApp(client: DiscordClient) {
     sayFeature,
     autoFeature,
     linkfixFeature,
+    clearFeature,
     botFeature
   );
   const syncResult = await bot.sync();
