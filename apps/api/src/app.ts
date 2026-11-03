@@ -8,6 +8,8 @@ import { createKeywordModule } from './modules/keyword.module';
 import { createMemberNotifyModule } from './modules/member-notify.module';
 import { createReactionRoleModule } from './modules/reaction-role.module';
 import { createStreamNotifyModule } from './modules/stream-notify.module';
+import { createAutoModule } from './modules/auto.module';
+import { autoRoutes } from './routes/auto';
 import { botStateRoutes } from './routes/bot-state';
 import { guildRoutes } from './routes/guilds';
 import { keywordRuleRoutes } from './routes/keyword-rules';
@@ -23,6 +25,7 @@ const memberNotifyModule = createMemberNotifyModule(prisma);
 const reactionRoleModule = createReactionRoleModule(prisma);
 const streamNotifyModule = createStreamNotifyModule(prisma);
 const botStateModule = createBotStateModule(prisma);
+const autoModule = createAutoModule(prisma);
 
 export const app = new Hono();
 
@@ -33,6 +36,7 @@ app.route('/api/v1/guilds/:guildId/keyword-rules', keywordRuleRoutes(keywordModu
 app.route('/api/v1/guilds/:guildId', memberNotifyRoutes(memberNotifyModule));
 app.route('/api/v1/guilds/:guildId', reactionRoleRoutes(reactionRoleModule));
 app.route('/api/v1/guilds/:guildId', streamNotifyRoutes(streamNotifyModule));
+app.route('/api/v1/guilds/:guildId', autoRoutes(autoModule));
 app.route('/api/v1/stream-watchers', streamWatcherRoutes(streamNotifyModule));
 app.route('/api/v1/tier-limits', tierLimitRoutes(guildModule));
 app.route('/api/v1/bot-state', botStateRoutes(botStateModule));

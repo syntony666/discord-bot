@@ -1,5 +1,6 @@
 {
   "name": "@discord-bot/doc",
+  "private": true,
   "version": "0.0.1",
   "description": "Discord Bot Document",
   "authors": {
@@ -8,9 +9,9 @@
   },
   "repository": "/discord-bot-docs",
   "scripts": {
-    "dev": "vitepress dev docs",
-    "build": "vitepress build docs",
-    "preview": "vitepress preview docs"
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
   },
   "license": "MIT",
   "devDependencies": {

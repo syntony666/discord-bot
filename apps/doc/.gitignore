@@ -5,6 +5,8 @@ npm-debug.log
 coverage/
 run
 dist
+site
+.vitepress/cache
 .DS_Store
 .nyc_output
 .basement

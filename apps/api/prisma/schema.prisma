@@ -25,11 +25,13 @@ model Guild {
   
   keywordRules              KeywordRule[]
   notificationChannels      NotificationChannel[]
+  notificationChannelIgnores NotificationChannelIgnore[]
   memberNotifyMessage       MemberNotifyMessage?
   reactionRoles             ReactionRole[]
   reactionRolePanels        ReactionRolePanel[]
   streamNotifyConfig         StreamNotifyConfig?
   streamWatchers            StreamWatcher[]
+  autoFeatures              AutoFeature[]
 }
 
 /**
@@ -74,6 +76,37 @@ model NotificationChannel {
 enum NotificationType {
   MEMBER_JOIN
   MEMBER_LEAVE
+  MESSAGE_DELETE
+}
+
+model NotificationChannelIgnore {
+  guildId   String
+  type      NotificationType
+  channelId String
+  createdAt DateTime         @default(now())
+
+  guild     Guild            @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@id([guildId, type, channelId])
+}
+
+enum AutoFeatureType {
+  LINKFIX
+}
+
+/**
+ * AutoFeature - Per-guild toggle for /auto automation features
+ */
+model AutoFeature {
+  guildId   String
+  feature   AutoFeatureType
+  enabled   Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  guild     Guild           @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@id([guildId, feature])
 }
 
 /**

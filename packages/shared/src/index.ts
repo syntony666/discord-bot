@@ -2,6 +2,7 @@ import './env';
 
 export * from './enums';
 export * from './logger';
+export * from './auto.type';
 export * from './error.type';
 export * from './guild.type';
 export * from './keyword.type';

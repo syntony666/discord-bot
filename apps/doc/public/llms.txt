@@ -1,0 +1,13 @@
+# 星野咲子 (Sakiko Hoshino)
+
+> Discord 機器人：關鍵字自動回覆、反應身分組、Twitch 開台通知、成員進出通知。
+
+## Docs
+
+- [指令說明](https://discord-bot.syntony666.com/command/): 全部斜線指令的用法與所需權限
+- [關於](https://discord-bot.syntony666.com/about/): 機器人介紹、邀請連結、版本紀錄
+- [隱私權政策](https://discord-bot.syntony666.com/privacy/): 資料蒐集、處理與利用方式
+
+## Links
+
+- GitHub: https://github.com/syntony666/discord-bot
