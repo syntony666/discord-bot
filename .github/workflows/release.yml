@@ -26,7 +26,7 @@ jobs:
       - id: changesets
         uses: changesets/action@v1
         with:
-          version: npx changeset version
+          version: npx changeset version && node scripts/stamp-doc-version.mjs
           publish: npx changeset git-tag
           commit: 'chore: release'
           title: 'chore: release'

@@ -1,10 +1,6 @@
-import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type HeadConfig } from 'vitepress';
-
-const { version: BOT_VERSION } = createRequire(import.meta.url)('../../bot/package.json') as {
-  version: string;
-};
+import { BOT_VERSION } from './version.mts';
 
 const HOSTNAME = 'https://discord-bot.syntony666.com';
 const OG_IMAGE = 'https://cdn.jsdelivr.net/gh/syntony666/cdn/SakikoHoshino-512x512.png';
