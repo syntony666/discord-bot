@@ -145,7 +145,7 @@ description: 星野咲子全部斜線指令說明：/keyword 關鍵字自動回�
 
 > X、Instagram、TikTok、Pixiv、Threads、Facebook 貼到 Discord 常常預覽不出來，工具人幫你換成能預覽的連結
 
-### 手動清理 `/linkfix`
+### 清理連結 `/linkfix`
 
 - 指令: `/linkfix <連結>`
 
