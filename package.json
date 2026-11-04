@@ -13,6 +13,7 @@
     "dev:doc": "npm run dev --workspace=@discord-bot/doc",
     "build": "npm run build -w @discord-bot/shared && npm run build -w @discord-bot/discord-client && npm run build -w @discord-bot/api && npm run build -w @discord-bot/bot",
     "typecheck": "npm run typecheck --workspaces --if-present",
+    "version:packages": "changeset version && node scripts/stamp-doc-version.mjs",
     "prisma:init": "npm run prisma:init --workspace=@discord-bot/api",
     "prisma:migrate": "npm run prisma:migrate --workspace=@discord-bot/api",
     "prisma:deploy": "npm run prisma:deploy --workspace=@discord-bot/api",
