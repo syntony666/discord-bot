@@ -5,7 +5,7 @@ import { BOT_VERSION } from './version.mts';
 const HOSTNAME = 'https://discord-bot.syntony666.com';
 const OG_IMAGE = 'https://cdn.jsdelivr.net/gh/syntony666/cdn/SakikoHoshino-512x512.png';
 const DESCRIPTION =
-  '星野咲子 Discord 機器人使用文件：關鍵字自動回覆、反應身分組、實況開台通知、成員進出通知的設定與指令說明。';
+  '星野咲子 Discord 機器人使用文件：關鍵字自動回覆、反應身分組、開台與進出通知、連結修復、刪訊記錄等功能的設定與指令說明。';
 
 export default defineConfig({
   srcDir: 'pages',
@@ -66,7 +66,7 @@ export default defineConfig({
               operatingSystem: 'Discord',
               url: `${HOSTNAME}/`,
               description:
-                'Discord 機器人，提供關鍵字自動回覆、反應身分組、實況開台通知與成員進出通知。',
+                'Discord 機器人，提供關鍵字自動回覆、反應身分組、開台與進出通知、連結修復與刪訊記錄。',
               inLanguage: 'zh-TW',
               author: {
                 '@type': 'Person',
