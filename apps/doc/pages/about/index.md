@@ -11,8 +11,6 @@ description: 關於星野咲子：Discord 機器人邀請連結、原始碼、�
 
 原始碼: [syntony666/discord-bot](https://github.com/syntony666/discord-bot/)
 
-[邀請連結](https://discord.com/api/oauth2/authorize?client_id=995551157151862854&permissions=1644971945463&scope=bot)
-
 ## 關於作者
 
 我的網站: [blog.syntony666.com](https://blog.syntony666.com)
