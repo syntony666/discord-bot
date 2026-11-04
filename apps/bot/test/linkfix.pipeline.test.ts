@@ -40,6 +40,7 @@ test('classifyUrl swaps all six fixer platforms', () => {
     ['https://pixiv.net/en/artworks/789', 'https://phixiv.net/en/artworks/789'],
     ['https://threads.net/@u/post/xYz', 'https://vxthreads.com/@u/post/xYz'],
     ['https://www.threads.com/@u/post/xYz', 'https://vxthreads.com/@u/post/xYz'],
+    ['https://www.threads.com/share/Ab12C/', 'https://vxthreads.com/share/Ab12C/'],
     ['https://facebook.com/reel/123', 'https://facebed.com/reel/123'],
     ['https://m.facebook.com/watch/?v=1', 'https://facebed.com/watch/?v=1'],
     [
@@ -71,7 +72,6 @@ test('classifyUrl marks allowlisted shorteners', () => {
   ]) {
     assert.equal(classifyUrl(`https://${host}/abc`).kind, 'shorten', host);
   }
-  assert.equal(classifyUrl('https://www.threads.com/share/Ab12C/').kind, 'shorten');
 });
 
 test('classifyUrl strips tracking params but keeps functional ones', () => {
@@ -126,12 +126,11 @@ test('processLink resolves a shortener into a plain resolved link', async () => 
   assert.deepEqual(result, { kind: 'resolved', url: 'https://example.com/article' });
 });
 
-test('processLink resolves threads share links into fixed posts', async () => {
-  const result = await processLink(
-    'https://www.threads.com/share/Ab12C/',
-    async () => 'https://www.threads.com/@u/post/DfDdw4dkuKH?xmt=track'
-  );
-  assert.deepEqual(result, { kind: 'fix', url: 'https://vxthreads.com/@u/post/DfDdw4dkuKH' });
+test('processLink fixes threads share links without resolving', async () => {
+  const result = await processLink('https://www.threads.com/share/Ab12C/', async () => {
+    throw new Error('resolve should not be called');
+  });
+  assert.deepEqual(result, { kind: 'fix', url: 'https://vxthreads.com/share/Ab12C/' });
 });
 
 test('sniffHtmlRedirect finds markup and JS redirect targets', () => {
