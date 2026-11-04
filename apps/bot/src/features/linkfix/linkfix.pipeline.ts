@@ -36,7 +36,8 @@ export const FIXER_RULES: readonly FixerRule[] = [
   {
     fixer: 'vxthreads.com',
     hosts: ['threads.net', 'www.threads.net', 'threads.com', 'www.threads.com'],
-    pattern: /^\/@[^/]+\/post\/[\w-]+/,
+    // /share/ links need no resolution — vxthreads serves the embed itself.
+    pattern: /^\/(@[^/]+\/post\/[\w-]+|share\/[\w-]+)/,
   },
   {
     fixer: 'facebed.com',
@@ -63,14 +64,6 @@ export const SHORTENER_HOSTS: ReadonlySet<string> = new Set([
   'lihi.cc',
   'lihi2.cc',
 ]);
-
-/** Host+path pairs that redirect (not in SHORTENER_HOSTS because the host is a fixer host). */
-const SHORTENER_PATTERNS: readonly { hosts: readonly string[]; pattern: RegExp }[] = [
-  {
-    hosts: ['threads.net', 'www.threads.net', 'threads.com', 'www.threads.com'],
-    pattern: /^\/share\//,
-  },
-];
 
 /** Unambiguous tracking params stripped on any host (`utm_*` matched by prefix). */
 const GLOBAL_TRACKING_PARAMS: ReadonlySet<string> = new Set([
@@ -223,10 +216,7 @@ export function classifyUrl(raw: string): LinkAction {
       url: `https://${rule.fixer}${u.pathname}${kept.size ? `?${kept}` : ''}`,
     };
   }
-  const isShortener =
-    SHORTENER_HOSTS.has(host) ||
-    SHORTENER_PATTERNS.some((s) => s.hosts.includes(host) && s.pattern.test(u.pathname));
-  if (isShortener) return { kind: 'shorten', url: raw };
+  if (SHORTENER_HOSTS.has(host)) return { kind: 'shorten', url: raw };
   const before = u.toString();
   const stripped = stripTracking(u);
   if (stripped !== before) return { kind: 'strip', url: stripped };
