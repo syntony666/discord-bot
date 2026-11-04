@@ -1,3 +1,39 @@
+@import url(@sakulime-ui/theme/umbra.css);
+
+/* umbra — map vitepress base vars onto the sl palette. Seeds live on
+   :root[data-theme="umbra"] (set via inline script in config head);
+   color-scheme: dark there also flips every light-dark() token. */
+
+:root.dark {
+  --vp-c-bg: var(--sl-bg);
+  --vp-c-bg-alt: var(--sl-surface);
+  --vp-c-bg-elv: var(--vp-c-bg-alt);
+  --vp-c-bg-soft: var(--vp-c-bg-alt);
+  /* wash behind code chips / row hover — default gray-soft reads cold */
+  --vp-c-default-soft: var(--sl-primary-bg);
+
+  --vp-c-text-1: var(--sl-text);
+  --vp-c-text-2: var(--sl-text-secondary);
+  --vp-c-text-3: var(--sl-text-muted);
+
+  --vp-c-brand-1: var(--sl-text-accent);
+  --vp-c-brand-2: var(--sl-primary);
+  --vp-c-brand-3: var(--vp-c-brand-1);
+  --vp-c-brand-soft: var(--sl-primary-bg);
+
+  /* brand button face is a pale teal — default white text fails contrast */
+  --vp-button-brand-text: var(--sl-primary-fg);
+  --vp-button-brand-hover-text: var(--sl-primary-fg);
+  --vp-button-brand-active-text: var(--sl-primary-fg);
+
+  --vp-c-border: var(--sl-border);
+  --vp-c-divider: var(--vp-c-border);
+
+  --vp-font-family-base:
+    'Inter', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  --vp-font-family-mono: 'JetBrains Mono', 'Noto Sans TC', ui-monospace, monospace;
+}
+
 /* Home hero: keep the image clear of the navbar */
 
 .VPHome .VPHero .image {
@@ -17,5 +53,9 @@
 
   .VPHome .VPHero .image-container {
     transform: translate(-32px, 0);
+  }
+
+  .VPHome .VPFeatures {
+    padding-top: 64px;
   }
 }
