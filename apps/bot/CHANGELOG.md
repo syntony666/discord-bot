@@ -1,5 +1,11 @@
 # @discord-bot/bot
 
+## 5.3.1
+
+### Patch Changes
+
+- 1350184: `/linkfix` and auto linkfix now rewrite `threads.com/share/` links straight to `vxthreads.com` instead of trying to resolve the redirect first — Threads rate-limits datacenter IPs, so the resolve pass returned 「無需修復」 on prod.
+
 ## 5.3.0
 
 ### Minor Changes
