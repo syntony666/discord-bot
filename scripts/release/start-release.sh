@@ -126,28 +126,7 @@ NODE
     npm install --package-lock-only --ignore-scripts
   fi
 
-  node --input-type=module <<'NODE'
-    import assert from 'node:assert/strict';
-    import { readFileSync, readdirSync } from 'node:fs';
-    const v = process.env.VERSION;
-    const esc = v.replace(/\./g, '\\.');
-    const pkg = JSON.parse(readFileSync('apps/bot/package.json', 'utf8'));
-    assert.equal(pkg.version, v, 'apps/bot/package.json must carry the target version');
-    assert.match(
-      readFileSync('apps/bot/CHANGELOG.md', 'utf8'),
-      new RegExp(`^## ${esc}\\b`, 'm'),
-      `apps/bot/CHANGELOG.md has no section for ${v}`
-    );
-    assert.match(
-      readFileSync('apps/doc/.vitepress/version.mts', 'utf8'),
-      new RegExp(`BOT_VERSION = '${esc}'`),
-      'docs footer version.mts was not stamped'
-    );
-    const pending = readdirSync('.changeset').filter(
-      (p) => p.endsWith('.md') && p !== 'README.md'
-    );
-    assert.equal(pending.length, 0, `unconsumed changesets: ${pending.join(', ')}`);
-NODE
+  node scripts/release/verify-release-data.js
 
   git config user.name "github-actions[bot]"
   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
