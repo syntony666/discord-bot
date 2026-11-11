@@ -224,7 +224,6 @@ db_ok() { psql -tAc 'select 1' >/dev/null 2>&1; }
 main() {
   ensure_prereqs
   ensure_user
-  ensure_units
   require_env_file
   export_pg_env
 
@@ -236,10 +235,20 @@ main() {
   esac
 
   mkdir -p "$ROOT/releases" "$STATE_DIR" "$BACKUP_DIR"
+  # first deploy on a host with the old layout: anchor bin at the previous
+  # install so drop-ins resolve and rollback has somewhere to go
+  if [ ! -L "$ROOT/bin" ] && [ -d /opt/discord-bot ]; then
+    ln -s /opt/discord-bot "$ROOT/bin"
+    say "anchored $ROOT/bin to /opt/discord-bot (previous install)"
+  fi
   [ -f "$STATE_FILE" ] || printf '{}\n' > "$STATE_FILE"
   touch "$LOCK_FILE"
   exec 200>"$LOCK_FILE"
   flock -n 200 || die "another deploy is running"
+
+  # units are only written after env, db, and bin all resolve — an early
+  # abort must never leave drop-ins pointing at a nonexistent bin
+  ensure_units
 
   PREV_BIN=""
   [ -L "$ROOT/bin" ] && PREV_BIN=$(readlink -f "$ROOT/bin" || true)
