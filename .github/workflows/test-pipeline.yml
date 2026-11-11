@@ -1,0 +1,170 @@
+name: Test pipeline
+
+on:
+  workflow_call:
+    inputs:
+      lint:
+        required: false
+        default: 'false'
+        type: string
+      site:
+        required: false
+        default: 'false'
+        type: string
+      test:
+        required: false
+        default: 'true'
+        type: string
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.15.0
+          registry-url: https://registry.npmjs.org
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+        if: ${{ inputs.lint == 'true' }}
+
+  build:
+    name: Build (${{ matrix.arch }})
+    needs: verify
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runs-on: ubuntu-24.04-arm
+          - arch: x64
+            runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.15.0
+          registry-url: https://registry.npmjs.org
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Build release package
+        run: |
+          version="$(node -p "require('./apps/bot/package.json').version")"
+          node scripts/release/build.js build \
+            --version "$version" --sha "$GITHUB_SHA" --out out/
+          tar -xzf "out/discord-bot-linux-${{ matrix.arch }}.tar.gz" -C out ./build.json 2>/dev/null \
+            || tar -xzf "out/discord-bot-linux-${{ matrix.arch }}.tar.gz" -C out build.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: pkg-${{ matrix.arch }}
+          path: out/
+          retention-days: 1
+      - name: Docs site build
+        if: ${{ matrix.arch == 'arm64' && inputs.site == 'true' }}
+        run: npm run build --workspace=@discord-bot/doc
+      - uses: actions/upload-artifact@v7
+        if: ${{ matrix.arch == 'arm64' && inputs.site == 'true' }}
+        with:
+          name: docs-site
+          path: apps/doc/site
+          retention-days: 1
+
+  manifest:
+    name: Manifest
+    needs: build
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.15.0
+          registry-url: https://registry.npmjs.org
+          cache: npm
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: pkg-*
+          path: pkg
+      - name: Assemble release manifest
+        run: |
+          mkdir -p release
+          cp pkg/pkg-*/discord-bot-linux-*.tar.gz release/
+          node scripts/release/build.js manifest --out release
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-meta
+          path: |
+            release/release.json
+            release/SHA256SUMS
+          retention-days: 1
+
+  test:
+    name: Unit tests
+    needs: build
+    if: ${{ inputs.test == 'true' }}
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.15.0
+          registry-url: https://registry.npmjs.org
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run typecheck
+      - run: npm test
+
+  pkg-e2e:
+    name: Package e2e (${{ matrix.arch }})
+    needs: manifest
+    if: ${{ inputs.test == 'true' }}
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runs-on: ubuntu-24.04-arm
+          - arch: x64
+            runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.15.0
+          registry-url: https://registry.npmjs.org
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/download-artifact@v8
+        with:
+          name: pkg-${{ matrix.arch }}
+          path: release
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-meta
+          path: release
+      - name: Package e2e
+        env:
+          RELEASE_ARCHIVE: release/discord-bot-linux-${{ matrix.arch }}.tar.gz
+          RELEASE_MANIFEST: release/release.json
+          RELEASE_CHECKSUMS: release/SHA256SUMS
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+        run: node --test scripts/test/package.e2e.js
