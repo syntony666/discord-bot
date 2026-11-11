@@ -14,7 +14,7 @@ Working agreement for coding agents in this repo. Contributor-facing rules live 
 ## Repo notes
 
 - `npm run build` must precede `typecheck`/`test` — they resolve workspace `dist/` outputs.
-- `prepare` runs `scripts/dev/prepare.sh` (husky + workspace prebuild) and no-ops under `CI`.
+- `prepare` runs `scripts/prepare.sh` (husky + workspace prebuild) and no-ops under `CI`.
 - Merge into `release/x.y.z` and then `master` with `--no-ff` only — no fast-forwards.
 - Releases run through changesets: feature branches carry `.changeset/*.md` (`npx changeset`); only `@discord-bot/bot` is versioned — all other workspaces are ignored. Merging to `master` makes `release.yml` open a `chore: release` PR; merging that PR bumps `apps/bot/package.json`, writes `apps/bot/CHANGELOG.md`, tags `@discord-bot/bot@x.y.z`, and creates the GH release — the version is decided there, not when the release branch is cut.
 - Direct VM access: `ssh ubuntu@138.2.37.66` (Oracle Cloud `oracle-vm-1`, key auth). Repo at `/opt/discord-bot` is owned by `discordbot` — git ops need `sudo -u discordbot git -C /opt/discord-bot ...` (dubious-ownership otherwise).

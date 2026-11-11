@@ -88,8 +88,8 @@ ensure_user() {
   }
 }
 
-# unit templates — heredoc bodies are generated from scripts/deploy/*.conf by
-# scripts/deploy/sync-units.mjs (# @embed markers); do not edit them by hand
+# unit templates — heredoc bodies are generated from scripts/units/*.conf by
+# scripts/units/sync-units.mjs (# @embed markers); do not edit them by hand
 unit_body_api() {
   # @embed unit-api.conf
   cat <<'EOF'

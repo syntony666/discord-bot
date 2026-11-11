@@ -11,7 +11,7 @@ import {
   validateVersion,
   writeManifest,
   ARCHIVE_NAMES,
-} from './lib.mjs';
+} from '../release/lib.mjs';
 
 // ---------- parseArgs ----------
 

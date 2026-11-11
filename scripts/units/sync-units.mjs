@@ -4,8 +4,8 @@
 // The conf files are the canonical systemd templates; deploy.sh is standalone
 // on the VM, so their contents are vendored in as generated regions.
 //
-//   node scripts/deploy/sync-units.mjs           rewrite deploy.sh in place
-//   node scripts/deploy/sync-units.mjs --check   exit 1 if deploy.sh is stale
+//   node scripts/units/sync-units.mjs           rewrite deploy.sh in place
+//   node scripts/units/sync-units.mjs --check   exit 1 if deploy.sh is stale
 //
 // A marker is a comment `# @embed <file>` on the line before a heredoc
 // opener (`<<'TAG'` or `<<TAG`); everything between opener and terminator
@@ -15,7 +15,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DIR = dirname(fileURLToPath(import.meta.url));
-const DEPLOY = join(DIR, 'deploy.sh');
+const DEPLOY = join(DIR, '..', 'deploy.sh');
 
 export function sync(deploySh, dir) {
   const lines = deploySh.split('\n');
@@ -58,12 +58,12 @@ export function sync(deploySh, dir) {
   return { result: out.join('\n'), embedded };
 }
 
-export function main(argv, dir = DIR) {
+export function main(argv, confDir = DIR, deployPath = DEPLOY) {
   const check = argv.includes('--check');
-  const before = readFileSync(join(dir, 'deploy.sh'), 'utf-8');
-  const { result, embedded } = sync(before, dir);
+  const before = readFileSync(deployPath, 'utf-8');
+  const { result, embedded } = sync(before, confDir);
 
-  const confs = readdirSync(dir).filter((f) => f.endsWith('.conf'));
+  const confs = readdirSync(confDir).filter((f) => f.endsWith('.conf'));
   const orphans = confs.filter((f) => !embedded.has(f));
   if (orphans.length) {
     console.error(`sync-units: ${orphans.join(', ')} has no @embed marker in deploy.sh`);
@@ -71,10 +71,10 @@ export function main(argv, dir = DIR) {
   }
   if (result === before) return 0;
   if (check) {
-    console.error('sync-units: deploy.sh is stale — run node scripts/deploy/sync-units.mjs');
+    console.error('sync-units: deploy.sh is stale — run node scripts/units/sync-units.mjs');
     return 1;
   }
-  writeFileSync(join(dir, 'deploy.sh'), result);
+  writeFileSync(deployPath, result);
   console.log('sync-units: deploy.sh regenerated');
   return 0;
 }
