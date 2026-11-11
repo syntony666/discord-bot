@@ -8,44 +8,102 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
-    name: Release
+  detect:
+    name: Detect
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      publish: ${{ steps.version.outputs.publish }}
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.15.0
+      - name: Detect version bump
+        id: version
+        run: |
+          version=$(node -p "require('./apps/bot/package.json').version")
+          previous=$(git show 'HEAD^1:apps/bot/package.json' \
+            | node -pe 'JSON.parse(require("fs").readFileSync(0, "utf8")).version')
+          if [[ "$version" == "$previous" ]]; then
+            echo "No version change; nothing to publish."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          VERSION="$version" PREVIOUS="$previous" node --input-type=module <<'NODE'
+            const parse = (v) => v.split('.').map(Number);
+            const [a, b] = [process.env.VERSION, process.env.PREVIOUS].map(parse);
+            for (const field of ['major', 'minor', 'patch']) {
+              const i = { major: 0, minor: 1, patch: 2 }[field];
+              if (a[i] < b[i]) {
+                console.log(`::error::version went backwards: ${process.env.PREVIOUS} -> ${process.env.VERSION}`);
+                process.exit(1);
+              }
+              if (a[i] > b[i]) break;
+            }
+          NODE
+          VERSION="$version" node scripts/release/verify-release-data.js
+          {
+            echo "publish=true"
+            echo "tag=@discord-bot/bot@$version"
+            echo "version=$version"
+          } >> "$GITHUB_OUTPUT"
+
+  package:
+    name: Package
+    needs: detect
+    if: needs.detect.outputs.publish == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/test-pipeline.yml
+    with:
+      lint: 'false'
+      site: 'false'
+      test: 'false'
+
+  publish:
+    name: Publish
+    needs: [detect, package]
+    if: needs.detect.outputs.publish == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
+    env:
+      RELEASE_TAG: ${{ needs.detect.outputs.tag }}
+      RELEASE_VERSION: ${{ needs.detect.outputs.version }}
+      RELEASE_SHA: ${{ github.sha }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v5
+          node-version: 24.15.0
+      - uses: actions/download-artifact@v8
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - id: changesets
-        uses: changesets/action@v1
+          name: pkg-arm64
+          path: artifacts/
+      - uses: actions/download-artifact@v8
         with:
-          version: npm run version:packages
-          publish: npx changeset git-tag
-          commit: 'chore: release'
-          title: 'chore: release'
+          name: pkg-x64
+          path: artifacts/
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-meta
+          path: artifacts/
+      - name: Tag and publish the release
+        run: bash scripts/release/publish-release.sh
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create GitHub release
-        run: |
-          version=$(node -p "require('./apps/bot/package.json').version")
-          tag="@discord-bot/bot@$version"
-          if gh release view "$tag" >/dev/null 2>&1; then
-            echo "$tag already released — skipping"
-            exit 0
-          fi
-          if ! git rev-parse --verify "refs/tags/$tag" >/dev/null 2>&1; then
-            echo "no local tag — this push did not publish"
-            exit 0
-          fi
-          git push origin "$tag" || true
-          notes=$(awk -v v="$version" '$0 == "## " v {f=1; next} /^## / {f=0} f' apps/bot/CHANGELOG.md)
-          gh release create "$tag" --title "$tag" --notes "${notes:-Release $tag}" --verify-tag
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARTIFACT_DIR: artifacts/
+
+  deploy:
+    name: Deploy
+    needs: publish
+    permissions:
+      contents: read
+    secrets: inherit
+    uses: ./.github/workflows/deploy-vm.yml
