@@ -101,9 +101,15 @@ EOF
 CUR_BIN=""
 [ -L "$ROOT/bin" ] && CUR_BIN=$(readlink -f "$ROOT/bin" || true)
 CUR_VER=$(json_get "$STATE_FILE" version)
+CUR_COMMIT=$(json_get "$STATE_FILE" commit)
+CUR_PKG_SHA=""
+if [ -n "$CUR_BIN" ] && [ -f "$CUR_BIN/.pkg-sha256" ]; then
+  CUR_PKG_SHA=$(cat "$CUR_BIN/.pkg-sha256")
+fi
 
-if [ "$CUR_VER" = "$VERSION" ] && [ -n "$CUR_BIN" ] && [ -d "$CUR_BIN" ]; then
-  echo "install.sh: $VERSION already present at $CUR_BIN — skipping tarball download"
+if [ "$CUR_VER" = "$VERSION" ] && [ "$CUR_COMMIT" = "$REL_COMMIT" ] &&
+  [ -n "$CUR_BIN" ] && [ -d "$CUR_BIN" ] && [ "$CUR_PKG_SHA" = "$REL_SHA" ]; then
+  echo "install.sh: $VERSION ($REL_COMMIT) already present at $CUR_BIN — skipping tarball download"
   NEED_TARBALL=0
 else
   NEED_TARBALL=1
