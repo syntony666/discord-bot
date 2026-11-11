@@ -1,11 +1,11 @@
-// Pure SQL splitting and safety classification for cli.cjs.
+// Pure SQL splitting and safety classification for cli.js.
 // No I/O — loaded both by the release CLI and the unit tests.
 
 // ---------- SQL splitting ----------
 
 // Returns statements with comments removed and no trailing semicolons.
 // Handles 'str', E'str', "ident", $$..$$ and $tag$..$tag$ quoting.
-function splitSql(sql) {
+export function splitSql(sql) {
   const out = [];
   let cur = '';
   let i = 0;
@@ -348,7 +348,7 @@ function classifyAlterOp(op, table, ctx) {
   return `deny: ALTER TABLE operation not allowed: ${op.slice(0, 60)}`;
 }
 
-function analyzeSql(sqlText) {
+export function analyzeSql(sqlText) {
   const statements = splitSql(sqlText);
   if (statements.length === 0) return { ok: false, reason: 'diff produced no statements' };
   const ctx = { newTables: new Set(), newEnums: new Set() };
@@ -358,5 +358,3 @@ function analyzeSql(sqlText) {
   }
   return { ok: true, statements: statements.length };
 }
-
-module.exports = { splitSql, analyzeSql };

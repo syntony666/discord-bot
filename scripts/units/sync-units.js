@@ -4,8 +4,8 @@
 // The conf files are the canonical systemd templates; deploy.sh is standalone
 // on the VM, so their contents are vendored in as generated regions.
 //
-//   node scripts/units/sync-units.mjs           rewrite deploy.sh in place
-//   node scripts/units/sync-units.mjs --check   exit 1 if deploy.sh is stale
+//   node scripts/units/sync-units.js           rewrite deploy.sh in place
+//   node scripts/units/sync-units.js --check   exit 1 if deploy.sh is stale
 //
 // A marker is a comment `# @embed <file>` on the line before a heredoc
 // opener (`<<'TAG'` or `<<TAG`); everything between opener and terminator
@@ -71,7 +71,7 @@ export function main(argv, confDir = DIR, deployPath = DEPLOY) {
   }
   if (result === before) return 0;
   if (check) {
-    console.error('sync-units: deploy.sh is stale — run node scripts/units/sync-units.mjs');
+    console.error('sync-units: deploy.sh is stale — run node scripts/units/sync-units.js');
     return 1;
   }
   writeFileSync(deployPath, result);

@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-'use strict';
 
 // Release database tool. Runs inside an unpacked release package.
 //   plan   --out <dir>     produce SQL diff, check it, save plan.sql + plan.json
@@ -8,16 +7,16 @@
 // DB access goes through the packaged Prisma CLI; DATABASE_URL comes from the
 // environment (systemd EnvironmentFile) and never appears in args or output.
 
-const { spawnSync } = require('node:child_process');
-const { createHash } = require('node:crypto');
-const fs = require('node:fs');
-const path = require('node:path');
+import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const { splitSql, analyzeSql } = require('./sql.cjs');
+import { splitSql, analyzeSql } from './sql.js';
 
 const PLAN_FORMAT = 1;
-const PKG_ROOT = path.resolve(__dirname, '..', '..');
-const CONFIG = 'scripts/db/prisma.config.cjs';
+const PKG_ROOT = path.resolve(import.meta.dirname, '..', '..');
+const CONFIG = 'scripts/db/prisma.config.js';
 const SCHEMA = 'prisma/schema.prisma';
 
 const sha256 = (s) => createHash('sha256').update(s).digest('hex');
@@ -195,10 +194,13 @@ function main() {
     case 'apply':
       return cmdApply(opts);
     default:
-      fail('usage: cli.cjs plan --out <dir> | verify --plan <dir> | apply --plan <dir>');
+      fail('usage: cli.js plan --out <dir> | verify --plan <dir> | apply --plan <dir>');
   }
 }
 
-if (require.main === module) main();
+const isMain =
+  process.argv[1] != null &&
+  import.meta.url === new URL(`file://${path.resolve(process.argv[1])}`).href;
+if (isMain) main();
 
-module.exports = { PLAN_FORMAT };
+export { PLAN_FORMAT };

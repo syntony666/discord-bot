@@ -6,11 +6,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-import { PLAN_FORMAT } from '../db/cli.cjs';
+import { PLAN_FORMAT } from '../db/cli.js';
 
 // ---------- apply state machine (fake CLI) ----------
 
-const TOOL = new URL('../db/cli.cjs', import.meta.url).pathname;
+const TOOL = new URL('../db/cli.js', import.meta.url).pathname;
 
 function sha256(s) {
   return createHash('sha256').update(s).digest('hex');

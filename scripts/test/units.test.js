@@ -4,13 +4,13 @@ import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { main, sync } from '../units/sync-units.mjs';
+import { main, sync } from '../units/sync-units.js';
 
 // deploy.sh vendors the systemd templates from scripts/units/*.conf via @embed
-// markers; scripts/units/sync-units.mjs --check is the drift gate (plan §9.7).
+// markers; scripts/units/sync-units.js --check is the drift gate (plan §9.7).
 
 test('deploy.sh embeds are in sync with scripts/units/*.conf', () => {
-  execFileSync(process.execPath, ['scripts/units/sync-units.mjs', '--check'], {
+  execFileSync(process.execPath, ['scripts/units/sync-units.js', '--check'], {
     encoding: 'utf-8',
   });
 });

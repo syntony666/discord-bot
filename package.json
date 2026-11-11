@@ -13,15 +13,15 @@
     "dev:doc": "npm run dev --workspace=@discord-bot/doc",
     "build": "npm run build -w @discord-bot/shared && npm run build -w @discord-bot/discord-client && npm run build -w @discord-bot/api && npm run build -w @discord-bot/bot",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "version:packages": "changeset version && node scripts/release/stamp-doc-version.mjs",
+    "version:packages": "changeset version && node scripts/release/stamp-doc-version.js",
     "prisma:init": "npm run prisma:init --workspace=@discord-bot/api",
     "prisma:migrate": "npm run prisma:migrate --workspace=@discord-bot/api",
     "prisma:deploy": "npm run prisma:deploy --workspace=@discord-bot/api",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "build:release": "node scripts/release/build.mjs",
-    "test": "node --test 'apps/*/test/**/*.test.ts' 'packages/*/test/**/*.test.ts' 'scripts/test/*.test.mjs'",
-    "test:release": "node --test scripts/test/package.e2e.mjs"
+    "build:release": "node scripts/release/build.js",
+    "test": "node --test 'apps/*/test/**/*.test.ts' 'packages/*/test/**/*.test.ts' 'scripts/test/*.test.js'",
+    "test:release": "node --test scripts/test/package.e2e.js"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
@@ -34,5 +34,6 @@
   },
   "lint-staged": {
     "*.{ts,tsx,mts,cts,js,mjs,cjs,json,md,yml,yaml}": "prettier --write"
-  }
+  },
+  "type": "module"
 }
