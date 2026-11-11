@@ -1,25 +1,70 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
+import { main, sync } from '../../../scripts/sync-units.mjs';
 
-// deploy.sh embeds the systemd unit templates; they must stay byte-identical
-// to deploy/systemd/*.conf (plan §9.7).
+// deploy.sh vendors the systemd templates from scripts/*.conf via @embed
+// markers; scripts/sync-units.mjs --check is the drift gate (plan §9.7).
 
-function extract(fn) {
-  const def = execFileSync('sed', ['-n', `/^${fn}()/,/^}/p`, 'scripts/deploy.sh'], {
+test('deploy.sh embeds are in sync with scripts/*.conf', () => {
+  execFileSync(process.execPath, ['scripts/sync-units.mjs', '--check'], {
     encoding: 'utf-8',
   });
-  assert.ok(def.length > 0, `${fn} not found in deploy.sh`);
-  return execFileSync('bash', ['-c', `${def}\n${fn}`], { encoding: 'utf-8' });
-}
-
-test('embedded api unit matches deploy/systemd/discord-bot-api.conf', () => {
-  const conf = readFileSync('deploy/systemd/discord-bot-api.conf', 'utf-8');
-  assert.equal(extract('unit_body_api'), conf);
 });
 
-test('embedded bot unit matches deploy/systemd/discord-bot.conf', () => {
-  const conf = readFileSync('deploy/systemd/discord-bot.conf', 'utf-8');
-  assert.equal(extract('unit_body_bot'), conf);
+test('sync() replaces the heredoc body after an @embed marker', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'sync-units-'));
+  writeFileSync(join(dir, 'unit.conf'), '[Unit]\nDescription=x\n');
+  const before = ['fn() {', '  # @embed unit.conf', "  cat <<'EOF'", 'stale', 'EOF', '}', ''].join(
+    '\n'
+  );
+  const { result, embedded } = sync(before, dir);
+  assert.deepEqual([...embedded], ['unit.conf']);
+  assert.equal(
+    result,
+    [
+      'fn() {',
+      '  # @embed unit.conf',
+      "  cat <<'EOF'",
+      '[Unit]',
+      'Description=x',
+      'EOF',
+      '}',
+      '',
+    ].join('\n')
+  );
+});
+
+test('sync() leaves non-embed heredocs and content untouched', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'sync-units-'));
+  const before = ['fn() {', "  cat <<'PY'", 'keep me', 'PY', '}', ''].join('\n');
+  const { result } = sync(before, dir);
+  assert.equal(result, before);
+});
+
+test('sync() throws on unterminated heredoc and missing conf', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'sync-units-'));
+  const open = ['fn() {', '  # @embed x.conf', "  cat <<'EOF'", 'EOF', '}'].join('\n');
+  assert.throws(() => sync(open, dir), /x\.conf/);
+  writeFileSync(join(dir, 'x.conf'), 'a\n');
+  const unterminated = ['fn() {', '  # @embed x.conf', "  cat <<'EOF'", 'no end'].join('\n');
+  assert.throws(() => sync(unterminated, dir), /unterminated/);
+});
+
+test('main --check fails on stale embeds and orphan conf files', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'sync-units-'));
+  writeFileSync(join(dir, 'unit.conf'), '[Unit]\nnew\n');
+  writeFileSync(
+    join(dir, 'deploy.sh'),
+    ['fn() {', '  # @embed unit.conf', "  cat <<'EOF'", 'stale', 'EOF', '}', ''].join('\n')
+  );
+  assert.equal(main(['--check'], dir), 1, 'stale embed must fail the check');
+  assert.equal(main([], dir), 0, 'sync rewrites the file');
+  assert.match(readFileSync(join(dir, 'deploy.sh'), 'utf-8'), /\[Unit\]\nnew\nEOF/);
+  assert.equal(main(['--check'], dir), 0, 'synced file passes the check');
+  writeFileSync(join(dir, 'orphan.conf'), '[Unit]\nunused\n');
+  assert.equal(main(['--check'], dir), 1, 'orphan conf without a marker must fail');
 });

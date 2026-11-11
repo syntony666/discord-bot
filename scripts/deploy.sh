@@ -88,8 +88,10 @@ ensure_user() {
   }
 }
 
-# unit templates — must match deploy/systemd/*.conf in the repo (test-enforced)
+# unit templates — heredoc bodies are generated from scripts/*.conf by
+# scripts/sync-units.mjs (# @embed markers); do not edit them by hand
 unit_body_api() {
+  # @embed discord-bot-api.conf
   cat <<'EOF'
 [Unit]
 Description=discord-bot API
@@ -111,6 +113,7 @@ WantedBy=discord-bot.target
 EOF
 }
 unit_body_bot() {
+  # @embed discord-bot.conf
   cat <<'EOF'
 [Unit]
 Description=discord-bot
@@ -133,12 +136,13 @@ EOF
 }
 dropin_body() {
   local entry=$1
-  cat <<EOF
+  # @embed release-dropin.conf
+  cat <<'EOF' | sed "s|__ENTRY__|$entry|"
 [Service]
 WorkingDirectory=/opt/sakiko-hoshino-bot/bin
 EnvironmentFile=/opt/sakiko-hoshino-bot/.env
 ExecStart=
-ExecStart=/usr/bin/node $entry
+ExecStart=/usr/bin/node __ENTRY__
 EOF
 }
 
