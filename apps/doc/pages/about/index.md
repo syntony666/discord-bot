@@ -21,6 +21,12 @@ GitHub: [syntony666](https://github.com/syntony666)
 
 ## 版本紀錄
 
+### ver. 5.3.1
+
+#### 2026.11.4
+
+- 修復 `/linkfix` 與 `/auto linkfix`：Threads 的 `/share/` 分享連結先前會誤判為「無需修復」，現在會直接改寫並修復預覽
+
 ### ver. 5.3.0
 
 #### 2026.11.3
