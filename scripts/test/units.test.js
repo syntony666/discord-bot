@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -13,6 +13,14 @@ test('deploy.sh embeds are in sync with scripts/units/*.conf', () => {
   execFileSync(process.execPath, ['scripts/units/sync-units.js', '--check'], {
     encoding: 'utf-8',
   });
+});
+
+test('unit confs carry __NODE__ on ExecStart, never a hardcoded node path', () => {
+  for (const conf of readdirSync('scripts/units').filter((f) => f.endsWith('.conf'))) {
+    const body = readFileSync(join('scripts/units', conf), 'utf-8');
+    assert.match(body, /^ExecStart=__NODE__ /m, `${conf} ExecStart must use __NODE__`);
+    assert.doesNotMatch(body, /\/usr\/bin\/node/, `${conf} must not hardcode /usr/bin/node`);
+  }
 });
 
 test('sync() replaces the heredoc body after an @embed marker', () => {

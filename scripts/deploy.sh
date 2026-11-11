@@ -56,9 +56,24 @@ ensure_prereqs() {
       || die "cannot install: ${missing[*]}"
   fi
 
-  if ! command -v node >/dev/null; then
-    say "installing Node.js $NODE_INSTALL_VERSION"
-    local arch t
+  # Resolve a node binary into NODE_BIN, in order:
+  #   1. a previous side-by-side install under /opt
+  #   2. a PATH node already on the required major (use its resolved path)
+  #   3. a fresh side-by-side download into /opt
+  # Never create /usr/bin/node, never replace the system node, never die on
+  # a wrong system version — we just don't use it.
+  NODE_BIN=""
+  local sysnode="" major="" arch t
+  if [ -x "/opt/node-$NODE_INSTALL_VERSION/bin/node" ]; then
+    NODE_BIN="/opt/node-$NODE_INSTALL_VERSION/bin/node"
+  else
+    sysnode=$(command -v node || true)
+    if [ -n "$sysnode" ] && [ "$("$sysnode" -e 'process.stdout.write(process.versions.node.split(".")[0])' 2>/dev/null)" = "$NODE_MAJOR" ]; then
+      NODE_BIN=$(readlink -f "$sysnode")
+    fi
+  fi
+  if [ -z "$NODE_BIN" ]; then
+    say "installing Node.js $NODE_INSTALL_VERSION to /opt/node-$NODE_INSTALL_VERSION"
     case "$(uname -m)" in
       x86_64) arch=x64 ;;
       aarch64|arm64) arch=arm64 ;;
@@ -69,14 +84,14 @@ ensure_prereqs() {
       -o "$t/node.tar.xz" || die "cannot download Node.js"
     mkdir -p "/opt/node-$NODE_INSTALL_VERSION"
     tar -xJf "$t/node.tar.xz" -C "/opt/node-$NODE_INSTALL_VERSION" --strip-components=1
-    ln -sfn "/opt/node-$NODE_INSTALL_VERSION/bin/node" /usr/bin/node
     rm -rf "$t"
+    NODE_BIN="/opt/node-$NODE_INSTALL_VERSION/bin/node"
   fi
-  local major
-  major=$(node -e 'process.stdout.write(process.versions.node.split(".")[0])')
-  [ "$major" = "$NODE_MAJOR" ] || die "node is $(node --version), need ${NODE_MAJOR}.x — not touching it"
+  major=$("$NODE_BIN" -e 'process.stdout.write(process.versions.node.split(".")[0])')
+  [ "$major" = "$NODE_MAJOR" ] || die "resolved node $NODE_BIN is $("$NODE_BIN" --version 2>/dev/null || echo unusable), need ${NODE_MAJOR}.x"
+  say "using node at $NODE_BIN"
 
-  for t in python3 tar flock systemd-run curl pg_dump pg_restore node; do
+  for t in python3 tar flock systemd-run curl pg_dump pg_restore; do
     command -v "$t" >/dev/null || die "$t still missing after install"
   done
 }
@@ -92,7 +107,7 @@ ensure_user() {
 # scripts/units/sync-units.js (# @embed markers); do not edit them by hand
 unit_body_api() {
   # @embed unit-api.conf
-  cat <<'EOF'
+  cat <<'EOF' | sed "s|__NODE__|$NODE_BIN|g"
 [Unit]
 Description=discord-bot API
 After=network-online.target
@@ -104,7 +119,7 @@ User=discordbot
 Group=discordbot
 WorkingDirectory=/opt/sakiko-hoshino-bot/bin
 EnvironmentFile=/opt/sakiko-hoshino-bot/.env
-ExecStart=/usr/bin/node apps/api/dist/index.js
+ExecStart=__NODE__ apps/api/dist/index.js
 Restart=on-failure
 RestartSec=5
 
@@ -114,7 +129,7 @@ EOF
 }
 unit_body_bot() {
   # @embed unit-bot.conf
-  cat <<'EOF'
+  cat <<'EOF' | sed "s|__NODE__|$NODE_BIN|g"
 [Unit]
 Description=discord-bot
 After=network-online.target discord-bot-api.service
@@ -126,7 +141,7 @@ User=discordbot
 Group=discordbot
 WorkingDirectory=/opt/sakiko-hoshino-bot/bin
 EnvironmentFile=/opt/sakiko-hoshino-bot/.env
-ExecStart=/usr/bin/node apps/bot/dist/index.js
+ExecStart=__NODE__ apps/bot/dist/index.js
 Restart=on-failure
 RestartSec=5
 
@@ -137,12 +152,12 @@ EOF
 dropin_body() {
   local entry=$1
   # @embed unit-dropin.conf
-  cat <<'EOF' | sed "s|__ENTRY__|$entry|"
+  cat <<'EOF' | sed "s|__ENTRY__|$entry|; s|__NODE__|$NODE_BIN|g"
 [Service]
 WorkingDirectory=/opt/sakiko-hoshino-bot/bin
 EnvironmentFile=/opt/sakiko-hoshino-bot/.env
 ExecStart=
-ExecStart=/usr/bin/node __ENTRY__
+ExecStart=__NODE__ __ENTRY__
 EOF
 }
 
@@ -404,7 +419,7 @@ run_release_db() {
     --property=Group=discordbot \
     --property=EnvironmentFile="$ENV_FILE" \
     --property=WorkingDirectory="$DESTDIR" \
-    /usr/bin/node "$DESTDIR/scripts/db/cli.js" "$sub" "$@"
+    "$NODE_BIN" "$DESTDIR/scripts/db/cli.js" "$sub" "$@"
 }
 
 restore() {
