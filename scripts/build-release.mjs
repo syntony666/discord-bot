@@ -24,6 +24,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   ARCHIVE_NAMES,
+  collectExternals,
   die,
   parseArgs,
   readJson,
