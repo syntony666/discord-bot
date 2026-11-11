@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -139,7 +140,7 @@ test('deploy-vm.yml is call-only, pins known_hosts, never disables host checks',
   assert.ok(!/--version|--standalone/.test(runs), 'entry command takes no arguments');
 });
 
-test('scripts/known_hosts pins all three prod VM host keys', () => {
+test('scripts/known_hosts pins all three prod VM host keys, hashed', () => {
   const file = path.join(REPO_ROOT, 'scripts', 'known_hosts');
   const lines = readFileSync(file, 'utf8')
     .split('\n')
@@ -148,7 +149,13 @@ test('scripts/known_hosts pins all three prod VM host keys', () => {
   const types = lines.map((l) => l.split(' ')[1]).sort();
   assert.deepEqual(types, ['ecdsa-sha2-nistp256', 'ssh-ed25519', 'ssh-rsa']);
   for (const l of lines) {
-    assert.equal(l.split(' ')[0], '138.2.37.66');
+    assert.ok(l.startsWith('|1|'), 'host entries must be hashed, not plaintext');
+  }
+  // opt-in: prove the hash resolves to the prod VM without committing the host
+  if (process.env.PROD_VM_HOST) {
+    const host = process.env.PROD_VM_HOST;
+    const out = execFileSync('ssh-keygen', ['-F', host, '-f', file], { encoding: 'utf8' });
+    assert.equal(out.match(new RegExp(`Host ${host.replace(/\./g, '\\.')} found`, 'g'))?.length, 3);
   }
 });
 
