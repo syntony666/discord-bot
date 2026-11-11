@@ -1,4 +1,4 @@
-// Pure SQL splitting and safety classification for release-db.cjs.
+// Pure SQL splitting and safety classification for cli.cjs.
 // No I/O — loaded both by the release CLI and the unit tests.
 
 // ---------- SQL splitting ----------

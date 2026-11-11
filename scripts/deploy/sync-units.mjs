@@ -4,8 +4,8 @@
 // The conf files are the canonical systemd templates; deploy.sh is standalone
 // on the VM, so their contents are vendored in as generated regions.
 //
-//   node scripts/deploy-sync-units.mjs           rewrite deploy.sh in place
-//   node scripts/deploy-sync-units.mjs --check   exit 1 if deploy.sh is stale
+//   node scripts/deploy/sync-units.mjs           rewrite deploy.sh in place
+//   node scripts/deploy/sync-units.mjs --check   exit 1 if deploy.sh is stale
 //
 // A marker is a comment `# @embed <file>` on the line before a heredoc
 // opener (`<<'TAG'` or `<<TAG`); everything between opener and terminator
@@ -66,16 +66,16 @@ export function main(argv, dir = DIR) {
   const confs = readdirSync(dir).filter((f) => f.endsWith('.conf'));
   const orphans = confs.filter((f) => !embedded.has(f));
   if (orphans.length) {
-    console.error(`deploy-sync-units: ${orphans.join(', ')} has no @embed marker in deploy.sh`);
+    console.error(`sync-units: ${orphans.join(', ')} has no @embed marker in deploy.sh`);
     return 1;
   }
   if (result === before) return 0;
   if (check) {
-    console.error('deploy-sync-units: deploy.sh is stale — run node scripts/deploy-sync-units.mjs');
+    console.error('sync-units: deploy.sh is stale — run node scripts/deploy/sync-units.mjs');
     return 1;
   }
   writeFileSync(join(dir, 'deploy.sh'), result);
-  console.log('deploy-sync-units: deploy.sh regenerated');
+  console.log('sync-units: deploy.sh regenerated');
   return 0;
 }
 

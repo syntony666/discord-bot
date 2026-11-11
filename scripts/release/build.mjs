@@ -2,8 +2,8 @@
 // Build a release tarball for the current platform, or assemble the shared
 // release manifest from both tarballs.
 //
-//   node scripts/build-release.mjs build --version 5.3.1 --sha <commit> --out <dir>
-//   node scripts/build-release.mjs manifest --out <dir>   (dir holds both tarballs)
+//   node scripts/release/build.mjs build --version 5.3.1 --sha <commit> --out <dir>
+//   node scripts/release/build.mjs manifest --out <dir>   (dir holds both tarballs)
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -30,9 +30,9 @@ import {
   readJson,
   sha256File,
   writeManifest,
-} from './release-lib.mjs';
+} from './lib.mjs';
 
-const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const REPOSITORY = 'syntony666/discord-bot';
 const SCHEMA_VERSION = 1;
 const NODE_MAJOR = '24';
@@ -180,7 +180,7 @@ async function build(opts) {
       path.join(stage, 'prisma/schema.prisma')
     );
     mkdirSync(path.join(stage, 'scripts'), { recursive: true });
-    for (const f of ['release-db.cjs', 'release-sql.cjs', 'prisma.config.cjs']) {
+    for (const f of ['db/cli.cjs', 'db/sql.cjs', 'db/prisma.config.cjs']) {
       cpSync(path.join(REPO_ROOT, 'scripts', f), path.join(stage, 'scripts', f));
     }
 
@@ -219,7 +219,7 @@ async function build(opts) {
 
 const isMain =
   process.argv[1] != null &&
-  path.basename(process.argv[1]) === 'build-release.mjs' &&
+  path.basename(process.argv[1]) === 'build.mjs' &&
   fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
 if (isMain) {
   try {

@@ -13,11 +13,11 @@ const { createHash } = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const { splitSql, analyzeSql } = require('./release-sql.cjs');
+const { splitSql, analyzeSql } = require('./sql.cjs');
 
 const PLAN_FORMAT = 1;
-const PKG_ROOT = path.resolve(__dirname, '..');
-const CONFIG = 'scripts/prisma.config.cjs';
+const PKG_ROOT = path.resolve(__dirname, '..', '..');
+const CONFIG = 'scripts/db/prisma.config.cjs';
 const SCHEMA = 'prisma/schema.prisma';
 
 const sha256 = (s) => createHash('sha256').update(s).digest('hex');
@@ -195,7 +195,7 @@ function main() {
     case 'apply':
       return cmdApply(opts);
     default:
-      fail('usage: release-db.cjs plan --out <dir> | verify --plan <dir> | apply --plan <dir>');
+      fail('usage: cli.cjs plan --out <dir> | verify --plan <dir> | apply --plan <dir>');
   }
 }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Pure helpers for build-release.mjs — argument parsing, externals
+// Pure helpers for build.mjs — argument parsing, externals
 // collection, and the shared release manifest. No esbuild, git, or npm.
 
 import { execFileSync } from 'node:child_process';

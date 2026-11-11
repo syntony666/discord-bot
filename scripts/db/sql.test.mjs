@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { splitSql, analyzeSql } from './release-sql.cjs';
+import { splitSql, analyzeSql } from './sql.cjs';
 
 // ---------- splitSql ----------
 
