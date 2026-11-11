@@ -61,7 +61,7 @@ PY
 
 # 3. decide version
 if [ -z "$VERSION" ]; then
-  TAG=$(curl -fsSL "$RELEASE_API_URL" | json_get - tag_name)
+  TAG=$(curl -fsSL "$RELEASE_API_URL" | json_get - tag_name) || TAG=""
   [ -n "$TAG" ] || die "cannot resolve latest release"
   VERSION="${TAG##*@}"
 else
