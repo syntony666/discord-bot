@@ -26,6 +26,7 @@ GitHub: [syntony666](https://github.com/syntony666)
 #### 2026.11.4
 
 - 修復 `/linkfix` 與 `/auto linkfix`：Threads 的 `/share/` 分享連結先前會誤判為「無需修復」，現在會直接改寫並修復預覽
+- 部署架構改版：改用預先建置並驗證的發布套件部署，網站網域改為 `sakiko.syntony666.com`
 
 ### ver. 5.3.0
 
