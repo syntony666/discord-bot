@@ -66,6 +66,24 @@ test('pkg-e2e runs both arches against a postgres:16 service', () => {
   assert.match(runs, /package\.e2e\.js/, 'pkg-e2e never runs the package e2e test');
 });
 
+test('release-pr.yml dispatches Start Release through the testable script', () => {
+  const wf = loadWorkflow('release-pr.yml');
+  assert.equal(wf.name, 'Start Release');
+  const input = wf.on?.workflow_dispatch?.inputs?.release_branch;
+  assert.ok(input?.required, 'release_branch input must be required');
+  assert.equal(wf.concurrency?.group, 'start-release');
+  assert.equal(wf.concurrency?.['cancel-in-progress'], false);
+  assert.equal(wf.permissions?.contents, 'write');
+  assert.equal(wf.permissions?.['pull-requests'], 'write');
+  const runs = (wf.jobs?.prepare?.steps ?? []).map((s) => s.run ?? '').join('\n');
+  assert.match(runs, /refs\/heads\/master/, 'Start Release must be run from master');
+  assert.match(
+    runs,
+    /scripts\/release\/start-release\.sh/,
+    'workflow must call the testable script'
+  );
+});
+
 test('no package.json script smuggles tests into non-test scripts', () => {
   const pkgFiles = [path.join(REPO_ROOT, 'package.json')];
   for (const dir of ['apps', 'packages']) {
