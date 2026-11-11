@@ -17,14 +17,14 @@ need() { command -v "$1" >/dev/null 2>&1 || die "missing required tool: $1"; }
 
 # Read one key from a JSON file (or stdin when the file is "-").
 json_get() {
-  python3 - "$1" "$2" <<'PY'
+  python3 -c '
 import json, sys
 try:
     src = sys.stdin if sys.argv[1] == "-" else open(sys.argv[1])
     print(json.load(src).get(sys.argv[2], ""))
 except Exception:
     print("")
-PY
+' "$1" "$2"
 }
 
 [ "$(id -u)" = 0 ] || die "must run as root"
