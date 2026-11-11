@@ -103,6 +103,7 @@ test.before(async () => {
     'apps/bot/dist/index.js',
     'prisma/schema.prisma',
     'scripts/release-db.cjs',
+    'scripts/release-sql.cjs',
     'scripts/prisma.config.cjs',
     'node_modules/prisma/build/index.js',
   ]) {

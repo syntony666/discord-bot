@@ -224,7 +224,7 @@ async function build(opts) {
       path.join(stage, 'prisma/schema.prisma')
     );
     mkdirSync(path.join(stage, 'scripts'), { recursive: true });
-    for (const f of ['release-db.cjs', 'prisma.config.cjs']) {
+    for (const f of ['release-db.cjs', 'release-sql.cjs', 'prisma.config.cjs']) {
       cpSync(path.join(REPO_ROOT, 'scripts', f), path.join(stage, 'scripts', f));
     }
 
