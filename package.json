@@ -19,14 +19,18 @@
     "prisma:deploy": "npm run prisma:deploy --workspace=@discord-bot/api",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --test 'apps/*/test/**/*.test.ts' 'packages/*/test/**/*.test.ts'"
+    "build:release": "node scripts/build-release.mjs",
+    "test": "node --test 'apps/*/test/**/*.test.ts' 'packages/*/test/**/*.test.ts' 'scripts/test/unit/*.test.mjs'",
+    "test:release": "node --test scripts/test/release-package.test.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
+    "esbuild": "^0.21.5",
     "husky": "^9.1.7",
     "lint-staged": "^17.5.1",
     "prettier": "^3.7.4",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "yaml": "^2.9.1"
   },
   "lint-staged": {
     "*.{ts,tsx,mts,cts,js,mjs,cjs,json,md,yml,yaml}": "prettier --write"
