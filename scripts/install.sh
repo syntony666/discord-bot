@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Entry point for every deploy (humans and Actions alike):
-#   curl -fsSL https://sakiko.syntony666.com/install.sh | sudo bash -s -- [--version X.Y.Z]
+#   curl -fsSL https://sakiko.syntony666.com/install.sh | sudo bash -s -- [--version X.Y.Z] [--standalone]
 # Ensures directories, fetches deploy.sh, decides which version to install,
 # downloads and checksums the package, then hands off to deploy.sh.
+# --standalone provisions a local PostgreSQL 16 first, unless .env already
+# carries a DATABASE_URL.
 set -euo pipefail
 
 ROOT=/opt/sakiko-hoshino-bot
@@ -31,9 +33,11 @@ except Exception:
 for t in curl tar sha256sum python3; do need "$t"; done
 
 VERSION=""
+STANDALONE=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --version) VERSION="${2:-}"; shift 2 ;;
+    --standalone) STANDALONE=1; shift ;;
     *) die "unknown argument: $1" ;;
   esac
 done
@@ -122,6 +126,67 @@ else
 fi
 
 echo "BOOTSTRAP sha=$DEPLOY_SHA"
+
+# --standalone: provision a local PostgreSQL 16 role+database and write
+# DATABASE_URL into $ROOT/.env. Complete no-op when .env already has one.
+# The generated password only ever reaches .env via stdin pipes — never
+# argv, output, or logs.
+standalone_db() {
+  local env_file="$ROOT/.env" db_pass
+  if [ -f "$env_file" ] && grep -q '^DATABASE_URL=' "$env_file"; then
+    echo "install.sh: --standalone: $env_file already has DATABASE_URL — leaving it alone"
+    return 0
+  fi
+
+  echo "install.sh: --standalone: provisioning local PostgreSQL 16"
+  if ! command -v psql >/dev/null 2>&1; then
+    apt-get update -qq
+    apt-cache show postgresql-16 >/dev/null 2>&1 \
+      || die "postgresql-16 is not in the configured apt repos — provision a database yourself and put DATABASE_URL in $env_file"
+    DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-16 >/dev/null \
+      || die "cannot install postgresql-16 — provision a database yourself and put DATABASE_URL in $env_file"
+  fi
+  command -v runuser >/dev/null 2>&1 || die "missing required tool: runuser"
+
+  if command -v pg_ctlcluster >/dev/null 2>&1; then
+    pg_ctlcluster 16 main start >/dev/null 2>&1 || true
+  fi
+  if command -v systemctl >/dev/null 2>&1; then
+    systemctl enable --now postgresql >/dev/null 2>&1 || true
+  fi
+  runuser -u postgres -- psql -tAc 'select 1' >/dev/null 2>&1 \
+    || die "PostgreSQL 16 is not running — start the cluster and retry"
+
+  db_pass=$(python3 -c 'import secrets;print(secrets.token_hex(24))')
+  {
+    cat <<'SQL'
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'discord_bot') THEN
+    CREATE ROLE discord_bot LOGIN;
+  END IF;
+END
+$$;
+SQL
+    printf "ALTER ROLE discord_bot WITH PASSWORD '%s';\n" "$db_pass"
+  } | runuser -u postgres -- psql -q -v ON_ERROR_STOP=1 >/dev/null \
+    || die "cannot provision role discord_bot"
+  if ! runuser -u postgres -- psql -tAc "select 1 from pg_database where datname = 'discord_bot'" | grep -q 1; then
+    echo 'CREATE DATABASE discord_bot OWNER discord_bot;' \
+      | runuser -u postgres -- psql -q -v ON_ERROR_STOP=1 >/dev/null \
+      || die "cannot create database discord_bot"
+  fi
+
+  touch "$env_file"
+  printf 'DATABASE_URL=postgresql://discord_bot:%s@localhost:5432/discord_bot\n' "$db_pass" >> "$env_file"
+  chmod 600 "$env_file"
+  if id discordbot >/dev/null 2>&1; then
+    chown discordbot:discordbot "$env_file"
+  fi
+  unset db_pass
+  echo "install.sh: --standalone: local database ready; DATABASE_URL written to $env_file"
+}
+if [ "$STANDALONE" = 1 ]; then standalone_db; fi
 
 # 5. hand off to deploy.sh; its DEPLOY line must appear or we treat it as a failure
 DEPLOY_OUT="$(mktemp /tmp/deploy-out.XXXXXX)"
