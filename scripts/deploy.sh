@@ -196,7 +196,7 @@ require_env_file() {
   [ -f "$ENV_FILE" ] || die "$ENV_FILE missing — put the environment file in place first; nothing was changed"
   local v
   for v in DISCORD_TOKEN DISCORD_APP_ID DATABASE_URL; do
-    grep -q "^$v=" "$ENV_FILE" || die "$ENV_FILE is missing $v"
+    [ -n "$(read_env_var "$v")" ] || die "$ENV_FILE is missing or empty: $v"
   done
 }
 api_port() { local p; p=$(read_env_var API_PORT); echo "${p:-$API_PORT_DEFAULT}"; }
