@@ -42,7 +42,7 @@ function prismaArgs(opts, args) {
 }
 
 function runCli(opts, args, input) {
-  const r = spawnSync('node', prismaArgs(opts, args), {
+  const r = spawnSync(process.execPath, prismaArgs(opts, args), {
     cwd: PKG_ROOT,
     input,
     env: process.env,

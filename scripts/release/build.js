@@ -153,7 +153,7 @@ async function build(opts) {
 
     // prisma engines postinstall was skipped: fetch the schema-engine binary
     // using prisma's own platform detection.
-    execFileSync('node', ['node_modules/@prisma/engines/scripts/postinstall.js'], {
+    execFileSync(process.execPath, ['node_modules/@prisma/engines/scripts/postinstall.js'], {
       cwd: stage,
       stdio: 'inherit',
     });
