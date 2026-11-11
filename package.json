@@ -20,8 +20,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "build:release": "node scripts/build-release.mjs",
-    "test": "node --test 'apps/*/test/**/*.test.ts' 'packages/*/test/**/*.test.ts' 'scripts/test/unit/*.test.mjs'",
-    "test:release": "node --test scripts/test/release-package.test.mjs"
+    "test": "node --test 'apps/*/test/**/*.test.ts' 'packages/*/test/**/*.test.ts' 'scripts/*.test.mjs'",
+    "test:release": "node --test scripts/release-package.e2e.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
