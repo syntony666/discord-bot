@@ -84,6 +84,36 @@ test('release-pr.yml dispatches Start Release through the testable script', () =
   );
 });
 
+test('release.yml repackages without tests and calls deploy after publish', () => {
+  const wf = loadWorkflow('release.yml');
+  const detect = wf.jobs?.detect;
+  assert.ok(detect, 'detect job missing');
+  const detectRuns = (detect.steps ?? []).map((s) => s.run ?? '').join('\n');
+  assert.match(detectRuns, /apps\/bot\/package\.json/, 'detect must compare the bot version');
+  assert.match(detectRuns, /HEAD\^1/, 'detect must compare against the pre-merge parent');
+
+  const pack = wf.jobs?.package;
+  assert.equal(pack?.uses, './.github/workflows/test-pipeline.yml');
+  assert.equal(pack?.if, "needs.detect.outputs.publish == 'true'");
+  for (const key of ['lint', 'site', 'test']) {
+    assert.equal(
+      pack.with?.[key],
+      'false',
+      `package.with.${key} must be 'false' — no tests post-merge`
+    );
+  }
+
+  const publish = wf.jobs?.publish;
+  assert.equal(publish?.if, "needs.detect.outputs.publish == 'true'");
+  const publishRuns = (publish?.steps ?? []).map((s) => s.run ?? '').join('\n');
+  assert.match(publishRuns, /scripts\/release\/publish-release\.sh/);
+  assert.ok(!/npm test|node --test|typecheck/.test(publishRuns), 'publish must not run tests');
+
+  const deploy = wf.jobs?.deploy;
+  assert.equal(deploy?.uses, './.github/workflows/deploy-vm.yml');
+  assert.deepEqual(deploy?.needs, 'publish');
+});
+
 test('no package.json script smuggles tests into non-test scripts', () => {
   const pkgFiles = [path.join(REPO_ROOT, 'package.json')];
   for (const dir of ['apps', 'packages']) {
