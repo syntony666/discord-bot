@@ -286,31 +286,39 @@ verify_package() {
   [ "$expect" = "$actual" ] || die "tarball checksum mismatch"
   TARBALL_SHA=$actual
 
-  REL_COMMIT=$(python3 - "$PKGDIR/release.json" "$VERSION" "$ARCH" "$actual" <<'PY'
-import json, sys
-m, version, arch, sha = json.load(open(sys.argv[1])), *sys.argv[2:]
-assert m["version"] == version, f'release.json version {m["version"]} != {version}'
-a = next((x for x in m["archives"] if x["arch"] == arch), None)
-assert a, f"no {arch} archive in release.json"
-assert a["sha256"] == sha, "archive sha mismatch"
-print(m["commit"])
-PY
-) || die "release.json verification failed"
-
   local tmp
   tmp=$(mktemp -d)
   tar -xzf "$TARBALL" -C "$tmp" ./build.json 2>/dev/null || tar -xzf "$TARBALL" -C "$tmp" build.json
-  python3 - "$tmp/build.json" "$VERSION" "$REL_COMMIT" "$ARCH" <<'PY' || die "build.json verification failed"
+
+  local rc=0
+  REL_COMMIT=$(python3 - "$PKGDIR/release.json" "$tmp/build.json" "$VERSION" "$ARCH" "$actual" <<'PY'
 import json, sys
-b = json.load(open(sys.argv[1]))
-assert b["version"] == sys.argv[2], "build.json version mismatch"
-assert b["commit"] == sys.argv[3], "build.json commit mismatch"
-assert b["platform"] == "linux", "build.json platform mismatch"
-assert b["arch"] == sys.argv[4], "build.json arch mismatch"
-assert b["nodeVersion"].split(".")[0] == "24", "build.json node mismatch"
+m, b, version, arch, sha = json.load(open(sys.argv[1])), json.load(open(sys.argv[2])), *sys.argv[3:]
+try:
+    assert m["version"] == version, f'release.json version {m["version"]} != {version}'
+    a = next((x for x in m["archives"] if x["arch"] == arch), None)
+    assert a, f"no {arch} archive in release.json"
+    assert a["sha256"] == sha, "archive sha mismatch"
+except AssertionError as e:
+    print(f"release.json verification failed: {e}", file=sys.stderr)
+    sys.exit(2)
+try:
+    assert b["version"] == version, "build.json version mismatch"
+    assert b["commit"] == m["commit"], "build.json commit mismatch"
+    assert b["platform"] == "linux", "build.json platform mismatch"
+    assert b["arch"] == arch, "build.json arch mismatch"
+    assert b["nodeVersion"].split(".")[0] == "24", "build.json node mismatch"
+except AssertionError as e:
+    print(f"build.json verification failed: {e}", file=sys.stderr)
+    sys.exit(3)
 print("build.json ok", file=sys.stderr)
+print(m["commit"])
 PY
+) || rc=$?
   rm -rf "$tmp"
+  [ "$rc" -eq 2 ] && die "release.json verification failed"
+  [ "$rc" -eq 3 ] && die "build.json verification failed"
+  [ "$rc" -eq 0 ] || die "release.json verification failed"
 
   local need avail
   need=$(( $(stat -c%s "$TARBALL") * 3 / 1024 ))
@@ -421,39 +429,35 @@ restore() {
   say "restore: previous version back up"
 }
 
-state_get() {
-  python3 - "$STATE_FILE" "$1" <<'PY' 2>/dev/null || true
-import json, sys
-try: print(json.load(open(sys.argv[1])).get(sys.argv[2], ""))
-except Exception: print("")
-PY
-}
-state_set() {
-  python3 - "$STATE_FILE" "$1" "$2" <<'PY'
-import json, os, sys
-p, k, v = sys.argv[1:4]
-try: st = json.load(open(p))
-except Exception: st = {}
-st[k] = v
-tmp = p + ".tmp"
-json.dump(st, open(tmp, "w"))
-os.replace(tmp, p)
-PY
-}
-state_write_success() {
-  python3 - "$STATE_FILE" "$VERSION" "$REL_COMMIT" "$PREV_BIN" "$DUMP" <<'PY'
+state() { # get <key> | set <key> <value> | success <ver> <commit> <prev> <dump>
+  python3 - "$STATE_FILE" "$@" <<'PY'
 import json, os, sys, time
-p, ver, commit, prev, dump = sys.argv[1:6]
-st = {
-    "result": "ok", "version": ver, "commit": commit,
-    "prev_bin": prev or "none", "dump": dump,
-    "deployedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-}
-tmp = p + ".tmp"
-json.dump(st, open(tmp, "w"))
-os.replace(tmp, p)
+p, sub, args = sys.argv[1], sys.argv[2], sys.argv[3:]
+def load():
+    try: return json.load(open(p))
+    except Exception: return {}
+def save(st):
+    tmp = p + ".tmp"
+    json.dump(st, open(tmp, "w"))
+    os.replace(tmp, p)
+if sub == "get":
+    print(load().get(args[0], ""))
+elif sub == "set":
+    st = load()
+    st[args[0]] = args[1]
+    save(st)
+elif sub == "success":
+    ver, commit, prev, dump = args
+    save({
+        "result": "ok", "version": ver, "commit": commit,
+        "prev_bin": prev or "none", "dump": dump,
+        "deployedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    })
 PY
 }
+state_get() { state get "$1" 2>/dev/null || true; }
+state_set() { state set "$1" "$2"; }
+state_write_success() { state success "$VERSION" "$REL_COMMIT" "$PREV_BIN" "$DUMP"; }
 
 cleanup_old() {
   python3 - "$ROOT/releases" "$VERSION" "$PREV_BIN" "$BACKUP_DIR" <<'PY'

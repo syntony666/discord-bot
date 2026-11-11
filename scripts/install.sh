@@ -15,6 +15,18 @@ RELEASE_BASE_URL="${BOT_RELEASE_BASE_URL:-https://github.com/syntony666/discord-
 die() { echo "install.sh: $*" >&2; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1 || die "missing required tool: $1"; }
 
+# Read one key from a JSON file (or stdin when the file is "-").
+json_get() {
+  python3 - "$1" "$2" <<'PY'
+import json, sys
+try:
+    src = sys.stdin if sys.argv[1] == "-" else open(sys.argv[1])
+    print(json.load(src).get(sys.argv[2], ""))
+except Exception:
+    print("")
+PY
+}
+
 [ "$(id -u)" = 0 ] || die "must run as root"
 for t in curl tar sha256sum python3; do need "$t"; done
 
@@ -38,17 +50,19 @@ curl -fsSL "$DEPLOY_SH_URL" -o "$DEPLOY_SH" || die "cannot fetch deploy.sh from 
 bash -n "$DEPLOY_SH" || die "downloaded deploy.sh failed bash -n"
 DEPLOY_SHA=$(sha256sum "$DEPLOY_SH" | cut -d' ' -f1)
 python3 - "$STATE_FILE" "$DEPLOY_SHA" <<'PY'
-import json, sys
+import json, os, sys
 p, sha = sys.argv[1], sys.argv[2]
 st = json.load(open(p))
 st["deployScriptSha256"] = sha
-json.dump(st, open(p, "w"))
+tmp = p + ".tmp"
+json.dump(st, open(tmp, "w"))
+os.replace(tmp, p)
 PY
 
 # 3. decide version
 if [ -z "$VERSION" ]; then
-  TAG=$(curl -fsSL "$RELEASE_API_URL" | python3 -c 'import json,sys; print(json.load(sys.stdin)["tag_name"])') \
-    || die "cannot resolve latest release"
+  TAG=$(curl -fsSL "$RELEASE_API_URL" | json_get - tag_name)
+  [ -n "$TAG" ] || die "cannot resolve latest release"
   VERSION="${TAG##*@}"
 else
   TAG="@discord-bot/bot@$VERSION"
@@ -86,14 +100,7 @@ EOF
 
 CUR_BIN=""
 [ -L "$ROOT/bin" ] && CUR_BIN=$(readlink -f "$ROOT/bin" || true)
-CUR_VER=$(python3 - "$STATE_FILE" <<'PY'
-import json, sys
-try:
-    print(json.load(open(sys.argv[1])).get("version", ""))
-except Exception:
-    print("")
-PY
-)
+CUR_VER=$(json_get "$STATE_FILE" version)
 
 if [ "$CUR_VER" = "$VERSION" ] && [ -n "$CUR_BIN" ] && [ -d "$CUR_BIN" ]; then
   echo "install.sh: $VERSION already present at $CUR_BIN — skipping tarball download"
