@@ -89,9 +89,9 @@ ensure_user() {
 }
 
 # unit templates — heredoc bodies are generated from scripts/*.conf by
-# scripts/sync-units.mjs (# @embed markers); do not edit them by hand
+# scripts/deploy-sync-units.mjs (# @embed markers); do not edit them by hand
 unit_body_api() {
-  # @embed discord-bot-api.conf
+  # @embed deploy-unit-api.conf
   cat <<'EOF'
 [Unit]
 Description=discord-bot API
@@ -113,7 +113,7 @@ WantedBy=discord-bot.target
 EOF
 }
 unit_body_bot() {
-  # @embed discord-bot.conf
+  # @embed deploy-unit-bot.conf
   cat <<'EOF'
 [Unit]
 Description=discord-bot
@@ -136,7 +136,7 @@ EOF
 }
 dropin_body() {
   local entry=$1
-  # @embed release-dropin.conf
+  # @embed deploy-unit-dropin.conf
   cat <<'EOF' | sed "s|__ENTRY__|$entry|"
 [Service]
 WorkingDirectory=/opt/sakiko-hoshino-bot/bin
