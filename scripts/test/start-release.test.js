@@ -82,6 +82,11 @@ function seedRepo(dir) {
   w('apps/doc/.vitepress/version.mts', "export const BOT_VERSION = '9.9.8';\n");
   w('.changeset/README.md', '# changesets\n');
   w('.changeset/config.json', '{}\n');
+  // start-release.sh shells out to the real verifier; ship it in the seed.
+  w(
+    'scripts/release/verify-release-data.js',
+    readFileSync(path.join(REPO_ROOT, 'scripts', 'release', 'verify-release-data.js'), 'utf8')
+  );
 }
 
 function addChangeset(dir, file = 'pending-fix.md') {
