@@ -114,6 +114,44 @@ test('release.yml repackages without tests and calls deploy after publish', () =
   assert.deepEqual(deploy?.needs, 'publish');
 });
 
+test('deploy-vm.yml is call-only, pins known_hosts, never disables host checks', () => {
+  const wf = loadWorkflow('deploy-vm.yml');
+  assert.deepEqual(Object.keys(wf.on ?? {}), ['workflow_call'], 'deploy must be call-only');
+  const deploy = wf.jobs?.deploy;
+  assert.ok(deploy, 'deploy job missing');
+  assert.ok(!deploy.environment, 'no environment: allowed');
+  const runs = (deploy.steps ?? []).map((s) => s.run ?? '').join('\n');
+  const env = deploy.env ?? {};
+  for (const key of ['VM_SSH_KEY', 'VM_HOST', 'VM_USER']) {
+    assert.equal(env[key], `\${{ secrets.${key} }}`, `${key} must come from secrets`);
+  }
+  assert.match(
+    runs,
+    /UserKnownHostsFile=\S*scripts\/known_hosts/,
+    'ssh must pin scripts/known_hosts'
+  );
+  assert.match(runs, /StrictHostKeyChecking=yes/, 'host verification must stay on');
+  assert.ok(
+    !/StrictHostKeyChecking=no|accept-new|ssh-keyscan/.test(runs),
+    'host verification must never be bypassed'
+  );
+  assert.match(runs, /curl -fsSL https:\/\/sakiko\.syntony666\.com\/install\.sh \| sudo bash/);
+  assert.ok(!/--version|--standalone/.test(runs), 'entry command takes no arguments');
+});
+
+test('scripts/known_hosts pins all three prod VM host keys', () => {
+  const file = path.join(REPO_ROOT, 'scripts', 'known_hosts');
+  const lines = readFileSync(file, 'utf8')
+    .split('\n')
+    .filter((l) => l && !l.startsWith('#'));
+  assert.equal(lines.length, 3);
+  const types = lines.map((l) => l.split(' ')[1]).sort();
+  assert.deepEqual(types, ['ecdsa-sha2-nistp256', 'ssh-ed25519', 'ssh-rsa']);
+  for (const l of lines) {
+    assert.equal(l.split(' ')[0], '138.2.37.66');
+  }
+});
+
 test('no package.json script smuggles tests into non-test scripts', () => {
   const pkgFiles = [path.join(REPO_ROOT, 'package.json')];
   for (const dir of ['apps', 'packages']) {
