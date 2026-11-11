@@ -15,7 +15,7 @@ const path = require('node:path');
 
 const PLAN_FORMAT = 1;
 const PKG_ROOT = path.resolve(__dirname, '..');
-const CONFIG = 'tools/prisma.config.cjs';
+const CONFIG = 'scripts/prisma.config.cjs';
 const SCHEMA = 'prisma/schema.prisma';
 
 const sha256 = (s) => createHash('sha256').update(s).digest('hex');

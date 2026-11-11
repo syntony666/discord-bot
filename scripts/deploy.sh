@@ -396,7 +396,7 @@ run_release_db() {
     --property=Group=discordbot \
     --property=EnvironmentFile="$ENV_FILE" \
     --property=WorkingDirectory="$DESTDIR" \
-    /usr/bin/node "$DESTDIR/tools/release-db.cjs" "$sub" "$@"
+    /usr/bin/node "$DESTDIR/scripts/release-db.cjs" "$sub" "$@"
 }
 
 restore() {

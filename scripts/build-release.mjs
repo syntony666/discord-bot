@@ -223,9 +223,9 @@ async function build(opts) {
       path.join(REPO_ROOT, 'apps/api/prisma/schema.prisma'),
       path.join(stage, 'prisma/schema.prisma')
     );
-    mkdirSync(path.join(stage, 'tools'), { recursive: true });
+    mkdirSync(path.join(stage, 'scripts'), { recursive: true });
     for (const f of ['release-db.cjs', 'prisma.config.cjs']) {
-      cpSync(path.join(REPO_ROOT, 'tools', f), path.join(stage, 'tools', f));
+      cpSync(path.join(REPO_ROOT, 'scripts', f), path.join(stage, 'scripts', f));
     }
 
     // the packaged root package.json carries the release version for getBotVersion

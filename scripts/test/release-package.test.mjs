@@ -102,8 +102,8 @@ test.before(async () => {
     'apps/api/dist/.prisma',
     'apps/bot/dist/index.js',
     'prisma/schema.prisma',
-    'tools/release-db.cjs',
-    'tools/prisma.config.cjs',
+    'scripts/release-db.cjs',
+    'scripts/prisma.config.cjs',
     'node_modules/prisma/build/index.js',
   ]) {
     assert.ok(existsSync(join(pkg, p)), `missing ${p}`);
@@ -164,7 +164,7 @@ test('prisma db push + Guild CRUD on the test database', async () => {
   const env = { ...process.env, DATABASE_URL: DB_URL, NODE_PATH: '', NODE_OPTIONS: '' };
   execFileSync(
     'node',
-    ['node_modules/prisma/build/index.js', 'db', 'push', '--config', 'tools/prisma.config.cjs'],
+    ['node_modules/prisma/build/index.js', 'db', 'push', '--config', 'scripts/prisma.config.cjs'],
     { cwd: pkg, env, encoding: 'utf-8', timeout: 120_000 }
   );
 

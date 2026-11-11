@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-import { splitSql, analyzeSql, PLAN_FORMAT } from '../../../tools/release-db.cjs';
+import { splitSql, analyzeSql, PLAN_FORMAT } from '../../../scripts/release-db.cjs';
 
 // ---------- splitSql ----------
 
@@ -113,7 +113,7 @@ test('analyzeSql fails when diff exists but no statement parses', () => {
 
 // ---------- apply state machine (fake CLI) ----------
 
-const TOOL = new URL('../../../tools/release-db.cjs', import.meta.url).pathname;
+const TOOL = new URL('../../../scripts/release-db.cjs', import.meta.url).pathname;
 
 function sha256(s) {
   return createHash('sha256').update(s).digest('hex');
