@@ -50,7 +50,7 @@ export function useStatusHandlers(deps: StatusDeps) {
       {
         type: ComponentType.ActionRow,
         components: [
-          linkButton('使用說明', 'https://discord-bot.syntony666.com'),
+          linkButton('使用說明', 'https://sakiko.syntony666.com'),
           linkButton(
             '邀請連結',
             `https://discord.com/api/oauth2/authorize?client_id=${discord.botId}&permissions=8&scope=bot%20applications.commands`
