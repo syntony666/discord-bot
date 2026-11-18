@@ -10,7 +10,7 @@
 
 ## Setup
 
-Node.js 22+, PostgreSQL.
+Node.js 24 (CI and release builds pin 24.15.0), PostgreSQL.
 
 ```bash
 npm install            # workspaces; `prepare` builds packages/*
@@ -40,6 +40,7 @@ npm run build -w @discord-bot/doc   # when touching apps/doc
 ## Testing
 
 - `node --test` on plain `.test.ts` files (Node 26 strips types natively — not `.mts`); files live at `apps/*/test/**/*.test.ts` and `packages/*/test/**/*.test.ts`
+- Release/packaging/deploy logic has its own `node --test` harnesses under `scripts/test/*.test.js` — they run with fake remotes and fake `gh`, no credentials needed
 - Tests only resolve relative paths and workspace packages — the `@core`/`@features` aliases don't resolve without a hook
 - A behavior fix should include a regression test that fails without the fix
 - An interaction E2E harness survives on the `test/interaction-harness` branch if ever needed
@@ -85,9 +86,9 @@ Work branches off the current `release/x.y.z` branch, never directly off `master
 1. Create or reuse the release branch: `release/x.y.z` — the name declares intent; the shipped version is computed by changesets at release time, not by hand
 2. Branch off it (`fix/…`, `feat/…`, `docs/…`). Changes that belong in the changelog carry a changeset file — run `npx changeset`, pick the bump level (patch/minor/major), describe the change. Only `@discord-bot/bot` is versioned; all other workspaces are changeset-ignored
 3. Push and wait for CI green, then merge into `release/x.y.z` with `--no-ff` — real merge commits, no fast-forwards
-4. When the release is ready, merge `release/x.y.z` into `master` with `--no-ff` and push — changesets/action opens (or updates) a `chore: release` PR accumulating every pending changeset
-5. Merge the `chore: release` PR to ship: it bumps `apps/bot/package.json`, writes `apps/bot/CHANGELOG.md`, tags `@discord-bot/bot@x.y.z`, and creates the GitHub release. Nothing is versioned until that PR merges
-6. Pushing `master` triggers CI → VM deploy for the bot. Pushes touching `apps/doc/` additionally trigger Cloudflare Workers Builds; doc-only changes skip the VM deploy
+4. When the release is ready, the maintainer runs **Start Release** (`release-pr.yml`) on `master` with `release/x.y.z` — it validates the source branch and pending changesets, runs `changeset version`, and opens the release PR `changeset-release/x.y.z` → `master`
+5. Merge the release PR to ship: it bumps `apps/bot/package.json`, writes `apps/bot/CHANGELOG.md`, then `release.yml` repacks the linux-arm64/x64 tarballs on the merge commit, tags `@discord-bot/bot@x.y.z`, publishes the GitHub release, and calls `deploy-vm.yml` to install it on the VM. Nothing is versioned until that PR merges
+6. Pushes touching `apps/doc/` additionally trigger Cloudflare Workers Builds; doc-only changes skip the VM deploy
 
 ## Change discipline
 
