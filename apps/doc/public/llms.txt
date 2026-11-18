@@ -4,9 +4,9 @@
 
 ## Docs
 
-- [指令說明](https://discord-bot.syntony666.com/command/): 全部斜線指令的用法與所需權限
-- [關於](https://discord-bot.syntony666.com/about/): 機器人介紹、邀請連結、版本紀錄
-- [隱私權政策](https://discord-bot.syntony666.com/privacy/): 資料蒐集、處理與利用方式
+- [指令說明](https://sakiko.syntony666.com/command/): 全部斜線指令的用法與所需權限
+- [關於](https://sakiko.syntony666.com/about/): 機器人介紹、邀請連結、版本紀錄
+- [隱私權政策](https://sakiko.syntony666.com/privacy/): 資料蒐集、處理與利用方式
 
 ## Links
 
