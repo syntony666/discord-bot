@@ -79,7 +79,6 @@ export function splitSql(sql) {
         const end = sql.indexOf(tag, i + tag.length);
         if (end === -1) {
           cur += sql.slice(i);
-          i = n;
           break;
         }
         cur += sql.slice(i, end + tag.length);

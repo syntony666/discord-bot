@@ -155,7 +155,7 @@ test('scripts/known_hosts pins all three prod VM host keys, hashed', () => {
   if (process.env.PROD_VM_HOST) {
     const host = process.env.PROD_VM_HOST;
     const out = execFileSync('ssh-keygen', ['-F', host, '-f', file], { encoding: 'utf8' });
-    assert.equal(out.match(new RegExp(`Host ${host.replace(/\./g, '\\.')} found`, 'g'))?.length, 3);
+    assert.equal(out.split(`Host ${host} found`).length - 1, 3);
   }
 });
 

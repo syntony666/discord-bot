@@ -1,14 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import {
-  chmodSync,
-  existsSync,
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  writeFileSync,
-} from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -72,9 +65,7 @@ test.before(async () => {
   // 1. SHA256SUMS must cover the archive and manifest, and both must verify.
   const sumLines = readFileSync(CHECKSUMS, 'utf-8').trim().split('\n');
   const sumFor = (file) => {
-    const line = sumLines.find(
-      (l) => l.trim().endsWith(` ${file}`) || l.trim().endsWith(` ${file}`)
-    );
+    const line = sumLines.find((l) => l.trim().endsWith(` ${file}`));
     assert.ok(line, `SHA256SUMS missing entry for ${file}`);
     return line.split(/\s+/)[0];
   };

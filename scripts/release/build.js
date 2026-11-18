@@ -13,7 +13,6 @@ import {
   mkdirSync,
   mkdtempSync,
   readdirSync,
-  readFileSync,
   readlinkSync,
   rmSync,
   writeFileSync,
@@ -22,28 +21,13 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  ARCHIVE_NAMES,
-  collectExternals,
-  die,
-  parseArgs,
-  readJson,
-  sha256File,
-  writeManifest,
-} from './lib.js';
+import { ARCHIVE_NAMES, die, parseArgs, readJson, sha256File, writeManifest } from './lib.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const REPOSITORY = 'syntony666/discord-bot';
 const SCHEMA_VERSION = 1;
 const NODE_MAJOR = '24';
 
-const WORKSPACES = [
-  'apps/api',
-  'apps/bot',
-  'apps/doc',
-  'packages/shared',
-  'packages/discord-client',
-];
 const PACKAGED_WORKSPACES = ['apps/api', 'apps/bot', 'packages/shared', 'packages/discord-client'];
 
 function git(args) {
@@ -158,9 +142,6 @@ async function build(opts) {
       stdio: 'inherit',
     });
 
-    const externals = collectExternals(
-      PACKAGED_WORKSPACES.map((w) => readJson(path.join(REPO_ROOT, w, 'package.json')))
-    );
     for (const app of ['api', 'bot']) {
       mkdirSync(path.join(stage, `apps/${app}/dist`), { recursive: true });
       await bundle(
